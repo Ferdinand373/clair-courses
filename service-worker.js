@@ -1,45 +1,105 @@
-# Clair Courses — V5.1
+"use strict";
 
-Mini-application de liste de courses conçue en priorité pour l’iPhone. Elle fonctionne sans compte, sans API distante et sans bibliothèque externe.
+const APP_VERSION = "6.0.0";
+const CACHE_PREFIX = "clair-courses-";
+const CACHE_NAME = CACHE_PREFIX + "v" + APP_VERSION;
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./assets/icon.svg",
+  "./assets/icon-180.png",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png"
+];
 
+self.addEventListener("install", function (event) {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(function (cache) {
+      const freshRequests = APP_SHELL.map(function (path) {
+        return new Request(path, { cache: "reload" });
+      });
+      return cache.addAll(freshRequests);
+    })
+  );
+});
 
-## Amélioration V5.1
+self.addEventListener("activate", function (event) {
+  event.waitUntil(
+    caches.keys()
+      .then(function (keys) {
+        return Promise.all(
+          keys
+            .filter(function (key) {
+              return key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME;
+            })
+            .map(function (key) {
+              return caches.delete(key);
+            })
+        );
+      })
+      .then(function () {
+        return self.clients.claim();
+      })
+  );
+});
 
-- En mode Courses, un rayon terminé se replie automatiquement au lieu de disparaître.
-- Son titre reste visible avec le nombre d’articles achetés.
-- Un toucher sur le rayon permet de revoir ce qui figurait sur la liste et de décocher un article en cas d’erreur.
+self.addEventListener("message", function (event) {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
-## Nouveautés de la V5
+self.addEventListener("fetch", function (event) {
+  const request = event.request;
+  const url = new URL(request.url);
 
-- **Mode Courses** : interface épurée, articles achetés masqués, cases et texte agrandis.
-- **Écran maintenu allumé** : bouton utilisant l’API Screen Wake Lock lorsque l’app est publiée en HTTPS et que l’iPhone la prend en charge.
-- **Suggestions à la saisie** : après deux lettres, l’application propose des articles et leur rayon.
-- **Progression plus lisible** : nombre d’articles achetés, articles restants et rayons restants.
-- **Mes habituels** : ajout rapide des produits récurrents, déjà présent et conservé.
+  if (request.method !== "GET" || url.origin !== self.location.origin) {
+    return;
+  }
 
-## Fichiers
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request, { cache: "no-store" })
+        .then(function (response) {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(function (cache) {
+              cache.put("./index.html", copy);
+            });
+          }
+          return response;
+        })
+        .catch(function () {
+          return caches.match("./index.html").then(function (cached) {
+            return cached || caches.match("./");
+          });
+        })
+    );
+    return;
+  }
 
-- `index.html` : toute l’interface et la logique, y compris l’import de listes, la vérification des doublons et la sauvegarde JSON.
-- `manifest.webmanifest` : installation sur l’écran d’accueil.
-- `service-worker.js` : fonctionnement hors connexion après un premier chargement.
-- `assets/` : icônes locales.
+  event.respondWith(
+    caches.match(request).then(function (cached) {
+      const networkRequest = fetch(request, { cache: "no-cache" })
+        .then(function (response) {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(function (cache) {
+              cache.put(request, copy);
+            });
+          }
+          return response;
+        });
 
-## Test sur ordinateur
+      if (cached) {
+        event.waitUntil(networkRequest.catch(function () {}));
+        return cached;
+      }
 
-Ouvrez `index.html` pour tester la liste, le mode Courses, les suggestions et la sauvegarde locale. Le bouton **Garder l’écran allumé** ne peut fonctionner qu’en contexte sécurisé (`https://` ou `localhost`) et doit donc être validé après publication sur GitHub Pages.
-
-## Publier avec GitHub Pages
-
-1. Ouvrir le dépôt qui héberge actuellement Clair Courses.
-2. Remplacer les fichiers existants par ceux de ce dossier : `index.html`, `manifest.webmanifest`, `service-worker.js`, `README.md` et `assets/`.
-3. Valider les changements sur la branche publiée par GitHub Pages.
-4. Attendre la fin du déploiement GitHub Pages.
-5. Ouvrir l’application sur l’iPhone et l’actualiser si l’ancienne version reste visible.
-
-Les chemins sont relatifs : l’application peut être publiée à la racine d’un site ou dans un sous-dossier.
-
-## Données
-
-La liste, les coches, les rayons, les habituels et l’option d’affichage restent enregistrés uniquement dans `localStorage`, sous la clé `clairCourses.state`. La V5 conserve cette même clé et migre automatiquement les données de la V4.
-
-Le menu **Aide et sauvegarde** permet d’exporter ou de restaurer une sauvegarde JSON. Une confirmation est demandée avant toute restauration.
+      return networkRequest.catch(function () {
+        return caches.match("./index.html");
+      });
+    })
+  );
+});
