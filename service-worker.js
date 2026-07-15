@@ -1,6 +1,6 @@
 "use strict";
 
-const APP_VERSION = "7.0.0";
+const APP_VERSION = "7.1.0";
 const CACHE_PREFIX = "clair-courses-";
 const CACHE_NAME = CACHE_PREFIX + "v" + APP_VERSION;
 const APP_SHELL = [
