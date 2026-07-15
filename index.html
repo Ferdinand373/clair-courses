@@ -1304,7 +1304,22 @@
       "use strict";
 
       const STORAGE_KEY = "clairCourses.state";
-      const DATA_VERSION = 3;
+      const DATA_VERSION = 4;
+
+      // Alias rencontrés dans les anciennes sauvegardes et dans les exports
+      // manuels. Ils sont centralisés afin que la migration reste lisible.
+      const IMPORT_ALIASES = {
+        items: ["items", "articles", "list", "liste", "listeCourses", "shoppingList", "courses"],
+        favorites: ["habituels", "favorites", "favourites", "favoris", "regulars"],
+        settings: ["settings", "parametres", "paramètres", "preferences", "options"],
+        name: ["name", "nom", "label", "libelle", "libellé", "text", "texte", "title", "article", "product", "produit"],
+        aisle: ["aisle", "rayon", "category", "categorie", "catégorie", "section"],
+        quantity: ["quantity", "quantite", "quantité", "qty", "qte", "qté", "amount", "count"],
+        checked: ["checked", "bought", "purchased", "done", "completed", "achete", "acheté", "isBought"],
+        id: ["id", "uuid", "uid", "key"],
+        createdAt: ["createdAt", "created_at", "created", "date", "dateCreation", "dateAdded", "timestamp"],
+        hideBought: ["hideBought", "hidePurchased", "hideCompleted", "masquerAchetes", "masquerAchetés"]
+      };
 
       const AISLES = [
         "Fruits et légumes",
@@ -1319,6 +1334,26 @@
         "Hygiène",
         "Divers"
       ];
+
+      const IMPORTED_AISLE_SYNONYMS = {
+        "fruit": "Fruits et légumes",
+        "fruits": "Fruits et légumes",
+        "legume": "Fruits et légumes",
+        "legumes": "Fruits et légumes",
+        "fruits legumes": "Fruits et légumes",
+        "viande": "Boucherie",
+        "viandes": "Boucherie",
+        "poisson": "Poissonnerie",
+        "poissons": "Poissonnerie",
+        "produits laitiers": "Crèmerie",
+        "boulanger": "Boulangerie",
+        "surgeles": "Surgelés",
+        "boisson": "Boissons",
+        "menage": "Maison",
+        "maison menage": "Maison",
+        "autre": "Divers",
+        "autres": "Divers"
+      };
 
       // Les expressions les plus longues gagnent, ce qui évite par exemple
       // de classer « eau de Javel » dans les boissons.
@@ -1474,7 +1509,7 @@
       }
 
       function cleanText(value, maxLength) {
-        return String(value || "")
+        return String(value === undefined || value === null ? "" : value)
           .replace(/\s+/g, " ")
           .trim()
           .slice(0, maxLength);
@@ -1507,74 +1542,459 @@
         };
       }
 
-      function sanitizeItem(item) {
-        if (!item || typeof item !== "object") {
-          return null;
+      function hasOwn(source, key) {
+        return Boolean(source) && Object.prototype.hasOwnProperty.call(source, key);
+      }
+
+      function findImportedValue(source, aliases, validator) {
+        if (!source || typeof source !== "object" || Array.isArray(source)) {
+          return { found: false, value: undefined };
         }
-        const name = cleanText(item.name || item.label || item.text, 160);
-        if (!name) {
-          return null;
+        for (let index = 0; index < aliases.length; index += 1) {
+          const key = aliases[index];
+          if (hasOwn(source, key) && (!validator || validator(source[key]))) {
+            return { found: true, value: source[key] };
+          }
         }
-        const legacyAisle = item.aisle || item.rayon || item.category;
-        const legacyChecked = item.checked !== undefined
-          ? item.checked
-          : (item.done !== undefined ? item.done : item.completed);
+        return { found: false, value: undefined };
+      }
+
+      function importedContainers(data) {
+        if (!data || typeof data !== "object" || Array.isArray(data)) {
+          return [];
+        }
+        const containers = [data];
+        const wrapperKeys = ["data", "state", "backup", "sauvegarde"];
+        for (let index = 0; index < containers.length && index < 12; index += 1) {
+          const container = containers[index];
+          wrapperKeys.forEach(function (key) {
+            const nested = container[key];
+            if (
+              nested &&
+              typeof nested === "object" &&
+              !Array.isArray(nested) &&
+              !containers.includes(nested)
+            ) {
+              containers.push(nested);
+            }
+          });
+        }
+        return containers;
+      }
+
+      function looksLikeImportedEntry(value) {
+        return Boolean(value) &&
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          IMPORT_ALIASES.name.some(function (key) { return hasOwn(value, key); });
+      }
+
+      function normalizeCollectionValue(value) {
+        if (Array.isArray(value)) {
+          return { valid: true, entries: value };
+        }
+        if (typeof value === "string") {
+          return { valid: true, entries: [value] };
+        }
+        if (value && typeof value === "object") {
+          return {
+            valid: true,
+            entries: looksLikeImportedEntry(value)
+              ? [value]
+              : Object.keys(value).map(function (key) { return value[key]; })
+          };
+        }
+        return { valid: false, entries: [] };
+      }
+
+      function findImportedCollection(containers, aliases) {
+        let found = false;
+        let invalidContainers = 0;
+        for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
+          const container = containers[containerIndex];
+          for (let aliasIndex = 0; aliasIndex < aliases.length; aliasIndex += 1) {
+            const key = aliases[aliasIndex];
+            if (!hasOwn(container, key)) {
+              continue;
+            }
+            found = true;
+            const normalized = normalizeCollectionValue(container[key]);
+            if (normalized.valid) {
+              return {
+                found: true,
+                valid: true,
+                entries: normalized.entries,
+                invalidContainers: invalidContainers
+              };
+            }
+            invalidContainers += 1;
+          }
+        }
         return {
-          id: typeof item.id === "string" && item.id ? item.id : createId("item"),
-          name: name,
-          quantity: cleanText(item.quantity, 60),
-          aisle: isKnownAisle(legacyAisle) ? legacyAisle : classifyItem(name),
-          checked: Boolean(legacyChecked),
-          createdAt: Number.isFinite(Number(item.createdAt)) ? Number(item.createdAt) : Date.now()
+          found: found,
+          valid: false,
+          entries: [],
+          invalidContainers: invalidContainers
         };
       }
 
-      function sanitizeFavorite(favorite) {
-        const source = typeof favorite === "string" ? { name: favorite } : favorite;
-        if (!source || typeof source !== "object") {
+      function findImportedSettings(containers) {
+        let found = false;
+        let invalidContainers = 0;
+        for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
+          const container = containers[containerIndex];
+          for (let aliasIndex = 0; aliasIndex < IMPORT_ALIASES.settings.length; aliasIndex += 1) {
+            const key = IMPORT_ALIASES.settings[aliasIndex];
+            if (!hasOwn(container, key)) {
+              continue;
+            }
+            found = true;
+            const value = container[key];
+            if (value && typeof value === "object" && !Array.isArray(value)) {
+              const knownSetting = findImportedValue(
+                value,
+                IMPORT_ALIASES.hideBought,
+                isRecognizedImportedBoolean
+              );
+              if (knownSetting.found) {
+                return {
+                  found: true,
+                  valid: true,
+                  value: value,
+                  invalidContainers: invalidContainers
+                };
+              }
+              // Un objet de paramètres vide est une sauvegarde partielle valide :
+              // les réglages standards seront appliqués sans faux avertissement.
+              if (Object.keys(value).length === 0) {
+                continue;
+              }
+            }
+            invalidContainers += 1;
+          }
+        }
+        return {
+          found: found,
+          valid: false,
+          value: {},
+          invalidContainers: invalidContainers
+        };
+      }
+
+      function importedBooleanResult(value) {
+        if (typeof value === "boolean") {
+          return { recognized: true, value: value };
+        }
+        if (typeof value === "number" && Number.isFinite(value)) {
+          return { recognized: true, value: value !== 0 };
+        }
+        const normalized = normalizeText(value);
+        if (["true", "1", "oui", "yes", "achete", "checked", "done"].includes(normalized)) {
+          return { recognized: true, value: true };
+        }
+        if (["false", "0", "non", "no", "unchecked", "not done", "non achete", "a acheter"].includes(normalized)) {
+          return { recognized: true, value: false };
+        }
+        return { recognized: false, value: false };
+      }
+
+      function isRecognizedImportedBoolean(value) {
+        return importedBooleanResult(value).recognized;
+      }
+
+      function normalizeImportedBoolean(value) {
+        return importedBooleanResult(value).value;
+      }
+
+      function normalizeImportedAisle(value) {
+        const normalized = normalizeText(value);
+        if (!normalized) {
+          return "Divers";
+        }
+        return AISLES.find(function (aisle) {
+          return normalizeText(aisle) === normalized;
+        }) || IMPORTED_AISLE_SYNONYMS[normalized] || "Divers";
+      }
+
+      function isRecognizedImportedAisle(value) {
+        const normalized = normalizeText(value);
+        return Boolean(normalized) && (
+          AISLES.some(function (aisle) {
+            return normalizeText(aisle) === normalized;
+          }) || Boolean(IMPORTED_AISLE_SYNONYMS[normalized])
+        );
+      }
+
+      function normalizeImportedId(value, prefix, usedIds) {
+        let id = (typeof value === "string" || typeof value === "number")
+          ? cleanText(value, 120)
+          : "";
+        while (!id || usedIds.has(id)) {
+          id = createId(prefix);
+        }
+        usedIds.add(id);
+        return id;
+      }
+
+      function normalizeImportedDate(value, fallbackOffset) {
+        const numeric = Number(value);
+        if (value !== "" && value !== null && value !== undefined && Number.isFinite(numeric) && numeric > 0) {
+          return numeric;
+        }
+        if (typeof value === "string") {
+          const parsed = Date.parse(value);
+          if (Number.isFinite(parsed)) {
+            return parsed;
+          }
+        }
+        return Date.now() + fallbackOffset;
+      }
+
+      function importedScalarText(value, maxLength) {
+        return typeof value === "string" || typeof value === "number"
+          ? cleanText(value, maxLength)
+          : "";
+      }
+
+      function isUsableImportedText(value, maxLength) {
+        return importedScalarText(value, maxLength) !== "";
+      }
+
+      function isRecognizedImportedDate(value) {
+        if (typeof value === "number") {
+          return Number.isFinite(value) && value > 0;
+        }
+        if (typeof value !== "string" || !value.trim()) {
+          return false;
+        }
+        const numeric = Number(value);
+        return (Number.isFinite(numeric) && numeric > 0) || Number.isFinite(Date.parse(value));
+      }
+
+      function sanitizeItem(item, usedIds, index) {
+        const source = typeof item === "string" ? { name: item } : item;
+        if (!source || typeof source !== "object" || Array.isArray(source)) {
           return null;
         }
-        const name = cleanText(source.name || source.label || source.text, 160);
+        const nameValue = findImportedValue(source, IMPORT_ALIASES.name, function (value) {
+          return isUsableImportedText(value, 160);
+        });
+        const name = nameValue.found ? importedScalarText(nameValue.value, 160) : "";
         if (!name) {
           return null;
         }
-        const legacyAisle = source.aisle || source.rayon || source.category;
+        const idValue = findImportedValue(source, IMPORT_ALIASES.id, function (value) {
+          return isUsableImportedText(value, 120);
+        });
+        const aisleValue = findImportedValue(source, IMPORT_ALIASES.aisle, isRecognizedImportedAisle);
+        const quantityValue = findImportedValue(source, IMPORT_ALIASES.quantity, function (value) {
+          return isUsableImportedText(value, 60);
+        });
+        const checkedValue = findImportedValue(source, IMPORT_ALIASES.checked, isRecognizedImportedBoolean);
+        const createdAtValue = findImportedValue(source, IMPORT_ALIASES.createdAt, isRecognizedImportedDate);
         return {
-          id: typeof source.id === "string" && source.id ? source.id : createId("favorite"),
+          id: normalizeImportedId(idValue.value, "item", usedIds),
           name: name,
-          quantity: cleanText(source.quantity, 60),
-          aisle: isKnownAisle(legacyAisle) ? legacyAisle : classifyItem(name)
+          quantity: quantityValue.found ? importedScalarText(quantityValue.value, 60) : "",
+          aisle: aisleValue.found ? normalizeImportedAisle(aisleValue.value) : "Divers",
+          checked: checkedValue.found ? normalizeImportedBoolean(checkedValue.value) : false,
+          createdAt: normalizeImportedDate(createdAtValue.value, index)
+        };
+      }
+
+      function sanitizeFavorite(favorite, usedIds) {
+        const source = typeof favorite === "string" ? { name: favorite } : favorite;
+        if (!source || typeof source !== "object" || Array.isArray(source)) {
+          return null;
+        }
+        const nameValue = findImportedValue(source, IMPORT_ALIASES.name, function (value) {
+          return isUsableImportedText(value, 160);
+        });
+        const name = nameValue.found ? importedScalarText(nameValue.value, 160) : "";
+        if (!name) {
+          return null;
+        }
+        const idValue = findImportedValue(source, IMPORT_ALIASES.id, function (value) {
+          return isUsableImportedText(value, 120);
+        });
+        const aisleValue = findImportedValue(source, IMPORT_ALIASES.aisle, isRecognizedImportedAisle);
+        const quantityValue = findImportedValue(source, IMPORT_ALIASES.quantity, function (value) {
+          return isUsableImportedText(value, 60);
+        });
+        return {
+          id: normalizeImportedId(idValue.value, "favorite", usedIds),
+          name: name,
+          quantity: quantityValue.found ? importedScalarText(quantityValue.value, 60) : "",
+          aisle: aisleValue.found ? normalizeImportedAisle(aisleValue.value) : "Divers"
+        };
+      }
+
+      // Cette fonction est volontairement pure : elle ne modifie ni l’état
+      // courant ni localStorage tant que tout le fichier n’a pas été analysé.
+      function normalizeImportedData(data) {
+        if (data === null || data === undefined || (typeof data !== "object" && !Array.isArray(data))) {
+          throw new Error("Aucune donnée Clair Courses exploitable n’a été trouvée.");
+        }
+
+        const containers = importedContainers(data);
+        let itemCollection = Array.isArray(data)
+          ? { found: true, valid: true, entries: data, invalidContainers: 0 }
+          : findImportedCollection(containers, IMPORT_ALIASES.items);
+        const favoriteCollection = Array.isArray(data)
+          ? { found: false, valid: false, entries: [], invalidContainers: 0 }
+          : findImportedCollection(containers, IMPORT_ALIASES.favorites);
+        const settingsCollection = Array.isArray(data)
+          ? { found: false, valid: false, value: {}, invalidContainers: 0 }
+          : findImportedSettings(containers);
+
+        if (!itemCollection.found && !Array.isArray(data)) {
+          for (let index = 0; index < containers.length; index += 1) {
+            const container = containers[index];
+            const wrapperKeys = ["data", "state", "backup", "sauvegarde"];
+            const arrayKey = wrapperKeys.find(function (key) {
+              return Array.isArray(container[key]);
+            });
+            if (arrayKey) {
+              itemCollection = {
+                found: true,
+                valid: true,
+                entries: container[arrayKey],
+                invalidContainers: 0
+              };
+              break;
+            }
+          }
+        }
+
+        if (!itemCollection.found && looksLikeImportedEntry(data)) {
+          itemCollection = {
+            found: true,
+            valid: true,
+            entries: [data],
+            invalidContainers: 0
+          };
+        }
+
+        let sourceVersion;
+        let knownAppMarker = false;
+        const markerKeys = ["formatVersion", "appVersion", "version"];
+        containers.forEach(function (container) {
+          if (normalizeText(container.app) === "clair courses") {
+            knownAppMarker = true;
+          }
+          markerKeys.forEach(function (key) {
+            if (
+              sourceVersion === undefined &&
+              hasOwn(container, key) &&
+              isUsableImportedText(container[key], 20)
+            ) {
+              sourceVersion = container[key];
+            }
+          });
+        });
+
+        let hideBoughtValue = settingsCollection.valid
+          ? findImportedValue(
+              settingsCollection.value,
+              IMPORT_ALIASES.hideBought,
+              isRecognizedImportedBoolean
+            )
+          : { found: false, value: undefined };
+        if (!hideBoughtValue.found) {
+          for (let index = 0; index < containers.length; index += 1) {
+            hideBoughtValue = findImportedValue(
+              containers[index],
+              IMPORT_ALIASES.hideBought,
+              isRecognizedImportedBoolean
+            );
+            if (hideBoughtValue.found) {
+              break;
+            }
+          }
+        }
+
+        const recognized = Array.isArray(data) ||
+          itemCollection.valid ||
+          favoriteCollection.valid ||
+          settingsCollection.valid ||
+          hideBoughtValue.found ||
+          knownAppMarker;
+        if (!recognized) {
+          throw new Error("Aucune donnée Clair Courses exploitable n’a été trouvée.");
+        }
+
+        const usedIds = new Set();
+        const items = [];
+        const favorites = [];
+        let ignored = itemCollection.invalidContainers +
+          favoriteCollection.invalidContainers +
+          settingsCollection.invalidContainers;
+
+        if (itemCollection.valid) {
+          itemCollection.entries.forEach(function (entry, index) {
+            const item = sanitizeItem(entry, usedIds, index);
+            if (item) {
+              items.push(item);
+            } else {
+              ignored += 1;
+            }
+          });
+        }
+        if (favoriteCollection.valid) {
+          favoriteCollection.entries.forEach(function (entry) {
+            const favorite = sanitizeFavorite(entry, usedIds);
+            if (favorite) {
+              favorites.push(favorite);
+            } else {
+              ignored += 1;
+            }
+          });
+        }
+
+        const hadUnreadableContent = ignored > 0 ||
+          (itemCollection.valid && itemCollection.entries.length > 0) ||
+          (favoriteCollection.valid && favoriteCollection.entries.length > 0);
+        const hasExplicitEmptyCollection =
+          (itemCollection.valid && itemCollection.entries.length === 0) ||
+          (favoriteCollection.valid && favoriteCollection.entries.length === 0);
+        if (
+          hadUnreadableContent &&
+          items.length === 0 &&
+          favorites.length === 0 &&
+          !hideBoughtValue.found &&
+          !hasExplicitEmptyCollection
+        ) {
+          throw new Error("Aucun élément exploitable n’a pu être récupéré.");
+        }
+
+        return {
+          state: {
+            appVersion: DATA_VERSION,
+            items: items,
+            favorites: favorites,
+            hideBought: hideBoughtValue.found
+              ? normalizeImportedBoolean(hideBoughtValue.value)
+              : false
+          },
+          stats: {
+            itemsRecovered: items.length,
+            favoritesRecovered: favorites.length,
+            ignored: ignored,
+            sourceVersion: sourceVersion === undefined ? "ancienne" : sourceVersion
+          },
+          recognized: true
         };
       }
 
       function migrateState(saved) {
-        if (!saved || typeof saved !== "object" || Array.isArray(saved)) {
-          throw new Error("Format de sauvegarde invalide");
-        }
-        const rawVersion = saved.appVersion !== undefined ? saved.appVersion : saved.version;
-        const version = rawVersion === undefined ? 1 : Number(rawVersion);
-        if (Number.isFinite(version) && version > DATA_VERSION) {
-          throw new Error("Cette sauvegarde provient d’une version plus récente.");
-        }
-        const fallback = defaultState();
-        const sourceFavorites = Array.isArray(saved.favorites)
-          ? saved.favorites
-          : (Array.isArray(saved.habituels) ? saved.habituels : null);
-        const items = Array.isArray(saved.items)
-          ? saved.items.map(sanitizeItem).filter(Boolean)
-          : [];
-        const favorites = sourceFavorites
-          ? sourceFavorites.map(sanitizeFavorite).filter(Boolean)
-          : fallback.favorites;
-        migrationNeeded = version !== DATA_VERSION || saved.appVersion !== DATA_VERSION;
-        return {
-          appVersion: DATA_VERSION,
-          items: items,
-          favorites: favorites,
-          hideBought: Boolean(
-            saved.hideBought !== undefined ? saved.hideBought : saved.hidePurchased
-          )
-        };
+        const normalized = normalizeImportedData(saved);
+        const rawVersion = findImportedValue(
+          saved,
+          ["appVersion", "formatVersion", "version"],
+          function (value) { return isUsableImportedText(value, 20); }
+        );
+        migrationNeeded = !rawVersion.found || Number(rawVersion.value) !== DATA_VERSION;
+        return normalized.state;
       }
 
       function loadState() {
@@ -2637,12 +3057,27 @@
       function exportData() {
         const payload = {
           app: "Clair Courses",
-          appVersion: DATA_VERSION,
+          formatVersion: DATA_VERSION,
           exportedAt: new Date().toISOString(),
-          data: {
-            appVersion: DATA_VERSION,
-            items: state.items,
-            favorites: state.favorites,
+          items: state.items.map(function (item) {
+            return {
+              id: item.id,
+              name: item.name,
+              category: item.aisle,
+              quantity: item.quantity,
+              checked: item.checked,
+              createdAt: item.createdAt
+            };
+          }),
+          habituels: state.favorites.map(function (favorite) {
+            return {
+              id: favorite.id,
+              name: favorite.name,
+              category: favorite.aisle,
+              quantity: favorite.quantity
+            };
+          }),
+          settings: {
             hideBought: state.hideBought
           }
         };
@@ -2682,41 +3117,47 @@
         if (!file) {
           return;
         }
-        let restored;
-        const previousMigrationFlag = migrationNeeded;
+        let parsed;
         try {
-          const parsed = JSON.parse(await readFileText(file));
-          const source = parsed && parsed.data && typeof parsed.data === "object"
-            ? parsed.data
-            : parsed;
-          const hasKnownData = source && typeof source === "object" &&
-            Array.isArray(source.items) &&
-            (Array.isArray(source.favorites) || Array.isArray(source.habituels));
-          if (!hasKnownData) {
-            throw new Error("Cette sauvegarde Clair Courses est incomplète.");
-          }
-          restored = migrateState(source);
+          parsed = JSON.parse(await readFileText(file));
         } catch (error) {
-          migrationNeeded = previousMigrationFlag;
-          console.warn("L’import de la sauvegarde a échoué.", error);
-          showToast(error && error.message
-            ? error.message
-            : "Cette sauvegarde JSON est invalide.");
+          console.warn("Le fichier de sauvegarde n’est pas un JSON valide.", error);
+          showToast("Fichier JSON invalide. Aucune donnée n’a été modifiée.");
           return;
         }
-        migrationNeeded = previousMigrationFlag;
+
+        let normalized;
+        try {
+          normalized = normalizeImportedData(parsed);
+        } catch (error) {
+          console.warn("Aucune donnée exploitable dans la sauvegarde.", error);
+          showToast("Aucune donnée Clair Courses exploitable. La liste actuelle est conservée.");
+          return;
+        }
 
         const confirmed = window.confirm(
-          "Restaurer cette sauvegarde ? La liste et les habituels actuels seront remplacés."
+          "Cette importation remplacera votre liste actuelle. Continuer ?"
         );
         if (!confirmed) {
           return;
         }
 
-        state = restored;
+        const previousState = state;
+        const previousStorageWriteBlocked = storageWriteBlocked;
+        const previousMigrationFlag = migrationNeeded;
+        state = normalized.state;
         storageWriteBlocked = false;
-        loadWarning = "";
         migrationNeeded = false;
+        if (!saveState()) {
+          state = previousState;
+          storageWriteBlocked = previousStorageWriteBlocked;
+          migrationNeeded = previousMigrationFlag;
+          render();
+          showToast("Import impossible. Vos données actuelles ont été conservées.");
+          return;
+        }
+
+        loadWarning = "";
         selectedFavoriteIds.clear();
         openAisles = new Set(
           AISLES.filter(function (aisle) {
@@ -2725,7 +3166,26 @@
             });
           })
         );
-        commit("Sauvegarde restaurée.");
+        render();
+
+        let message = "Import terminé : " + pluralize(
+          normalized.stats.itemsRecovered,
+          "article récupéré",
+          "articles récupérés"
+        ) + ".";
+        if (normalized.stats.favoritesRecovered > 0) {
+          message += " " + pluralize(
+            normalized.stats.favoritesRecovered,
+            "habituel restauré",
+            "habituels restaurés"
+          ) + ".";
+        }
+        if (normalized.stats.ignored > 0) {
+          message += normalized.stats.ignored === 1
+            ? " 1 élément non reconnu a été ignoré."
+            : " " + normalized.stats.ignored + " éléments non reconnus ont été ignorés.";
+        }
+        showToast(message);
       }
 
       elements.itemAisle.append(new Option("Classement automatique", ""));
