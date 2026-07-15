@@ -1,0 +1,11 @@
+CLAIR COURSES — VERSION 7 FINALE
+
+Cette version conserve automatiquement les données de la version 6.
+
+Nouveautés :
+- Annuler après la suppression accidentelle d’un article.
+- Le Mode Courses maintient automatiquement l’écran allumé lorsque l’iPhone l’autorise.
+- Sauvegarde automatique de la liste précédente et bouton de restauration.
+
+Pour GitHub Pages : remplacez le contenu du dépôt Clair Courses par les fichiers et le dossier contenus dans cette archive.
+La liste déjà enregistrée sur l’iPhone est conservée grâce à la même clé de sauvegarde locale.
