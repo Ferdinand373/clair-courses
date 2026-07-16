@@ -1,15 +1,9 @@
-CLAIR COURSES — V7.1 CORRIGÉE
+CLAIR COURSES V8.01
 
-Fichiers à remplacer dans le dépôt GitHub :
-1. index.html
-2. service-worker.js
+Cette étape ajoute le nouvel écran d’accueil :
+- résumé des articles et rayons restants ;
+- estimation simple du temps de courses ;
+- grand bouton « Commencer les courses » ;
+- accès direct à « Nouvelle liste » et à l’import depuis Chat.
 
-Les données déjà enregistrées (liste et habituels) sont conservées.
-
-Améliorations :
-- rayons terminés masqués avec bouton pour les revoir ;
-- compteur « articles à acheter » ;
-- boutons Effacer et Partager affichés seulement quand ils sont utiles ;
-- « Liste de Chat » devient « Chat » ;
-- Mode Courses concentré sur un seul rayon, puis passage automatique au suivant ;
-- version du cache mise à jour en 7.1.0.
+Les fonctions existantes sont conservées.
