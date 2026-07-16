@@ -1,7 +1,7 @@
 {
   "name": "Clair Courses",
   "short_name": "Clair Courses",
-  "description": "Liste de courses avec gestion des produits déjà à la maison.",
+  "description": "Ma liste de courses, simplement.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -17,6 +17,12 @@
       "src": "./assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

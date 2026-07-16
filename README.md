@@ -1,3 +1,6 @@
-# Clair Courses V8.01
+# Clair Courses V8.02
 
-Nouvel écran d’accueil, basé sur la version stable précédente.
+- Gestion « Déjà à la maison »
+- Retrait automatique de ces produits lors d’un collage depuis Chat
+- Accueil et compteurs adaptés quand la liste est vide
+- Mode Courses, écran maintenu allumé, habituels et sauvegarde
