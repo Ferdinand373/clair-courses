@@ -1,5 +1,5 @@
 "use strict";
-const VERSION="8.02.0",CACHE="clair-courses-"+VERSION,FILES=["./","./index.html","./manifest.webmanifest","./assets/icon.svg","./assets/icon-180.png","./assets/icon-192.png","./assets/icon-512.png"];
+const VERSION="8.03.0-final",CACHE="clair-courses-"+VERSION,FILES=["./","./index.html","./manifest.webmanifest","./assets/icon.svg","./assets/icon-180.png","./assets/icon-192.png","./assets/icon-512.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES.map(x=>new Request(x,{cache:"reload"})))))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("clair-courses-")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",e=>{const r=e.request,u=new URL(r.url);if(r.method!=="GET"||u.origin!==location.origin)return;if(r.mode==="navigate"){e.respondWith(fetch(r,{cache:"no-store"}).then(res=>{if(res.ok)caches.open(CACHE).then(c=>c.put("./index.html",res.clone()));return res}).catch(()=>caches.match("./index.html").then(x=>x||caches.match("./"))));return}e.respondWith(caches.match(r).then(cached=>cached||fetch(r).then(res=>{if(res.ok)caches.open(CACHE).then(c=>c.put(r,res.clone()));return res})))});

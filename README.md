@@ -1,6 +1,8 @@
-# Clair Courses V8.02
+# Clair Courses V8.03 Finale
 
-- Gestion « Déjà à la maison »
-- Retrait automatique de ces produits lors d’un collage depuis Chat
-- Accueil et compteurs adaptés quand la liste est vide
-- Mode Courses, écran maintenu allumé, habituels et sauvegarde
+Version finale stabilisée à partir de la V8.02.
+
+- Pommes de terre grenailles reconnues et conservées dans la liste
+- État des panneaux mémorisé
+- Message de fin de courses
+- Cache actualisé
