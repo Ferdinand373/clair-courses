@@ -35,6 +35,7 @@
   <script>
   (async()=>{
     const commit="eb4e3ee8db453dc0983606251bac5943a085e44b";
+    const shellCacheKey="clairCourses.shell.v10";
     const sources=[
       `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html`,
       `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html`
@@ -46,9 +47,14 @@
         const response=await fetch(source,{cache:"no-store"});
         if(response.ok){
           html=await response.text();
+          try{localStorage.setItem(shellCacheKey,html)}catch(error){}
           break;
         }
       }catch(error){}
+    }
+
+    if(!html){
+      try{html=localStorage.getItem(shellCacheKey)||""}catch(error){}
     }
 
     if(!html){
@@ -60,17 +66,34 @@
     }
 
     html=html
-      .replace('const APP_VERSION=904;','const APP_VERSION=905;')
-      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="9.5";')
-      .replaceAll('V9.4','V9.5')
-      .replaceAll('Version 9.4','Version 9.5');
+      .replace('const APP_VERSION=904;','const APP_VERSION=1000;')
+      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.0";')
+      .replaceAll('V9.4','V10.0')
+      .replaceAll('Version 9.4','Version 10.0');
 
     html=html.replace('</style>',`
       .empty-state{display:none!important}
       .products-panel>summary span:first-child{line-height:1.25}
+      .choice-copy{margin:-4px 0 0;color:var(--muted);font-size:.9rem;line-height:1.4}
+      .choice-list{display:grid;gap:9px}
+      .choice-button{min-height:54px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;color:var(--text);background:#fff;text-align:left;font-weight:900}
+      .choice-button small{display:block;margin-top:3px;color:var(--muted);font-size:.78rem;font-weight:600}
+      .choice-button.primary-choice{border-color:#b8cfbf;background:var(--accentSoft);color:var(--accent2)}
+      .condition-hint{font-weight:600}
     </style>`);
 
     html=html.replace('</body>',`
+      <dialog id="choice-dialog">
+        <div class="dialog-card">
+          <div class="dialog-header">
+            <h2 id="choice-title">Choisir le conditionnement</h2>
+            <button class="close-button" id="choice-close" type="button" aria-label="Fermer">×</button>
+          </div>
+          <p class="choice-copy">Touchez simplement la présentation disponible en magasin.</p>
+          <div class="choice-list" id="choice-list"></div>
+        </div>
+      </dialog>
+
       <script>
       (()=>{        
         const productSummary=document.querySelector('#products-panel > summary > span:first-child');
@@ -97,6 +120,120 @@
             });
           });
         }
+
+        const quantityField=document.getElementById('product-quantity');
+        if(quantityField){
+          quantityField.placeholder='Ex. à l’unité | filet de 4/5';
+          const label=quantityField.closest('label');
+          if(label){
+            const hint=label.querySelector('.label-hint');
+            for(const node of Array.from(label.childNodes)){
+              if(node.nodeType===Node.TEXT_NODE && node.textContent.trim()){
+                node.textContent='Conditionnement(s)';
+                break;
+              }
+            }
+            if(hint){
+              hint.textContent='Un choix, ou plusieurs séparés par |. Exemple : à l’unité | filet de 4/5.';
+              hint.classList.add('condition-hint');
+            }
+          }
+        }
+
+        const choiceDialog=document.getElementById('choice-dialog');
+        const choiceTitle=document.getElementById('choice-title');
+        const choiceList=document.getElementById('choice-list');
+        const choiceClose=document.getElementById('choice-close');
+        let pendingProduct=null;
+
+        function productChoices(product){
+          const raw=clean(product && product.quantity,80);
+          if(!raw)return [];
+          return raw.split(/\s*[|;]\s*/).map(value=>clean(value,80)).filter(Boolean);
+        }
+
+        function addChosenProduct(product,quantity){
+          if(itemExists(product)){
+            showToast(product.name+' est déjà dans la liste.');
+            return;
+          }
+          addOrMergeItem({name:product.name,quantity:quantity,aisle:product.aisle});
+          closeDialog(choiceDialog);
+          commit(product.name+' ajouté'+(quantity?' · '+quantity:'')+'.');
+          pendingProduct=null;
+        }
+
+        function openChoiceDialog(product,choices){
+          pendingProduct=product;
+          choiceTitle.textContent=product.name;
+          choiceList.innerHTML='';
+          choices.forEach((choice,index)=>{
+            const button=document.createElement('button');
+            button.type='button';
+            button.className='choice-button'+(index===0?' primary-choice':'');
+            const strong=document.createElement('strong');
+            strong.textContent=choice;
+            const small=document.createElement('small');
+            small.textContent='Ajouter à la liste';
+            button.append(strong,small);
+            button.addEventListener('click',()=>addChosenProduct(product,choice));
+            choiceList.append(button);
+          });
+          openDialog(choiceDialog);
+        }
+
+        const originalAddProductToList=addProductToList;
+        addProductToList=function(product){
+          const choices=productChoices(product);
+          if(choices.length<=1){
+            originalAddProductToList(product);
+            return;
+          }
+          if(itemExists(product)){
+            showToast(product.name+' est déjà dans la liste.');
+            return;
+          }
+          openChoiceDialog(product,choices);
+        };
+
+        function decorateProducts(){
+          const buttons=Array.from(document.querySelectorAll('#products-list .product-add'));
+          buttons.forEach(button=>{
+            const name=button.querySelector('strong')?.textContent||'';
+            const product=state.products.find(entry=>entry.name===name);
+            if(!product || itemExists(product))return;
+            const choices=productChoices(product);
+            if(choices.length>1){
+              const small=button.querySelector('small');
+              if(small)small.textContent=choices.join(' ou ')+' · '+product.aisle;
+            }
+          });
+        }
+
+        const originalRender=render;
+        render=function(){
+          originalRender();
+          decorateProducts();
+        };
+
+        const migrationKey='clairCourses.v10.conditionnements';
+        try{
+          if(!localStorage.getItem(migrationKey)){
+            const courgette=state.products.find(product=>productKey(product.name)==='courgette');
+            if(courgette && !clean(courgette.quantity,80)){
+              courgette.quantity='à l’unité | filet de 4/5';
+              save();
+            }
+            localStorage.setItem(migrationKey,'1');
+          }
+        }catch(error){}
+
+        choiceClose.addEventListener('click',()=>closeDialog(choiceDialog));
+        choiceDialog.addEventListener('click',event=>{
+          if(event.target===choiceDialog)closeDialog(choiceDialog);
+        });
+
+        decorateProducts();
       })();
       <\/script>
     </body>`);
