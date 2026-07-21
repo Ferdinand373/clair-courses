@@ -20,7 +20,7 @@
   <script>
   (async()=>{
     const commit="eb4e3ee8db453dc0983606251bac5943a085e44b";
-    const shellCacheKey="clairCourses.shell.v10.1";
+    const shellCacheKey="clairCourses.shell.v10.1.correctif-gousse";
     const sources=[
       `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html`,
       `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html`
@@ -238,14 +238,23 @@
         function repairEntry(entry){
           if(!entry)return false;
           let changed=false;
-          if(/^rosses?\\s+aubergines?\\b/i.test(entry.name)){
+          const gramsMistake=/^\d+(?:[.,]\d+)?\s*g$/i;
+
+          if(/^rosses?\s+aubergines?\b/i.test(entry.name)){
             entry.name=entry.name.replace(/^rosses?/i,match=>match.toLocaleLowerCase('fr').endsWith('s')?'Grosses':'Grosse');
-            entry.quantity=clean(String(entry.quantity||'').replace(/\\s*g\\s*$/i,''),80);
+            entry.quantity=clean(String(entry.quantity||'').replace(/\s*g\s*$/i,''),80);
             changed=true;
           }
-          if(/^ousse\\b/i.test(entry.name)){
+          if(/^ousse\b/i.test(entry.name)){
             entry.name=entry.name.replace(/^ousse/i,'Gousse');
-            entry.quantity=clean(String(entry.quantity||'').replace(/\\s*g\\s*$/i,''),80);
+            entry.quantity=clean(String(entry.quantity||'').replace(/\s*g\s*$/i,''),80);
+            changed=true;
+          }
+
+          /* Corrige les lignes déjà enregistrées comme « 1 g Gousse d’ail »
+             ou « 2 g Grosses aubergines » : le g appartenait au mot. */
+          if((/^gousses?\b/i.test(entry.name)||/^grosses?\s+aubergines?\b/i.test(entry.name))&&gramsMistake.test(String(entry.quantity||''))){
+            entry.quantity=clean(String(entry.quantity||'').replace(/\s*g\s*$/i,''),80);
             changed=true;
           }
           return changed;
