@@ -4,109 +4,327 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f6f4ed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Clair Courses">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="description" content="Une liste de courses claire, rapide et privée.">
   <title>Clair Courses</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./assets/icon-180.png">
   <style>
-    html,body{
-      min-height:100%;
-      margin:0;
-      background:#f6f4ed;
-      color:#203128;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+    :root{
+      color-scheme:light;
+      --bg:#f6f4ed;--surface:#fffefa;--soft:#eeeee5;--text:#203128;--muted:#66736b;
+      --line:#d9ded7;--accent:#2f6b4f;--accent2:#24543f;--accentSoft:#dceadf;
+      --danger:#a33d36;--shadow:0 12px 30px rgba(36,61,48,.08);--radius:20px;--touch:50px;
     }
-    .loading{
-      display:grid;
-      min-height:100vh;
-      place-items:center;
-      padding:24px;
-      text-align:center
-    }
-    .loading strong{font-size:1.35rem}
-    .loading p{color:#66736b;line-height:1.45}
+    *{box-sizing:border-box}[hidden]{display:none!important}
+    html{min-width:320px;min-height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;-webkit-text-size-adjust:100%}
+    body{min-height:100vh;margin:0;color:var(--text);background:radial-gradient(circle at 100% 0,rgba(90,135,104,.12),transparent 24rem),var(--bg)}
+    button,input,select,textarea{font:inherit}button,summary,input[type=checkbox]{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:default;opacity:.48}
+    .app{width:min(620px,100%);min-height:100vh;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) calc(108px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+    h1,h2,h3,p{margin-top:0}.brand-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.brand{min-width:0}
+    h1{margin-bottom:2px;font-size:clamp(1.9rem,9vw,2.5rem);line-height:1.05;letter-spacing:-.035em}.tagline{margin-bottom:0;color:var(--muted);font-size:.98rem}
+    .version-pill{flex:0 0 auto;padding:7px 10px;border:1px solid #c8d7cc;border-radius:999px;color:var(--accent2);background:rgba(255,254,250,.82);font-size:.76rem;font-weight:900}
+    .status-card{display:grid;gap:8px;margin:18px 0 12px;padding:17px;border:1px solid rgba(72,91,79,.12);border-radius:var(--radius);background:rgba(255,254,250,.94);box-shadow:var(--shadow)}
+    .status-top{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px}.counter-block{display:grid;min-width:78px;place-items:center;padding:9px 12px;border-radius:16px;color:var(--accent2);background:var(--accentSoft)}.progress-badge{font-size:2.15rem;font-weight:950;line-height:1;letter-spacing:-.04em}.counter-label{margin-top:3px;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.045em}.status-main{margin:0;font-size:1.22rem;font-weight:900;letter-spacing:-.015em}.status-sub{margin:3px 0 0;color:var(--muted);font-size:.92rem;line-height:1.35}
+    .primary-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}.primary-action{min-height:58px;padding:8px 10px;border:0;border-radius:15px;color:#fff;background:var(--accent);font-weight:900;line-height:1.15}.primary-action.alt{border:1px solid var(--line);color:var(--text);background:var(--surface)}.primary-action span{display:block;margin-bottom:2px;font-size:1.22rem}
+    .course-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:16px}.control-button{min-height:50px;padding:7px 9px;border:1px solid var(--line);border-radius:14px;color:var(--text);background:var(--surface);font-size:.86rem;font-weight:900;line-height:1.15;box-shadow:0 4px 14px rgba(36,61,48,.045)}.control-button[aria-pressed=true]{border-color:#a8c6b0;color:var(--accent2);background:var(--accentSoft)}
+    .list-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:4px 0 10px}.list-heading h2{margin-bottom:0;font-size:1.26rem}.list-count{color:var(--muted);font-size:.88rem;font-weight:850}
+    .empty-state{padding:30px 20px;border:1px dashed #c8d0c9;border-radius:var(--radius);color:var(--muted);background:rgba(255,254,250,.58);text-align:center}.empty-state strong{display:block;margin-bottom:5px;color:var(--text);font-size:1.08rem}
+    .aisles{display:grid;gap:11px}.aisle{overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:0 5px 16px rgba(36,61,48,.045)}.aisle-summary{display:grid;min-height:62px;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 10px 8px 13px;cursor:pointer}.aisle-chevron{color:var(--muted);font-size:.95rem;transition:transform 150ms ease}.aisle[open] .aisle-chevron{transform:rotate(90deg)}.aisle-name{display:block;margin-bottom:2px;font-weight:900}.aisle-count{display:block;color:var(--muted);font-size:.82rem}.check-all{min-height:42px;padding:0 10px;border:1px solid var(--line);border-radius:999px;color:var(--accent2);background:var(--surface);font-size:.76rem;font-weight:900}
+    .items{border-top:1px solid var(--line)}.item{display:grid;min-height:66px;grid-template-columns:48px minmax(0,1fr) 44px 44px;align-items:center;gap:3px;padding:5px 7px 5px 10px;border-bottom:1px solid rgba(217,222,215,.75)}.item:last-child{border-bottom:0}.item-check{width:44px;height:44px;margin:0;border:2px solid #8b998f;border-radius:10px;appearance:none;-webkit-appearance:none;background:#fff;cursor:pointer}.item-check:checked{border-color:var(--accent);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 12 4 4 8-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/22px no-repeat,var(--accent)}.item-label{min-width:0;padding:8px 4px;overflow-wrap:anywhere;line-height:1.25}.quantity{margin-right:.35em;font-weight:900}
+    details.panel{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,254,250,.78);overflow:hidden}summary{list-style:none}summary::-webkit-details-marker{display:none}details.panel>summary{display:flex;min-height:58px;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;cursor:pointer;font-weight:900}details.panel>summary:after{content:"⌄";color:var(--muted);font-size:1.25rem;transition:transform 150ms ease}details.panel[open]>summary:after{transform:rotate(180deg)}
+    .panel-content{display:grid;gap:12px;padding:0 12px 14px}.panel-copy{margin:0;color:var(--muted);font-size:.88rem;line-height:1.42}.product-search{width:100%;min-height:46px;padding:0 12px;border:1px solid #cbd3cc;border-radius:12px;color:var(--text);background:#fff;font-size:16px}
+    .products-list{display:grid;gap:8px}.product-row{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px;gap:5px;align-items:center}.product-add{position:relative;min-height:56px;padding:7px 12px 7px 56px;border:1px solid var(--line);border-radius:13px;color:var(--text);background:#fff;text-align:left}.product-add:before{content:"+";position:absolute;left:12px;top:50%;display:grid;width:32px;height:32px;place-items:center;transform:translateY(-50%);border-radius:999px;color:#fff;background:var(--accent);font-size:1.35rem;font-weight:950;line-height:1}.product-add strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.product-add small{display:block;margin-top:3px;color:var(--muted);font-size:.78rem}.product-add.is-present{border-color:#b7cfbe;color:var(--accent2);background:var(--accentSoft)}.product-add.is-present:before{content:"✓";background:var(--accent2);font-size:1.05rem}
+    .icon-button{display:inline-grid;width:44px;height:44px;place-items:center;padding:0;border:1px solid transparent;border-radius:999px;color:var(--muted);background:transparent;font-size:1.05rem}.icon-button.edit{border-color:var(--line);background:var(--surface)}.icon-button.delete{color:var(--danger)}
+    .empty-products{padding:18px;border:1px dashed #c8d0c9;border-radius:14px;color:var(--muted);text-align:center}.add-product-button{min-height:48px;border:0;border-radius:13px;color:#fff;background:var(--accent);font-weight:900}
+    .tools-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.secondary-button,.primary-button{min-height:48px;padding:0 14px;border-radius:13px;font-weight:900}.secondary-button{border:1px solid var(--line);color:var(--text);background:var(--surface)}.primary-button{border:0;color:#fff;background:var(--accent)}.version-line{margin:4px 0 0;color:var(--muted);font-size:.82rem;text-align:center}
+    .action-bar{position:fixed;right:0;bottom:0;left:0;z-index:8;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));border-top:1px solid rgba(194,203,196,.86);background:rgba(250,249,244,.94);backdrop-filter:blur(16px)}.action-bar-inner{display:grid;width:min(620px,100%);margin:0 auto;grid-template-columns:repeat(4,1fr);gap:4px}.action{display:grid;min-width:0;min-height:60px;place-items:center;align-content:center;gap:2px;padding:4px 2px;border:0;border-radius:12px;color:var(--text);background:transparent;font-size:.72rem;font-weight:900;line-height:1.05}.action-icon{font-size:1.25rem;line-height:1}.action.has-items{color:#fff;background:var(--accent)}
+    dialog{width:min(520px,calc(100% - 24px));max-height:calc(100dvh - 24px);margin:auto;padding:0;overflow:auto;border:0;border-radius:22px;color:var(--text);background:var(--surface);box-shadow:0 24px 70px rgba(26,44,34,.26)}dialog::backdrop{background:rgba(22,38,29,.42);backdrop-filter:blur(2px)}.dialog-card{display:grid;gap:16px;padding:20px}.dialog-header{display:flex;align-items:center;justify-content:space-between;gap:12px}.dialog-header h2{margin-bottom:0;font-size:1.3rem}.close-button{display:inline-grid;width:44px;height:44px;place-items:center;padding:0;border:1px solid var(--line);border-radius:999px;color:var(--text);background:var(--soft);font-size:1.45rem}.form-grid{display:grid;gap:14px}label{font-weight:850}.label-hint{display:block;margin-top:3px;color:var(--muted);font-size:.82rem;font-weight:500}.field{width:100%;min-height:var(--touch);margin-top:7px;padding:0 12px;border:1px solid #cbd3cc;border-radius:12px;color:var(--text);background:#fff;font-size:16px}textarea.field{min-height:230px;padding-top:12px;padding-bottom:12px;resize:vertical;line-height:1.42}.save-product-choice{display:flex;min-height:48px;align-items:center;gap:10px}.save-product-choice input{width:23px;height:23px;margin:0;accent-color:var(--accent)}.dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.dialog-actions .full{grid-column:1/-1}.import-mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px;border:0;border-radius:14px;background:var(--soft)}.mode-option{position:relative}.mode-option input{position:absolute;opacity:0}.mode-option span{display:grid;min-height:48px;place-items:center;padding:6px 10px;border:1px solid transparent;border-radius:11px;color:var(--muted);text-align:center;font-size:.84rem;font-weight:900}.mode-option input:checked+span{border-color:#c9d3cb;color:var(--accent2);background:#fff}.choice-copy{margin:-4px 0 0;color:var(--muted);font-size:.9rem;line-height:1.4}.choice-list{display:grid;gap:9px}.choice-button{min-height:54px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;color:var(--text);background:#fff;text-align:left;font-weight:900}.choice-button small{display:block;margin-top:3px;color:var(--muted);font-size:.78rem;font-weight:600}.choice-button:first-child{border-color:#b8cfbf;background:var(--accentSoft);color:var(--accent2)}
+    .toast{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));left:14px;z-index:20;display:flex;width:fit-content;max-width:min(520px,calc(100% - 28px));align-items:center;justify-content:center;gap:12px;margin:0 auto;padding:9px 10px 9px 15px;border-radius:999px;color:#fff;background:#263d30;box-shadow:0 10px 30px rgba(21,38,27,.22);font-size:.9rem;font-weight:800;text-align:center;transform:translateY(12px);opacity:0;pointer-events:none;transition:opacity 160ms ease,transform 160ms ease}.toast.is-visible{transform:translateY(0);opacity:1}.toast.has-action{pointer-events:auto}.toast-action{min-height:38px;padding:0 13px;border:0;border-radius:999px;color:#263d30;background:#fff;font-weight:900}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}:focus-visible{outline:3px solid rgba(47,107,79,.34);outline-offset:2px}
+    body.course-mode .products-panel,body.course-mode .tools-panel,body.course-mode .list-heading,body.course-mode .action-bar,body.course-mode .primary-actions{display:none!important}body.course-mode .app{padding-bottom:calc(26px + env(safe-area-inset-bottom))}body.course-mode .status-card{position:sticky;top:calc(8px + env(safe-area-inset-top));z-index:7;margin-top:12px}body.course-mode .course-controls{position:sticky;top:calc(112px + env(safe-area-inset-top));z-index:7;padding:7px;border:1px solid rgba(194,203,196,.86);border-radius:16px;background:rgba(250,249,244,.95);backdrop-filter:blur(16px);box-shadow:0 7px 20px rgba(36,61,48,.08)}body.course-mode .item{min-height:78px;grid-template-columns:58px minmax(0,1fr);gap:6px;padding:8px 12px}body.course-mode .item .icon-button{display:none}body.course-mode .item-check{width:52px;height:52px;border-width:3px;border-radius:12px}body.course-mode .item-label{padding:10px 4px;font-size:1.16rem;font-weight:750;line-height:1.3}body.course-mode .aisle-summary{min-height:70px}
+    @media(max-width:370px){.app{padding-right:10px;padding-left:10px}.primary-actions{gap:7px}.product-row{grid-template-columns:minmax(0,1fr) 42px 42px}.tools-actions{grid-template-columns:1fr}.action-bar-inner{gap:1px}.action{font-size:.68rem}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
   </style>
 </head>
 <body>
-  <div class="loading" id="loading">
-    <div>
-      <strong>Clair Courses</strong>
-      <p>Ouverture de votre liste…</p>
+<div class="app">
+  <header>
+    <div class="brand-row">
+      <div class="brand"><h1>Clair Courses</h1><p class="tagline">Ma liste, simplement</p></div>
+      <span class="version-pill">V10.8</span>
     </div>
+
+    <section class="status-card" aria-label="Articles restant à acheter">
+      <div class="status-top">
+        <div class="counter-block"><span class="progress-badge" id="progress-badge">0</span><span class="counter-label" id="counter-label">article</span></div>
+        <div><p class="status-main" id="status-main">Votre liste est vide</p><p class="status-sub" id="status-sub">Ajoutez un article ou collez la liste préparée avec Chat.</p></div>
+      </div>
+    </section>
+
+    <section class="primary-actions" aria-label="Actions rapides">
+      <button class="primary-action" id="quick-add" type="button"><span>＋</span>Ajouter un article</button>
+      <button class="primary-action alt" id="quick-chat" type="button"><span>✨</span>Coller depuis Chat</button>
+    </section>
+
+    <section class="course-controls" aria-label="Confort pendant les courses">
+      <button class="control-button" id="course-mode-button" type="button" aria-pressed="false">🛒 Mode Courses</button>
+      <button class="control-button" id="wake-lock-button" type="button" aria-pressed="false">☀️ Garder l’écran allumé</button>
+    </section>
+  </header>
+
+  <main>
+    <section aria-labelledby="list-title">
+      <div class="list-heading"><h2 id="list-title">Ma liste</h2><span class="list-count" id="list-count">0 restant</span></div>
+      <div class="empty-state" id="empty-state"><strong>La liste est prête.</strong>Ajoutez un article, collez la liste préparée avec Chat ou ouvrez Mes produits.</div>
+      <div class="aisles" id="aisles-root"></div>
+    </section>
+
+    <details class="panel products-panel" id="products-panel">
+      <summary><span>Ajouter depuis mes produits <small id="products-count"></small></span><span class="sr-only">Afficher ou masquer</span></summary>
+      <div class="panel-content">
+        <p class="panel-copy">Les produits les plus souvent choisis apparaissent en premier. Touchez un produit pour l’ajouter.</p>
+        <input class="product-search" id="product-search" type="search" placeholder="Rechercher un produit" autocomplete="off" aria-label="Rechercher dans Mes produits">
+        <div class="products-list" id="products-list"></div>
+        <div class="empty-products" id="empty-products" hidden>Aucun produit enregistré.</div>
+        <button class="add-product-button" id="add-product-button" type="button">＋ Ajouter un produit</button>
+      </div>
+    </details>
+
+    <details class="panel tools-panel" id="tools-panel">
+      <summary><span>Aide et sauvegarde</span><span class="sr-only">Afficher ou masquer</span></summary>
+      <div class="panel-content">
+        <p class="panel-copy">Votre liste et vos produits restent enregistrés sur cet appareil.</p>
+        <div class="tools-actions">
+          <button class="secondary-button" id="share-button" type="button">Partager la liste</button>
+          <button class="secondary-button" id="new-list-button" type="button">Vider toute la liste</button>
+          <button class="secondary-button" id="export-button" type="button">Exporter mes données</button>
+          <button class="secondary-button" id="import-data-button" type="button">Importer mes données</button>
+          <button class="secondary-button" id="restore-button" type="button">Restaurer la liste précédente</button>
+        </div>
+        <p class="version-line">Clair Courses — Version 10.8 stable</p>
+        <input class="sr-only" id="import-data-file" type="file" accept="application/json,.json">
+      </div>
+    </details>
+  </main>
+</div>
+
+<nav class="action-bar" aria-label="Actions principales"><div class="action-bar-inner">
+  <button class="action" id="bar-list" type="button"><span class="action-icon">📋</span><span id="bar-list-label">Liste</span></button>
+  <button class="action" id="bar-products" type="button"><span class="action-icon">⭐</span><span>Mes produits</span></button>
+  <button class="action" id="bar-chat" type="button"><span class="action-icon">✨</span><span>Chat</span></button>
+  <button class="action" id="bar-share" type="button"><span class="action-icon">📤</span><span>Partager</span></button>
+</div></nav>
+
+<dialog id="item-dialog">
+  <form class="dialog-card" id="item-form">
+    <div class="dialog-header"><h2 id="item-dialog-title">Ajouter un article</h2><button class="close-button" id="item-close" type="button" aria-label="Fermer">×</button></div>
+    <div class="form-grid">
+      <label>Article<input class="field" id="item-name" type="text" maxlength="140" autocomplete="off" required></label>
+      <label>Quantité (facultative)<span class="label-hint">Ex. 3, 500 g ou 1 paquet.</span><input class="field" id="item-quantity" type="text" maxlength="80" autocomplete="off"></label>
+      <label>Rayon<select class="field" id="item-aisle"></select></label>
+      <label class="save-product-choice"><input id="item-save-product" type="checkbox">Garder aussi dans Mes produits</label>
+    </div>
+    <div class="dialog-actions"><button class="secondary-button" id="item-cancel" type="button">Annuler</button><button class="primary-button" type="submit">Enregistrer</button></div>
+  </form>
+</dialog>
+
+<dialog id="product-dialog">
+  <form class="dialog-card" id="product-form">
+    <div class="dialog-header"><h2 id="product-dialog-title">Ajouter un produit</h2><button class="close-button" id="product-close" type="button" aria-label="Fermer">×</button></div>
+    <div class="form-grid">
+      <label>Produit<input class="field" id="product-name" type="text" maxlength="140" autocomplete="off" required></label>
+      <label>Conditionnement(s)<span class="label-hint">Un choix, ou plusieurs séparés par |. Exemple : à l’unité | filet de 4/5.</span><input class="field" id="product-quantity" type="text" maxlength="80" autocomplete="off"></label>
+      <label>Rayon<select class="field" id="product-aisle"></select></label>
+    </div>
+    <div class="dialog-actions"><button class="secondary-button" id="product-cancel" type="button">Annuler</button><button class="primary-button" type="submit">Enregistrer</button></div>
+  </form>
+</dialog>
+
+<dialog id="chat-dialog">
+  <div class="dialog-card">
+    <div class="dialog-header"><h2>Coller la liste préparée par Chat</h2><button class="close-button" id="chat-close" type="button" aria-label="Fermer">×</button></div>
+    <form class="form-grid" id="chat-form">
+      <fieldset class="import-mode"><legend class="sr-only">Mode d’import</legend>
+        <label class="mode-option"><input type="radio" name="chat-mode" value="add" checked><span>Ajouter à ma liste</span></label>
+        <label class="mode-option"><input type="radio" name="chat-mode" value="replace"><span>Remplacer ma liste</span></label>
+      </fieldset>
+      <label>Liste de courses<span class="label-hint">Les titres de rayons ne deviennent jamais des articles.</span><textarea class="field" id="chat-text" placeholder="Fruits et légumes&#10;- Courgettes — 3&#10;- Tomates — 4&#10;&#10;Crèmerie&#10;- Beurre — 1" required></textarea></label>
+      <button class="secondary-button" id="paste-button" type="button">Coller depuis le presse-papiers</button>
+      <div class="dialog-actions"><button class="secondary-button" id="chat-cancel" type="button">Annuler</button><button class="primary-button" type="submit">Ajouter la liste</button></div>
+    </form>
   </div>
+</dialog>
 
-  <script>
+<dialog id="choice-dialog">
+  <div class="dialog-card">
+    <div class="dialog-header"><h2 id="choice-title">Choisir le conditionnement</h2><button class="close-button" id="choice-close" type="button" aria-label="Fermer">×</button></div>
+    <p class="choice-copy">Touchez simplement la présentation disponible en magasin.</p>
+    <div class="choice-list" id="choice-list"></div>
+  </div>
+</dialog>
 
-(async()=>{
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-message"></span><button class="toast-action" id="toast-action" type="button" hidden>Annuler</button></div>
+
+<script>
+(()=>{
   "use strict";
 
-  const commit="a538de479e6fe7907d62890526c3c13d27359a04";
-  const shellCacheKey="clairCourses.shell.v10.7.stable.1";
-  const cacheBuster="clair-courses-v10.7-stable-1";
-  const sources=[
-    `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html?${cacheBuster}`,
-    `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html?${cacheBuster}`
+  const STORAGE_KEY="clairCourses.state";
+  const PREVIOUS_KEY="clairCourses.previousList.v9";
+  const USAGE_KEY="clairCourses.usage.v10";
+  const APP_VERSION=1008;
+  const APP_RELEASE="10.8";
+  const AISLES=["Eau","Épicerie","Fruits et légumes","Boucherie","Charcuterie","Poissonnerie","Boulangerie","Conserves","Crèmerie","Surgelés","Boissons","Hygiène","Maison","Divers"];
+  const CLASSIFICATION_ORDER=["Eau","Charcuterie","Conserves","Surgelés","Boissons","Poissonnerie","Boucherie","Crèmerie","Boulangerie","Épicerie","Fruits et légumes","Hygiène","Maison"];
+  const DEFAULT_PRODUCTS=[
+    {name:"Eau",quantity:"",aisle:"Eau"},{name:"Pain",quantity:"",aisle:"Boulangerie"},
+    {name:"Lait",quantity:"",aisle:"Crèmerie"},{name:"Beurre",quantity:"",aisle:"Crèmerie"},
+    {name:"Café",quantity:"",aisle:"Épicerie"},{name:"Papier aluminium",quantity:"",aisle:"Maison"},
+    {name:"Sacs-poubelle",quantity:"",aisle:"Maison"},{name:"Courgettes",quantity:"à l’unité | filet de 4/5",aisle:"Fruits et légumes"}
   ];
+  const KEYWORDS={
+    "Eau":["eau","eaux","pack d eau","bouteille d eau","bouteilles d eau"],
+    "Épicerie":["café","céréale","chocolat","biscuit","farine","huile","moutarde","pâtes","riz","semoule","sel","sucre","thé","vinaigre","épice","sauce","condiment","gnocchi"],
+    "Fruits et légumes":["pdt","patate","patates","ail","aubergine","avocat","basilic","betterave","brocoli","carotte","céleri","champignon","chou","ciboulette","concombre","coriandre","courgette","échalote","épinard","haricot vert","mâche","menthe","navet","oignon","persil","poireau","poivron","pomme de terre","radis","romarin","salade","thym","tomate","abricot","ananas","banane","cerise","citron","clémentine","figue","fraise","framboise","kiwi","mandarine","mangue","melon","mirabelle","nectarine","orange","pamplemousse","pastèque","pêche","poire","pomme","prune","raisin"],
+    "Boucherie":["agneau","bavette","boeuf","bœuf","canard","chipolata","côte de porc","dinde","entrecôte","escalope","filet mignon","lapin","merguez","porc","poulet","rôti","saucisse","steak","veau","viande"],
+    "Charcuterie":["andouillette","bacon","boudin","chorizo","jambon","lardon","lardons","mortadelle","pâté","pate","rillettes","salami","saucisson","terrine"],
+    "Poissonnerie":["bar","cabillaud","calamar","crevette","daurade","dorade","huître","maquereau","moule","poisson","saumon","sardine fraîche","sole","thon frais","truite"],
+    "Boulangerie":["baguette","brioche","pain","viennoiserie"],
+    "Conserves":["conserve","en boîte","en boite","boîte de thon","boite de thon","thon au naturel","sardines en boîte","sardines en boite","maïs en boîte","mais en boite","petits pois en boîte","petits pois en boite","haricots en boîte","haricots en boite"],
+    "Crèmerie":["beurre","camembert","crème","emmental","faisselle","fromage","lait","mozzarella","œuf","oeuf","parmesan","yaourt"],
+    "Surgelés":["surgelé","glace"],"Boissons":["jus","limonade","soda","sirop"],
+    "Hygiène":["dentifrice","déodorant","gel douche","savon","shampoing","papier toilette"],
+    "Maison":["aluminium","essuie-tout","papier cuisson","sac-poubelle","sacs-poubelle","éponge","lessive","liquide vaisselle"]
+  };
+  const HEADING_ALIASES={
+    "eau":"Eau","eaux":"Eau","epicerie":"Épicerie","fruits legumes":"Fruits et légumes","fruits et legumes":"Fruits et légumes","legumes":"Fruits et légumes","fruits":"Fruits et légumes",
+    "boucherie":"Boucherie","viandes":"Boucherie","charcuterie":"Charcuterie","poissonnerie":"Poissonnerie","poissons":"Poissonnerie","boulangerie":"Boulangerie",
+    "conserve":"Conserves","conserves":"Conserves","cremerie":"Crèmerie","produits frais":"Crèmerie","surgeles":"Surgelés","boissons":"Boissons","hygiene":"Hygiène","maison":"Maison","entretien":"Maison","divers":"Divers"
+  };
+  const NON_ARTICLE_HEADINGS=new Set(["liste","courses","liste des courses","a acheter","viande et poisson","viandes et poisson","viande et poissons","viandes et poissons","viande poisson","viandes poisson"]);
+  const VEGETABLE_WORDS=["ail","aubergine","avocat","basilic","betterave","brocoli","carotte","celeri","champignon","chou","ciboulette","concombre","coriandre","courgette","echalote","epinard","haricot vert","mache","menthe","navet","oignon","persil","poireau","poivron","pomme de terre","radis","romarin","salade","thym","tomate"];
+  const FRUIT_WORDS=["abricot","ananas","banane","cerise","citron","clementine","figue","fraise","framboise","kiwi","mandarine","mangue","melon","mirabelle","nectarine","orange","pamplemousse","pasteque","peche","poire","pomme","prune","raisin"];
+  const NAME_ALIASES={"pdt":"pomme de terre","pomme de terre":"pomme de terre","pommes de terre":"pomme de terre","patate":"pomme de terre","patates":"pomme de terre","courgette":"courgette","courgettes":"courgette","tomate":"tomate","tomates":"tomate","carotte":"carotte","carottes":"carotte","oignon":"oignon","oignons":"oignon","oeuf":"oeuf","oeufs":"oeuf"};
 
-  let source="";
+  const $=id=>document.getElementById(id);
+  const els={
+    statusMain:$("status-main"),statusSub:$("status-sub"),progressBadge:$("progress-badge"),counterLabel:$("counter-label"),quickAdd:$("quick-add"),quickChat:$("quick-chat"),courseModeButton:$("course-mode-button"),wakeLockButton:$("wake-lock-button"),
+    productsPanel:$("products-panel"),productsCount:$("products-count"),productSearch:$("product-search"),productsList:$("products-list"),emptyProducts:$("empty-products"),addProductButton:$("add-product-button"),listCount:$("list-count"),emptyState:$("empty-state"),aislesRoot:$("aisles-root"),
+    shareButton:$("share-button"),newListButton:$("new-list-button"),exportButton:$("export-button"),importDataButton:$("import-data-button"),restoreButton:$("restore-button"),importDataFile:$("import-data-file"),barList:$("bar-list"),barListLabel:$("bar-list-label"),barProducts:$("bar-products"),barChat:$("bar-chat"),barShare:$("bar-share"),
+    itemDialog:$("item-dialog"),itemForm:$("item-form"),itemTitle:$("item-dialog-title"),itemClose:$("item-close"),itemCancel:$("item-cancel"),itemName:$("item-name"),itemQuantity:$("item-quantity"),itemAisle:$("item-aisle"),itemSaveProduct:$("item-save-product"),
+    productDialog:$("product-dialog"),productForm:$("product-form"),productTitle:$("product-dialog-title"),productClose:$("product-close"),productCancel:$("product-cancel"),productName:$("product-name"),productQuantity:$("product-quantity"),productAisle:$("product-aisle"),
+    chatDialog:$("chat-dialog"),chatForm:$("chat-form"),chatClose:$("chat-close"),chatCancel:$("chat-cancel"),chatText:$("chat-text"),pasteButton:$("paste-button"),choiceDialog:$("choice-dialog"),choiceTitle:$("choice-title"),choiceClose:$("choice-close"),choiceList:$("choice-list"),toast:$("toast"),toastMessage:$("toast-message"),toastAction:$("toast-action")
+  };
+  let editingItemId=null,editingProductId=null,courseMode=false,wakeLockRequested=false,wakeLockSentinel=null,toastTimer=null,toastActionHandler=null,pendingProduct=null;
 
-  for(const url of sources){
-    try{
-      const response=await fetch(url,{cache:"no-store"});
-      if(response.ok){
-        source=await response.text();
-        try{localStorage.setItem(shellCacheKey,source)}catch(error){}
-        break;
-      }
-    }catch(error){}
+  function clean(value,max=160){return String(value??"").replace(/\s+/g," ").trim().slice(0,max)}
+  function normalize(value){return clean(value,220).toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’']/g," ").replace(/[^a-z0-9]+/g," ").trim()}
+  function uid(prefix){return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`}
+  function productKey(value){const n=normalize(value);return NAME_ALIASES[n]||n}
+  function isAisle(value){return AISLES.includes(value)}
+  function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]))}
+  function hasExactKeyword(label,word){const padded=` ${normalize(label)} `;return padded.includes(` ${normalize(word)} `)}
+  function classify(label){
+    if((KEYWORDS.Eau||[]).some(word=>hasExactKeyword(label,word)))return "Eau";
+    const n=normalize(label);
+    for(const aisle of CLASSIFICATION_ORDER){if(aisle!=="Eau"&&(KEYWORDS[aisle]||[]).some(word=>n.includes(normalize(word))))return aisle}
+    return "Divers";
   }
-
-  if(!source){
-    try{source=localStorage.getItem(shellCacheKey)||""}catch(error){}
+  function normalizeGarlic(entry){
+    if(!entry)return entry;const copy={...entry},name=normalize(copy.name),quantity=normalize(copy.quantity);
+    if(/^gousses? d ail$/.test(name)){copy.name="Ail";copy.quantity="1 tête"}
+    else if(/^tetes? d ail$/.test(name)){copy.name="Ail";copy.quantity=copy.quantity||"1 tête"}
+    else if((name==="ail"||name==="ail frais")&&/gousses?/.test(quantity)){copy.name="Ail";copy.quantity="1 tête"}
+    return copy;
   }
-
-  if(!source){
-    document.getElementById("loading").innerHTML=
-      '<div><strong>Clair Courses ne peut pas s’ouvrir.</strong>'+
-      '<p>Vérifiez la connexion puis rechargez la page.</p>'+
-      '<button onclick="location.reload()" style="min-height:48px;padding:0 18px;border:0;border-radius:13px;color:white;background:#2f6b4f;font-weight:800">Réessayer</button></div>';
-    return;
+  function fakeHeading(entry){return entry&&!clean(entry.quantity,80)&&NON_ARTICLE_HEADINGS.has(normalize(entry.name))}
+  function makeItem(raw){if(!raw)return null;const normalized=normalizeGarlic(raw),name=clean(normalized.name??normalized.label??normalized.article,140);if(!name||fakeHeading({name,quantity:normalized.quantity}))return null;const quantity=clean(normalized.quantity??normalized.qty??normalized.quantite,80);return {id:clean(normalized.id,100)||uid("item"),name,quantity,aisle:isAisle(normalized.aisle??normalized.rayon)?(normalized.aisle??normalized.rayon):classify(`${name} ${quantity}`),checked:Boolean(normalized.checked??normalized.done??normalized.achete),createdAt:Number(normalized.createdAt)||Date.now()}}
+  function makeProduct(raw){if(!raw)return null;if(typeof raw==="string")raw={name:raw};const normalized=normalizeGarlic(raw),name=clean(normalized.name??normalized.label??normalized.article,140);if(!name||fakeHeading({name,quantity:normalized.quantity}))return null;const quantity=clean(normalized.quantity??normalized.qty??normalized.quantite,80);return {id:clean(normalized.id,100)||uid("product"),name,quantity,aisle:isAisle(normalized.aisle??normalized.rayon)?(normalized.aisle??normalized.rayon):classify(`${name} ${quantity}`)}}
+  function uniqueProducts(products){const seen=new Set(),result=[];for(const raw of products||[]){const product=makeProduct(raw);if(!product)continue;const key=productKey(product.name);if(seen.has(key))continue;seen.add(key);result.push(product)}return result}
+  function consolidateItems(items){const result=[];for(const raw of items||[]){const item=makeItem(raw);if(!item)continue;const existing=result.find(entry=>productKey(entry.name)===productKey(item.name)&&!entry.checked&&!item.checked);if(existing){const merged=mergeQuantities(existing.quantity,item.quantity);existing.quantity=merged.quantity;existing.aisle=classify(`${existing.name} ${existing.quantity}`)}else result.push(item)}return result}
+  function loadJson(key,fallback){try{const value=JSON.parse(localStorage.getItem(key)||"null");return value??fallback}catch(error){return fallback}}
+  function loadState(){
+    const raw=loadJson(STORAGE_KEY,{}),source=raw&&raw.state?raw.state:raw;
+    const products=Array.isArray(source.products)?source.products:DEFAULT_PRODUCTS;
+    const items=Array.isArray(source.items)?source.items:[];
+    const loaded={version:APP_VERSION,items:consolidateItems(items),products:uniqueProducts(products),updatedAt:Date.now()};
+    if(!loaded.products.length)loaded.products=uniqueProducts(DEFAULT_PRODUCTS);
+    const courgette=loaded.products.find(p=>productKey(p.name)==="courgette");if(courgette&&!courgette.quantity)courgette.quantity="à l’unité | filet de 4/5";
+    return loaded;
   }
+  let state=loadState();
+  let usage=loadJson(USAGE_KEY,{});if(!usage||typeof usage!=="object"||Array.isArray(usage))usage={};
+  function save(){state.version=APP_VERSION;state.updatedAt=Date.now();try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));localStorage.setItem(USAGE_KEY,JSON.stringify(usage))}catch(error){showToast("L’enregistrement local est saturé.")}}
+  function snapshotPrevious(){try{localStorage.setItem(PREVIOUS_KEY,JSON.stringify(state.items))}catch(error){}}
+  function openDialog(dialog){if(!dialog)return;try{if(!dialog.open)dialog.showModal()}catch(error){dialog.setAttribute("open","")}}
+  function closeDialog(dialog){if(!dialog)return;try{dialog.close()}catch(error){dialog.removeAttribute("open")}}
+  function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}
+  function showToast(message,actionLabel="",action=null){clearTimeout(toastTimer);toastActionHandler=action;els.toastMessage.textContent=message;els.toastAction.hidden=!action;els.toastAction.textContent=actionLabel||"Annuler";els.toast.classList.toggle("has-action",Boolean(action));els.toast.classList.add("is-visible");toastTimer=setTimeout(()=>{els.toast.classList.remove("is-visible");els.toast.classList.remove("has-action");toastActionHandler=null},action?6000:3000)}
+  function commit(message=""){state.items=consolidateItems(state.items);state.products=uniqueProducts(state.products);save();render();if(message)showToast(message)}
+  function itemExists(product){return state.items.some(item=>!item.checked&&productKey(item.name)===productKey(product.name))}
 
-  source=source
-    .replaceAll('shell.v10.6','shell.v10.7.stable')
-    .replaceAll('APP_VERSION=1006','APP_VERSION=1007')
-    .replaceAll('APP_RELEASE="10.6"','APP_RELEASE="10.7"')
-    .replaceAll('V10.6','V10.7')
-    .replaceAll('Version 10.6','Version 10.7');
+  const UNIT_ALIASES={"g":"g","kg":"kg","ml":"ml","cl":"cl","l":"l","unite":"unité","unites":"unité","piece":"unité","pieces":"unité","tete":"tête","tetes":"tête","paquet":"paquet","paquets":"paquet","filet":"filet","filets":"filet","boite":"boîte","boites":"boîte","bouteille":"bouteille","bouteilles":"bouteille","pot":"pot","pots":"pot","sachet":"sachet","sachets":"sachet","barquette":"barquette","barquettes":"barquette","tranche":"tranche","tranches":"tranche"};
+  function parseQuantity(value){const raw=clean(value,80),n=normalize(raw);if(!raw)return null;let match=n.match(/^(\d+(?:[.,]\d+)?)\s*([a-z]+)?$/);if(!match)return null;let amount=Number(match[1].replace(",",".")),unit=UNIT_ALIASES[match[2]||"unite"]||match[2]||"unité";if(!Number.isFinite(amount))return null;let kind="count",base=amount;if(unit==="kg"){kind="weight";base=amount*1000}else if(unit==="g"){kind="weight"}else if(unit==="l"){kind="volume";base=amount*1000}else if(unit==="cl"){kind="volume";base=amount*10}else if(unit==="ml"){kind="volume"}else kind=`count:${unit}`;return {kind,base,unit}}
+  function formatQuantity(parsed){if(!parsed)return "";if(parsed.kind==="weight")return parsed.base>=1000&&parsed.base%1000===0?`${parsed.base/1000} kg`:`${parsed.base} g`;if(parsed.kind==="volume")return parsed.base>=1000&&parsed.base%1000===0?`${parsed.base/1000} l`:parsed.base%10===0?`${parsed.base/10} cl`:`${parsed.base} ml`;const unit=parsed.kind.startsWith("count:")?parsed.kind.slice(6):"unité";const plural=parsed.base>1?(unit==="unité"?"unités":unit+"s"):unit;return unit==="unité"?String(parsed.base):`${parsed.base} ${plural}`}
+  function mergeQuantities(a,b){const first=clean(a,80),second=clean(b,80);if(!first)return {quantity:second,calculated:false};if(!second||normalize(first)===normalize(second))return {quantity:first,calculated:false};const pa=parseQuantity(first),pb=parseQuantity(second);if(pa&&pb&&pa.kind===pb.kind)return {quantity:formatQuantity({...pa,base:pa.base+pb.base}),calculated:true};return {quantity:`${first} + ${second}`,calculated:false}}
+  function addOrMergeItem(raw){const item=makeItem(raw);if(!item)return {status:"unchanged",item:null,calculated:false};const existing=state.items.find(entry=>!entry.checked&&productKey(entry.name)===productKey(item.name));if(!existing){state.items.push(item);return {status:"added",item,calculated:false}}const merged=mergeQuantities(existing.quantity,item.quantity);if(merged.quantity===existing.quantity)return {status:"unchanged",item:existing,calculated:false};existing.quantity=merged.quantity;existing.aisle=classify(`${existing.name} ${existing.quantity}`);return {status:"merged",item:existing,calculated:merged.calculated}}
+  function bumpUsage(name){const key=productKey(name);usage[key]=(Number(usage[key])||0)+1}
+  function productChoices(product){const raw=clean(product?.quantity,80);return raw?raw.split(/\s*[|;]\s*/).map(value=>clean(value,80)).filter(Boolean):[]}
+  function addChosenProduct(product,quantity){if(itemExists(product)){closeDialog(els.choiceDialog);showToast(`${product.name} est déjà dans la liste.`,"Voir la liste",()=>scrollToId("list-title"));return}addOrMergeItem({name:product.name,quantity,aisle:product.aisle});bumpUsage(product.name);pendingProduct=null;closeDialog(els.choiceDialog);commit();showToast(`${product.name} ajouté à la liste.`,"Voir la liste",()=>scrollToId("list-title"))}
+  function addProductToList(product){if(itemExists(product)){showToast(`${product.name} est déjà dans la liste.`,"Voir la liste",()=>scrollToId("list-title"));return}const choices=productChoices(product);if(choices.length>1){pendingProduct=product;els.choiceTitle.textContent=product.name;els.choiceList.innerHTML="";for(const choice of choices){const button=document.createElement("button");button.type="button";button.className="choice-button";button.innerHTML=`<strong>${escapeHtml(choice)}</strong><small>Ajouter à la liste</small>`;button.addEventListener("click",()=>addChosenProduct(product,choice));els.choiceList.append(button)}openDialog(els.choiceDialog);return}addOrMergeItem({name:product.name,quantity:choices[0]||product.quantity,aisle:product.aisle});bumpUsage(product.name);commit();showToast(`${product.name} ajouté à la liste.`,"Voir la liste",()=>scrollToId("list-title"))}
 
-  const finalPatch="<script>\n(()=>{\n  \"use strict\";\n\n  if(typeof state===\"undefined\" ||\n     typeof normalize!==\"function\" ||\n     typeof parseLine!==\"function\" ||\n     typeof classify!==\"function\"){\n    return;\n  }\n\n  const GENERAL_MEAT_FISH_HEADING=/^viandes?\\s+(?:et\\s+)?poissons?$/;\n\n  function normalizedGeneralHeading(value){\n    return normalize(String(value||\"\")\n      .replace(/^\\s*[-•–—*✓✔☐☑]+\\s*/,\"\")\n      .replace(/[*_#]+/g,\" \")\n      .replace(/[\\/&+]+/g,\" et \")\n      .replace(/[()[\\]{}]/g,\" \")\n      .replace(/[:：;,.!?]+\\s*$/g,\" \")\n      .replace(/\\s+/g,\" \"));\n  }\n\n  function isGeneralMeatFishHeading(value){\n    return GENERAL_MEAT_FISH_HEADING.test(normalizedGeneralHeading(value));\n  }\n\n  function isFalseArticle(entry){\n    if(!entry)return false;\n    const quantity=String(entry.quantity||\"\").trim();\n    return !quantity && isGeneralMeatFishHeading(entry.name);\n  }\n\n  function cleanStoredState(){\n    const oldItems=Array.isArray(state.items)?state.items:[];\n    const oldProducts=Array.isArray(state.products)?state.products:[];\n\n    const filteredItems=oldItems.filter(entry=>!isFalseArticle(entry));\n    const filteredProducts=oldProducts.filter(entry=>!isFalseArticle(entry));\n\n    state.items=typeof consolidateItems===\"function\"\n      ? consolidateItems(filteredItems)\n      : filteredItems;\n\n    state.products=typeof uniqueProducts===\"function\"\n      ? uniqueProducts(filteredProducts)\n      : filteredProducts;\n  }\n\n  parseChat=function(text){\n    let aisle=null;\n    const rows=[];\n\n    for(const raw of String(text||\"\").split(/\\r?\\n/)){\n      if(isGeneralMeatFishHeading(raw)){\n        aisle=null;\n        continue;\n      }\n\n      const parsed=parseLine(raw,aisle);\n      if(!parsed)continue;\n\n      if(parsed.heading){\n        aisle=parsed.heading;\n        continue;\n      }\n\n      parsed.aisle=aisle||parsed.aisle||\n        classify((parsed.name||\"\")+\" \"+(parsed.quantity||\"\"));\n\n      if(!isFalseArticle(parsed))rows.push(parsed);\n    }\n\n    return rows;\n  };\n\n  if(typeof addOrMergeItem===\"function\"){\n    const stableBaseAddOrMergeItem=addOrMergeItem;\n    addOrMergeItem=function(entry){\n      if(isFalseArticle(entry)){\n        return {status:\"unchanged\",item:null,calculated:false};\n      }\n      return stableBaseAddOrMergeItem(entry);\n    };\n  }\n\n  if(typeof commit===\"function\"){\n    const stableBaseCommit=commit;\n    commit=function(message){\n      cleanStoredState();\n      return stableBaseCommit(message);\n    };\n  }\n\n  if(typeof render===\"function\"){\n    const stableBaseRender=render;\n    render=function(){\n      cleanStoredState();\n      return stableBaseRender();\n    };\n  }\n\n  cleanStoredState();\n  if(typeof save===\"function\")save();\n  if(typeof render===\"function\")render();\n})();\n</script>";
-  const encodedPatch=JSON.stringify(finalPatch).replaceAll("</script>","<\\/script>");
+  function produceRank(item){const label=normalize(`${item.name} ${item.quantity}`);if(VEGETABLE_WORDS.some(word=>label.includes(normalize(word))))return 0;if(FRUIT_WORDS.some(word=>label.includes(normalize(word))))return 1;return 0}
+  function visibleItems(){return state.items.filter(item=>!item.checked)}
+  function sortedItems(){return visibleItems().slice().sort((a,b)=>{const aisleDiff=AISLES.indexOf(a.aisle)-AISLES.indexOf(b.aisle);if(aisleDiff)return aisleDiff;if(a.aisle==="Fruits et légumes"){const rank=produceRank(a)-produceRank(b);if(rank)return rank}return (a.createdAt||0)-(b.createdAt||0)})}
+  function renderStatus(){const remaining=visibleItems().length,total=state.items.length,bought=total-remaining;els.progressBadge.textContent=String(remaining);els.counterLabel.textContent=remaining===1?"article":"articles";els.listCount.textContent=`${remaining} restant${remaining>1?"s":""}`;els.emptyState.hidden=remaining>0;if(!total){els.statusMain.textContent="Votre liste est vide";els.statusSub.textContent="Ajoutez un article ou collez la liste préparée avec Chat."}else if(!remaining){els.statusMain.textContent="Courses terminées";els.statusSub.textContent="Tout est coché. Vous pouvez vider la liste quand vous êtes prêt."}else{els.statusMain.textContent=remaining===1?"1 article à prendre":`${remaining} articles à prendre`;els.statusSub.textContent=bought?`${bought} déjà pris${bought>1?"s":""}. Les lignes cochées disparaissent de la vue.`:"Votre liste est prête, classée par rayons."}els.barListLabel.textContent=remaining?`Liste (${remaining})`:"Liste";els.barList.classList.toggle("has-items",remaining>0)}
+  function renderItems(){const groups=new Map();for(const item of sortedItems()){if(!groups.has(item.aisle))groups.set(item.aisle,[]);groups.get(item.aisle).push(item)}els.aislesRoot.innerHTML="";for(const aisle of AISLES){const items=groups.get(aisle)||[];if(!items.length)continue;const details=document.createElement("details");details.className="aisle";details.open=true;const summary=document.createElement("summary");summary.className="aisle-summary";summary.innerHTML=`<span class="aisle-chevron">›</span><span><span class="aisle-name">${escapeHtml(aisle)}</span><span class="aisle-count">${items.length} article${items.length>1?"s":""}</span></span><button class="check-all" type="button">Tout cocher</button>`;summary.querySelector(".check-all").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();const changed=[];for(const item of items){item.checked=true;changed.push(item.id)}commit();showToast(`${items.length} article${items.length>1?"s":""} coché${items.length>1?"s":""}.`,"Annuler",()=>{for(const id of changed){const item=state.items.find(entry=>entry.id===id);if(item)item.checked=false}commit()})});const box=document.createElement("div");box.className="items";for(const item of items){const row=document.createElement("div");row.className="item";row.innerHTML=`<input class="item-check" type="checkbox" aria-label="Cocher ${escapeHtml(item.name)}"><div class="item-label">${item.quantity?`<span class="quantity">${escapeHtml(item.quantity)}</span>`:""}${escapeHtml(item.name)}</div><button class="icon-button edit" type="button" aria-label="Modifier ${escapeHtml(item.name)}">✎</button><button class="icon-button delete" type="button" aria-label="Supprimer ${escapeHtml(item.name)}">×</button>`;row.querySelector(".item-check").addEventListener("change",()=>{item.checked=true;commit();showToast(`${item.name} coché.`,"Annuler",()=>{item.checked=false;commit()})});row.querySelector(".edit").addEventListener("click",()=>openItemDialog(item));row.querySelector(".delete").addEventListener("click",()=>deleteItem(item));box.append(row)}details.append(summary,box);els.aislesRoot.append(details)}}
+  function renderProducts(){const q=normalize(els.productSearch.value),products=state.products.filter(product=>!q||normalize(`${product.name} ${product.quantity} ${product.aisle}`).includes(q)).slice().sort((a,b)=>(Number(usage[productKey(b.name)])||0)-(Number(usage[productKey(a.name)])||0)||a.name.localeCompare(b.name,"fr"));els.productsCount.textContent=`(${state.products.length})`;els.emptyProducts.hidden=products.length>0;els.productsList.innerHTML="";for(const product of products){const row=document.createElement("div");row.className="product-row";const present=itemExists(product),choices=productChoices(product);row.innerHTML=`<button class="product-add${present?" is-present":""}" type="button"><strong>${escapeHtml(product.name)}</strong><small>${present?"✓ Dans la liste":choices.length>1?"Touchez pour choisir":"Touchez pour ajouter"} · ${escapeHtml(product.aisle)}</small></button><button class="icon-button edit" type="button" aria-label="Modifier ${escapeHtml(product.name)}">✎</button><button class="icon-button delete" type="button" aria-label="Supprimer ${escapeHtml(product.name)}">×</button>`;row.querySelector(".product-add").addEventListener("click",()=>addProductToList(product));row.querySelector(".edit").addEventListener("click",()=>openProductDialog(product));row.querySelector(".delete").addEventListener("click",()=>deleteProduct(product));els.productsList.append(row)}}
+  function render(){renderStatus();renderItems();renderProducts()}
 
-  const oldWriter=[
-    "    document.open();",
-    "    document.write(html);",
-    "    document.close();"
-  ].join("\n");
+  function fillAisles(){for(const select of [els.itemAisle,els.productAisle]){select.innerHTML=AISLES.map(aisle=>`<option value="${escapeHtml(aisle)}">${escapeHtml(aisle)}</option>`).join("")}}
+  function openItemDialog(item=null){editingItemId=item?.id||null;els.itemTitle.textContent=item?"Modifier l’article":"Ajouter un article";els.itemName.value=item?.name||"";els.itemQuantity.value=item?.quantity||"";els.itemAisle.value=item?.aisle||"Divers";els.itemSaveProduct.checked=false;openDialog(els.itemDialog);setTimeout(()=>els.itemName.focus(),50)}
+  function openProductDialog(product=null){editingProductId=product?.id||null;els.productTitle.textContent=product?"Modifier le produit":"Ajouter un produit";els.productName.value=product?.name||"";els.productQuantity.value=product?.quantity||"";els.productAisle.value=product?.aisle||"Divers";openDialog(els.productDialog);setTimeout(()=>els.productName.focus(),50)}
+  function deleteItem(item){const index=state.items.findIndex(entry=>entry.id===item.id);if(index<0)return;state.items.splice(index,1);commit();showToast(`${item.name} supprimé.`,"Annuler",()=>{state.items.splice(index,0,item);commit()})}
+  function deleteProduct(product){if(!confirm(`Supprimer ${product.name} de Mes produits ?`))return;state.products=state.products.filter(entry=>entry.id!==product.id);commit(`${product.name} supprimé de Mes produits.`)}
+  function submitItem(event){event.preventDefault();const name=clean(els.itemName.value,140),quantity=clean(els.itemQuantity.value,80),aisle=els.itemAisle.value;if(!name)return;const existing=editingItemId?state.items.find(item=>item.id===editingItemId):null;if(existing){existing.name=name;existing.quantity=quantity;existing.aisle=aisle;existing.checked=false}else addOrMergeItem({name,quantity,aisle,createdAt:Date.now()});if(els.itemSaveProduct.checked&&!state.products.some(product=>productKey(product.name)===productKey(name)))state.products.push(makeProduct({name,quantity,aisle}));closeDialog(els.itemDialog);commit(existing?`${name} modifié.`:`${name} ajouté.`)}
+  function submitProduct(event){event.preventDefault();const name=clean(els.productName.value,140),quantity=clean(els.productQuantity.value,80),aisle=els.productAisle.value;if(!name)return;const existing=editingProductId?state.products.find(product=>product.id===editingProductId):null;if(existing){existing.name=name;existing.quantity=quantity;existing.aisle=aisle}else if(!state.products.some(product=>productKey(product.name)===productKey(name)))state.products.push(makeProduct({name,quantity,aisle}));else{showToast(`${name} existe déjà dans Mes produits.`);return}closeDialog(els.productDialog);commit(existing?`${name} modifié.`:`${name} ajouté à Mes produits.`)}
 
-  const newWriter=[
-    "    html=html.replace('</body>',"+encodedPatch+"+'</body>');",
-    "    document.open();",
-    "    document.write(html);",
-    "    document.close();"
-  ].join("\n");
+  function headingFrom(line){const cleaned=normalize(line.replace(/[*_#]+/g," ").replace(/[:：;,.!?]+\s*$/,""));return HEADING_ALIASES[cleaned]||null}
+  function parseLine(raw,currentAisle){let line=clean(String(raw).replace(/^\s*[-•–—*✓✔☐☑]+\s*/,"").replace(/\*\*/g,""),220);if(!line)return null;const normalized=normalize(line.replace(/[:：;,.!?]+\s*$/,""));if(NON_ARTICLE_HEADINGS.has(normalized))return {skip:true};const heading=headingFrom(line);if(heading)return {heading};let name=line,quantity="";const sep=line.match(/^(.+?)\s+(?:—|–|-)\s+(.+)$/);if(sep){name=clean(sep[1],140);quantity=clean(sep[2],80)}else{const number=line.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/);if(number){quantity=number[1];name=clean(number[2],140)}else{const prefix=line.match(/^((?:\d+(?:[.,]\d+)?\s*)?(?:kg|g|l|cl|ml|bo[iî]te(?:s)?|paquet(?:s)?|filet(?:s)?|bouteille(?:s)?|pot(?:s)?|tranche(?:s)?|pi[eè]ce(?:s)?|barquette(?:s)?|sachet(?:s)?)(?:\s+de|\s+d[’'])?)\s+(.+)$/i);if(prefix){quantity=clean(prefix[1].replace(/\s+(de|d[’'])$/i,""),80);name=clean(prefix[2],140)}}}name=name.replace(/^[dD][e’']\s+/,"").trim();if(!name)return null;const entry=normalizeGarlic({name:name.charAt(0).toUpperCase()+name.slice(1),quantity,aisle:currentAisle||classify(`${name} ${quantity}`)});return entry}
+  function parseChat(text){let aisle=null;const rows=[];for(const raw of String(text||"").split(/\r?\n/)){const parsed=parseLine(raw,aisle);if(!parsed||parsed.skip)continue;if(parsed.heading){aisle=parsed.heading;continue}parsed.aisle=aisle||parsed.aisle||classify(`${parsed.name} ${parsed.quantity}`);if(!fakeHeading(parsed))rows.push(parsed)}return rows}
+  function importChat(event){event.preventDefault();const rows=parseChat(els.chatText.value);if(!rows.length){showToast("Aucun article reconnu.");return}const mode=new FormData(els.chatForm).get("chat-mode")||"add";if(mode==="replace"){if(state.items.length&&!confirm("Remplacer la liste actuelle ?"))return;snapshotPrevious();state.items=[]}let added=0,merged=0,unchanged=0,calculated=0;for(const row of rows){const result=addOrMergeItem({...row,createdAt:Date.now()+added});if(result.status==="added")added++;else if(result.status==="unchanged")unchanged++;else{merged++;if(result.calculated)calculated++}}closeDialog(els.chatDialog);els.chatForm.reset();commit();let message=`${added} article${added>1?"s":""} ajouté${added>1?"s":""}`;if(merged)message+=` · ${merged} regroupé${merged>1?"s":""}`;if(calculated)message+=` dont ${calculated} addition${calculated>1?"s":""}`;if(unchanged)message+=` · ${unchanged} déjà présent${unchanged>1?"s":""}`;showToast(`${message}.`)}
 
-  if(!source.includes(oldWriter)){
-    document.getElementById("loading").innerHTML=
-      '<div><strong>La version stable ne peut pas être préparée.</strong>'+
-      '<p>Rechargez la page. Vos articles enregistrés ne sont pas supprimés.</p></div>';
-    return;
-  }
+  function buildShareText(){const sections=[];const items=sortedItems();for(const aisle of AISLES){const aisleItems=items.filter(item=>item.aisle===aisle);if(aisleItems.length)sections.push(`${aisle}\n${aisleItems.map(item=>`☐ ${item.quantity?item.quantity+" ":""}${item.name}`).join("\n")}`)}return sections.length?`Liste des courses\n\n${sections.join("\n\n")}`:""}
+  async function shareList(){const text=buildShareText();if(!text){showToast("La liste est vide.");return}if(navigator.share){try{await navigator.share({title:"Clair Courses",text});return}catch(error){if(error?.name==="AbortError")return}}try{await navigator.clipboard.writeText(text);showToast("Liste copiée.")}catch(error){prompt("Copiez votre liste :",text)}}
+  function newList(){if(!state.items.length){showToast("La liste est déjà vide.");return}if(!confirm("Vider toute la liste ?"))return;snapshotPrevious();state.items=[];commit("La liste a été vidée.")}
+  function restorePrevious(){const previous=loadJson(PREVIOUS_KEY,[]);if(!Array.isArray(previous)||!previous.length){showToast("Aucune liste précédente à restaurer.");return}if(state.items.length&&!confirm("Remplacer la liste actuelle par la précédente ?"))return;snapshotPrevious();state.items=previous.map(item=>({...item,checked:false}));commit("La liste précédente est restaurée.")}
+  function exportData(){const payload={app:"Clair Courses",version:APP_RELEASE,exportedAt:new Date().toISOString(),state,usage};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=`clair-courses-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast("Sauvegarde créée.")}
+  async function importData(file){if(!file)return;try{const payload=JSON.parse(await file.text()),source=payload.state||payload;if(!source||(!Array.isArray(source.items)&&!Array.isArray(source.products)))throw new Error("format");if(!confirm("Importer cette sauvegarde et remplacer les données actuelles ?"))return;snapshotPrevious();state={version:APP_VERSION,items:consolidateItems(source.items||[]),products:uniqueProducts(source.products||DEFAULT_PRODUCTS),updatedAt:Date.now()};usage=payload.usage&&typeof payload.usage==="object"?payload.usage:{};commit("Sauvegarde importée.")}catch(error){showToast("Ce fichier n’est pas une sauvegarde Clair Courses valide.")}finally{els.importDataFile.value=""}}
+  async function requestWakeLock(){if(!("wakeLock" in navigator)){showToast("L’iPhone ne permet pas de garder l’écran allumé ici.");wakeLockRequested=false;updateWakeButton();return}try{wakeLockSentinel=await navigator.wakeLock.request("screen");wakeLockSentinel.addEventListener("release",()=>{wakeLockSentinel=null;updateWakeButton()});updateWakeButton()}catch(error){wakeLockRequested=false;updateWakeButton();showToast("Impossible de garder l’écran allumé pour le moment.")}}
+  function updateWakeButton(){els.wakeLockButton.setAttribute("aria-pressed",wakeLockRequested&&Boolean(wakeLockSentinel));els.wakeLockButton.textContent=wakeLockRequested&&wakeLockSentinel?"☀️ Écran maintenu allumé":"☀️ Garder l’écran allumé"}
+  async function toggleWakeLock(){wakeLockRequested=!wakeLockRequested;if(wakeLockRequested)await requestWakeLock();else{try{await wakeLockSentinel?.release()}catch(error){}wakeLockSentinel=null;updateWakeButton()}}
+  function toggleCourseMode(){courseMode=!courseMode;document.body.classList.toggle("course-mode",courseMode);els.courseModeButton.setAttribute("aria-pressed",courseMode);els.courseModeButton.textContent=courseMode?"✓ Quitter le Mode Courses":"🛒 Mode Courses";if(courseMode&&!wakeLockRequested){wakeLockRequested=true;requestWakeLock()}scrollToId("list-title")}
 
-  source=source.replace(oldWriter,newWriter);
+  fillAisles();
+  els.quickAdd.addEventListener("click",()=>openItemDialog());els.quickChat.addEventListener("click",()=>openDialog(els.chatDialog));els.courseModeButton.addEventListener("click",toggleCourseMode);els.wakeLockButton.addEventListener("click",toggleWakeLock);
+  els.barList.addEventListener("click",()=>scrollToId("list-title"));els.barProducts.addEventListener("click",()=>{els.productsPanel.open=true;scrollToId("products-panel")});els.barChat.addEventListener("click",()=>openDialog(els.chatDialog));els.barShare.addEventListener("click",shareList);
+  els.addProductButton.addEventListener("click",()=>openProductDialog());els.productSearch.addEventListener("input",renderProducts);els.shareButton.addEventListener("click",shareList);els.newListButton.addEventListener("click",newList);els.restoreButton.addEventListener("click",restorePrevious);els.exportButton.addEventListener("click",exportData);els.importDataButton.addEventListener("click",()=>els.importDataFile.click());els.importDataFile.addEventListener("change",event=>importData(event.target.files?.[0]));
+  els.itemForm.addEventListener("submit",submitItem);els.productForm.addEventListener("submit",submitProduct);els.chatForm.addEventListener("submit",importChat);
+  for(const [button,dialog] of [[els.itemClose,els.itemDialog],[els.itemCancel,els.itemDialog],[els.productClose,els.productDialog],[els.productCancel,els.productDialog],[els.chatClose,els.chatDialog],[els.chatCancel,els.chatDialog],[els.choiceClose,els.choiceDialog]])button.addEventListener("click",()=>closeDialog(dialog));
+  for(const dialog of [els.itemDialog,els.productDialog,els.chatDialog,els.choiceDialog])dialog.addEventListener("click",event=>{if(event.target===dialog)closeDialog(dialog)});
+  els.pasteButton.addEventListener("click",async()=>{try{els.chatText.value=await navigator.clipboard.readText();els.chatText.focus()}catch(error){els.chatText.focus();showToast("Maintenez votre doigt dans la zone puis choisissez Coller.")}});
+  els.toastAction.addEventListener("click",()=>{const action=toastActionHandler;els.toast.classList.remove("is-visible");toastActionHandler=null;if(action)action()});
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&wakeLockRequested&&!wakeLockSentinel)requestWakeLock()});
+  window.addEventListener("error",()=>showToast("Une erreur est survenue, mais vos données restent enregistrées."));
 
-  document.open();
-  document.write(source);
-  document.close();
+  commit();
+  if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
 })();
-
-  </script>
+</script>
 </body>
 </html>
