@@ -6,90 +6,107 @@
   <meta name="theme-color" content="#f6f4ed">
   <title>Clair Courses</title>
   <style>
-    html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .loading{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center}
+    html,body{
+      min-height:100%;
+      margin:0;
+      background:#f6f4ed;
+      color:#203128;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+    }
+    .loading{
+      display:grid;
+      min-height:100vh;
+      place-items:center;
+      padding:24px;
+      text-align:center
+    }
     .loading strong{font-size:1.35rem}
     .loading p{color:#66736b;line-height:1.45}
   </style>
 </head>
 <body>
   <div class="loading" id="loading">
-    <div><strong>Clair Courses</strong><p>Ouverture de votre liste…</p></div>
+    <div>
+      <strong>Clair Courses</strong>
+      <p>Ouverture de votre liste…</p>
+    </div>
   </div>
 
   <script>
-  (async()=>{
-    const commit="a538de479e6fe7907d62890526c3c13d27359a04";
-    const shellCacheKey="clairCourses.shell.v10.7";
-    const sources=[
-      `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html`,
-      `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html`
-    ];
 
-    let source="";
-    for(const url of sources){
-      try{
-        const response=await fetch(url,{cache:"no-store"});
-        if(response.ok){
-          source=await response.text();
-          try{localStorage.setItem(shellCacheKey,source)}catch(error){}
-          break;
-        }
-      }catch(error){}
-    }
+(async()=>{
+  "use strict";
 
-    if(!source){
-      try{source=localStorage.getItem(shellCacheKey)||""}catch(error){}
-    }
+  const commit="a538de479e6fe7907d62890526c3c13d27359a04";
+  const shellCacheKey="clairCourses.shell.v10.7.stable.1";
+  const cacheBuster="clair-courses-v10.7-stable-1";
+  const sources=[
+    `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html?${cacheBuster}`,
+    `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html?${cacheBuster}`
+  ];
 
-    if(!source){
-      document.getElementById("loading").innerHTML=
-        '<div><strong>Clair Courses ne peut pas s’ouvrir.</strong>'+
-        '<p>Vérifiez la connexion puis rechargez la page.</p>'+
-        '<button onclick="location.reload()" style="min-height:48px;padding:0 18px;border:0;border-radius:13px;color:white;background:#2f6b4f;font-weight:800">Réessayer</button></div>';
-      return;
-    }
+  let source="";
 
-    source=source
-      .replaceAll('shell.v10.6','shell.v10.7')
-      .replaceAll('APP_VERSION=1006','APP_VERSION=1007')
-      .replaceAll('APP_RELEASE="10.6"','APP_RELEASE="10.7"')
-      .replaceAll('V10.6','V10.7')
-      .replaceAll('Version 10.6','Version 10.7');
+  for(const url of sources){
+    try{
+      const response=await fetch(url,{cache:"no-store"});
+      if(response.ok){
+        source=await response.text();
+        try{localStorage.setItem(shellCacheKey,source)}catch(error){}
+        break;
+      }
+    }catch(error){}
+  }
 
-    const oldFake=`        function fakeGroupHeadingV106(entry){
-          if(!entry)return false;
-          return !clean(entry.quantity,80)&&NON_ARTICLE_HEADINGS_V106.has(normalize(entry.name));
-        }`;
+  if(!source){
+    try{source=localStorage.getItem(shellCacheKey)||""}catch(error){}
+  }
 
-    const newFake=`        function normalizedGroupHeadingV107(value){
-          return normalize(String(value||'')
-            .replace(/[*_#]+/g,' ')
-            .replace(/[\\/&+]+/g,' et ')
-            .replace(/[()[\\]{}]/g,' ')
-            .replace(/[:：;,.!?]+$/g,' ')
-            .replace(/\\s+/g,' '));
-        }
+  if(!source){
+    document.getElementById("loading").innerHTML=
+      '<div><strong>Clair Courses ne peut pas s’ouvrir.</strong>'+
+      '<p>Vérifiez la connexion puis rechargez la page.</p>'+
+      '<button onclick="location.reload()" style="min-height:48px;padding:0 18px;border:0;border-radius:13px;color:white;background:#2f6b4f;font-weight:800">Réessayer</button></div>';
+    return;
+  }
 
-        function fakeGroupHeadingV106(entry){
-          if(!entry)return false;
-          const heading=normalizedGroupHeadingV107(entry.name);
-          return NON_ARTICLE_HEADINGS_V106.has(heading)||
-            /^viandes?\\s+(?:et\\s+)?poissons?$/.test(heading);
-        }`;
+  source=source
+    .replaceAll('shell.v10.6','shell.v10.7.stable')
+    .replaceAll('APP_VERSION=1006','APP_VERSION=1007')
+    .replaceAll('APP_RELEASE="10.6"','APP_RELEASE="10.7"')
+    .replaceAll('V10.6','V10.7')
+    .replaceAll('Version 10.6','Version 10.7');
 
-    source=source
-      .replace(oldFake,newFake)
-      .replace('const cleanedHeading=normalize(','const cleanedHeading=normalizedGroupHeadingV107(')
-      .replace(
-        'if(NON_ARTICLE_HEADINGS_V106.has(cleanedHeading)){',
-        'if(NON_ARTICLE_HEADINGS_V106.has(cleanedHeading)||/^viandes?\\s+(?:et\\s+)?poissons?$/.test(cleanedHeading)){'
-      );
+  const finalPatch="<script>\n(()=>{\n  \"use strict\";\n\n  if(typeof state===\"undefined\" ||\n     typeof normalize!==\"function\" ||\n     typeof parseLine!==\"function\" ||\n     typeof classify!==\"function\"){\n    return;\n  }\n\n  const GENERAL_MEAT_FISH_HEADING=/^viandes?\\s+(?:et\\s+)?poissons?$/;\n\n  function normalizedGeneralHeading(value){\n    return normalize(String(value||\"\")\n      .replace(/^\\s*[-•–—*✓✔☐☑]+\\s*/,\"\")\n      .replace(/[*_#]+/g,\" \")\n      .replace(/[\\/&+]+/g,\" et \")\n      .replace(/[()[\\]{}]/g,\" \")\n      .replace(/[:：;,.!?]+\\s*$/g,\" \")\n      .replace(/\\s+/g,\" \"));\n  }\n\n  function isGeneralMeatFishHeading(value){\n    return GENERAL_MEAT_FISH_HEADING.test(normalizedGeneralHeading(value));\n  }\n\n  function isFalseArticle(entry){\n    if(!entry)return false;\n    const quantity=String(entry.quantity||\"\").trim();\n    return !quantity && isGeneralMeatFishHeading(entry.name);\n  }\n\n  function cleanStoredState(){\n    const oldItems=Array.isArray(state.items)?state.items:[];\n    const oldProducts=Array.isArray(state.products)?state.products:[];\n\n    const filteredItems=oldItems.filter(entry=>!isFalseArticle(entry));\n    const filteredProducts=oldProducts.filter(entry=>!isFalseArticle(entry));\n\n    state.items=typeof consolidateItems===\"function\"\n      ? consolidateItems(filteredItems)\n      : filteredItems;\n\n    state.products=typeof uniqueProducts===\"function\"\n      ? uniqueProducts(filteredProducts)\n      : filteredProducts;\n  }\n\n  parseChat=function(text){\n    let aisle=null;\n    const rows=[];\n\n    for(const raw of String(text||\"\").split(/\\r?\\n/)){\n      if(isGeneralMeatFishHeading(raw)){\n        aisle=null;\n        continue;\n      }\n\n      const parsed=parseLine(raw,aisle);\n      if(!parsed)continue;\n\n      if(parsed.heading){\n        aisle=parsed.heading;\n        continue;\n      }\n\n      parsed.aisle=aisle||parsed.aisle||\n        classify((parsed.name||\"\")+\" \"+(parsed.quantity||\"\"));\n\n      if(!isFalseArticle(parsed))rows.push(parsed);\n    }\n\n    return rows;\n  };\n\n  if(typeof addOrMergeItem===\"function\"){\n    const stableBaseAddOrMergeItem=addOrMergeItem;\n    addOrMergeItem=function(entry){\n      if(isFalseArticle(entry)){\n        return {status:\"unchanged\",item:null,calculated:false};\n      }\n      return stableBaseAddOrMergeItem(entry);\n    };\n  }\n\n  if(typeof commit===\"function\"){\n    const stableBaseCommit=commit;\n    commit=function(message){\n      cleanStoredState();\n      return stableBaseCommit(message);\n    };\n  }\n\n  if(typeof render===\"function\"){\n    const stableBaseRender=render;\n    render=function(){\n      cleanStoredState();\n      return stableBaseRender();\n    };\n  }\n\n  cleanStoredState();\n  if(typeof save===\"function\")save();\n  if(typeof render===\"function\")render();\n})();\n</script>";
+  const encodedPatch=JSON.stringify(finalPatch).replaceAll("</script>","<\\/script>");
 
-    document.open();
-    document.write(source);
-    document.close();
-  })();
+  const oldWriter=[
+    "    document.open();",
+    "    document.write(html);",
+    "    document.close();"
+  ].join("\n");
+
+  const newWriter=[
+    "    html=html.replace('</body>',"+encodedPatch+"+'</body>');",
+    "    document.open();",
+    "    document.write(html);",
+    "    document.close();"
+  ].join("\n");
+
+  if(!source.includes(oldWriter)){
+    document.getElementById("loading").innerHTML=
+      '<div><strong>La version stable ne peut pas être préparée.</strong>'+
+      '<p>Rechargez la page. Vos articles enregistrés ne sont pas supprimés.</p></div>';
+    return;
+  }
+
+  source=source.replace(oldWriter,newWriter);
+
+  document.open();
+  document.write(source);
+  document.close();
+})();
+
   </script>
 </body>
 </html>
