@@ -35,7 +35,7 @@
   <script>
   (async()=>{
     const commit="eb4e3ee8db453dc0983606251bac5943a085e44b";
-    const shellCacheKey="clairCourses.shell.v10.1";
+    const shellCacheKey="clairCourses.shell.v10";
     const sources=[
       `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html`,
       `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html`
@@ -66,25 +66,20 @@
     }
 
     html=html
-      .replace('const APP_VERSION=904;','const APP_VERSION=1001;')
-      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.1";')
-      .replaceAll('V9.4','V10.1')
-      .replaceAll('Version 9.4','Version 10.1')
-      .replace('V10.1 installée · rayons réordonnés, Boucherie et Charcuterie séparées.','V10.1 installée · favoris et fruits/légumes regroupés.');
+      .replace('const APP_VERSION=904;','const APP_VERSION=1000;')
+      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.0";')
+      .replaceAll('V9.4','V10.0')
+      .replaceAll('Version 9.4','Version 10.0');
 
     html=html.replace('</style>',`
       .empty-state{display:none!important}
       .products-panel>summary span:first-child{line-height:1.25}
-      .product-row{grid-template-columns:minmax(0,1fr) 44px 44px 44px}
-      .icon-button.favorite{border-color:var(--line);background:var(--surface);font-size:1.25rem}
-      .icon-button.favorite.is-favorite{border-color:#e1ce91;color:#986f13;background:#fff8de}
       .choice-copy{margin:-4px 0 0;color:var(--muted);font-size:.9rem;line-height:1.4}
       .choice-list{display:grid;gap:9px}
       .choice-button{min-height:54px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;color:var(--text);background:#fff;text-align:left;font-weight:900}
       .choice-button small{display:block;margin-top:3px;color:var(--muted);font-size:.78rem;font-weight:600}
       .choice-button.primary-choice{border-color:#b8cfbf;background:var(--accentSoft);color:var(--accent2)}
       .condition-hint{font-weight:600}
-      .produce-divider{padding:9px 14px 7px;border-bottom:1px solid rgba(217,222,215,.75);color:var(--accent2);background:var(--accentSoft);font-size:.78rem;font-weight:950;text-transform:uppercase;letter-spacing:.045em}
     </style>`);
 
     html=html.replace('</body>',`
@@ -100,50 +95,29 @@
       </dialog>
 
       <script>
-      (()=>{
-        const FAVORITES_KEY='clairCourses.v10.1.favoriteProductIds';
-        let favoriteProductIds=new Set();
-        try{
-          const stored=JSON.parse(localStorage.getItem(FAVORITES_KEY)||'[]');
-          if(Array.isArray(stored))favoriteProductIds=new Set(stored.map(String));
-        }catch(error){}
-
-        function saveFavoriteProductIds(){
-          try{localStorage.setItem(FAVORITES_KEY,JSON.stringify(Array.from(favoriteProductIds)))}catch(error){}
-        }
-        function isFavoriteProduct(product){return Boolean(product&&favoriteProductIds.has(String(product.id)))}
-        function toggleFavoriteProduct(product){
-          const id=String(product.id);
-          if(favoriteProductIds.has(id)){
-            favoriteProductIds.delete(id);
-            showToast(product.name+' retiré des favoris.');
-          }else{
-            favoriteProductIds.add(id);
-            showToast(product.name+' ajouté aux favoris.');
-          }
-          saveFavoriteProductIds();
-          render();
-        }
-
+      (()=>{        
         const productSummary=document.querySelector('#products-panel > summary > span:first-child');
         if(productSummary){
           const count=productSummary.querySelector('small');
           productSummary.textContent='Ajouter depuis mes produits ';
           if(count)productSummary.append(count);
         }
-        const productCopy=document.querySelector('#products-panel .panel-copy');
-        if(productCopy)productCopy.textContent='Touchez un produit pour l’ajouter. Touchez ♡ pour le placer en favori.';
 
         const oldButton=document.getElementById('bar-add');
         if(oldButton){
           const listButton=oldButton.cloneNode(true);
           const icon=listButton.querySelector('.action-icon');
           const labels=listButton.querySelectorAll('span');
+
           if(icon)icon.textContent='📋';
           if(labels.length>1)labels[labels.length-1].textContent='Liste';
+
           oldButton.replaceWith(listButton);
           listButton.addEventListener('click',()=>{
-            document.getElementById('list-title')?.scrollIntoView({behavior:'smooth',block:'start'});
+            document.getElementById('list-title')?.scrollIntoView({
+              behavior:'smooth',
+              block:'start'
+            });
           });
         }
 
@@ -166,45 +140,6 @@
           }
         }
 
-        function fixKnownSpelling(value){
-          const original=clean(value,140);
-          const key=normalize(original);
-          if(key==='rose aubergine'||key==='rosse aubergine')return 'Grosse aubergine';
-          if(key==='ousse'||key.startsWith('ousse '))return 'G'+original.charAt(0).toLowerCase()+original.slice(1);
-          return original;
-        }
-
-        let spellingChanged=false;
-        for(const entry of [...state.items,...state.products]){
-          const corrected=fixKnownSpelling(entry.name);
-          if(corrected!==entry.name){entry.name=corrected;spellingChanged=true}
-        }
-        if(spellingChanged)save();
-
-        parseLine=function(raw,currentAisle){
-          let line=clean(raw.replace(/^\s*[-•–—*✓✔☐☑]+\s*/,''),220);
-          if(!line)return null;
-          const heading=headingFrom(line);
-          if(heading)return {heading};
-          if(/^(liste|courses|liste des courses|a acheter|à acheter)$/i.test(line))return null;
-          let name=line,quantity='';
-          const sep=line.match(/^(.+?)\s+(?:—|–|-)\s+(.+)$/);
-          if(sep){
-            name=clean(sep[1],140);
-            quantity=clean(sep[2],80);
-          }else{
-            const prefix=line.match(/^(\d+(?:[.,]\d+)?\s*(?:(?:kg|g|l|cl|ml|bo[iî]te(?:s)?|paquet(?:s)?|filet(?:s)?|bouteille(?:s)?|pot(?:s)?|tranche(?:s)?|pi[eè]ce(?:s)?|barquette(?:s)?|sachet(?:s)?)\b)?(?:\s+(?:de|d[’']))?\s*)(.+)$/i);
-            if(prefix){
-              quantity=clean(prefix[1].replace(/\s+(de|d[’'])\s*$/i,''),80);
-              name=clean(prefix[2],140);
-            }
-          }
-          name=name.replace(/^[dD][e’']\s+/, '').trim();
-          name=fixKnownSpelling(name);
-          if(!name)return null;
-          return {name:name.charAt(0).toUpperCase()+name.slice(1),quantity,aisle:currentAisle||classify(name+' '+quantity)};
-        };
-
         const choiceDialog=document.getElementById('choice-dialog');
         const choiceTitle=document.getElementById('choice-title');
         const choiceList=document.getElementById('choice-list');
@@ -212,7 +147,7 @@
         let pendingProduct=null;
 
         function productChoices(product){
-          const raw=clean(product&&product.quantity,80);
+          const raw=clean(product && product.quantity,80);
           if(!raw)return [];
           return raw.split(/\s*[|;]\s*/).map(value=>clean(value,80)).filter(Boolean);
         }
@@ -261,112 +196,6 @@
           openChoiceDialog(product,choices);
         };
 
-        renderProducts=function(){
-          const query=normalize(els.productSearch.value);
-          const products=state.products
-            .filter(product=>!query||normalize(product.name+' '+product.quantity+' '+product.aisle).includes(query))
-            .slice()
-            .sort((a,b)=>{
-              const favoriteDifference=Number(isFavoriteProduct(b))-Number(isFavoriteProduct(a));
-              if(favoriteDifference)return favoriteDifference;
-              return a.name.localeCompare(b.name,'fr',{sensitivity:'base'});
-            });
-          els.productsCount.textContent='('+state.products.length+')';
-          els.productsList.innerHTML='';
-          els.emptyProducts.hidden=products.length>0;
-          for(const product of products){
-            const row=document.createElement('div');
-            row.className='product-row';
-            const add=document.createElement('button');
-            add.type='button';
-            add.className='product-add'+(itemExists(product)?' is-present':'');
-            add.innerHTML='<strong></strong><small></small>';
-            add.querySelector('strong').textContent=product.name;
-            add.querySelector('small').textContent=itemExists(product)?'Déjà dans la liste':(product.quantity||'Quantité libre')+' · '+product.aisle;
-            add.addEventListener('click',()=>addProductToList(product));
-            const favorite=document.createElement('button');
-            favorite.type='button';
-            favorite.className='icon-button favorite'+(isFavoriteProduct(product)?' is-favorite':'');
-            favorite.setAttribute('aria-label',(isFavoriteProduct(product)?'Retirer ':'Ajouter ')+product.name+(isFavoriteProduct(product)?' des favoris':' aux favoris'));
-            favorite.textContent=isFavoriteProduct(product)?'♥':'♡';
-            favorite.addEventListener('click',()=>toggleFavoriteProduct(product));
-            const edit=document.createElement('button');
-            edit.type='button';
-            edit.className='icon-button edit';
-            edit.setAttribute('aria-label','Modifier '+product.name);
-            edit.textContent='✎';
-            edit.addEventListener('click',()=>openProductEditor(product));
-            const del=document.createElement('button');
-            del.type='button';
-            del.className='icon-button delete';
-            del.setAttribute('aria-label','Supprimer '+product.name);
-            del.textContent='×';
-            del.addEventListener('click',()=>removeProduct(product.id));
-            row.append(add,favorite,edit,del);
-            els.productsList.append(row);
-          }
-        };
-
-        const FRUIT_WORDS=['abricot','ananas','banane','cerise','citron','clementine','fraise','framboise','kiwi','mandarine','mangue','melon','myrtille','orange','pamplemousse','peche','poire','pomme','prune','raisin'];
-        const VEGETABLE_WORDS=['ail','artichaut','asperge','aubergine','avocat','betterave','brocoli','carotte','celeri','champignon','chou','concombre','courge','courgette','echalote','endive','epinard','fenouil','haricot','laitue','mache','navet','oignon','patate','petit pois','poireau','poivron','pomme de terre','radis','salade','tomate'];
-        function produceGroup(item){
-          const key=normalize(item.name);
-          if(VEGETABLE_WORDS.some(word=>key.includes(word)))return 0;
-          if(FRUIT_WORDS.some(word=>key.includes(word)))return 1;
-          return 2;
-        }
-        function produceGroupLabel(group){return group===0?'Légumes':group===1?'Fruits':'Autres'}
-
-        renderList=function(){
-          const active=state.items;
-          els.listCount.textContent=active.length+' restant'+(active.length>1?'s':'');
-          els.emptyState.hidden=active.length>0;
-          els.aislesRoot.innerHTML='';
-          for(const aisle of AISLES){
-            let items=active.filter(item=>item.aisle===aisle);
-            if(!items.length)continue;
-            if(aisle==='Fruits et légumes'){
-              items=items.slice().sort((a,b)=>{
-                const groupDifference=produceGroup(a)-produceGroup(b);
-                if(groupDifference)return groupDifference;
-                return a.name.localeCompare(b.name,'fr',{sensitivity:'base'});
-              });
-            }
-            const details=document.createElement('details');
-            details.className='aisle';
-            details.open=true;
-            const summary=document.createElement('summary');
-            summary.className='aisle-summary';
-            summary.innerHTML='<span class="aisle-chevron">›</span><span><span class="aisle-name"></span><span class="aisle-count"></span></span>';
-            summary.querySelector('.aisle-name').textContent=aisle;
-            summary.querySelector('.aisle-count').textContent=items.length+' article'+(items.length>1?'s':'');
-            const all=document.createElement('button');
-            all.type='button';
-            all.className='check-all';
-            all.textContent='Tout acheté';
-            all.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();markPurchased(items)});
-            summary.append(all);
-            const list=document.createElement('div');
-            list.className='items';
-            let previousGroup=-1;
-            for(const item of items){
-              if(aisle==='Fruits et légumes'){
-                const group=produceGroup(item);
-                if(group!==previousGroup){
-                  const divider=document.createElement('div');
-                  divider.className='produce-divider';
-                  divider.textContent=produceGroupLabel(group);
-                  list.append(divider);
-                  previousGroup=group;
-                }
-              }
-              list.append(renderItem(item));
-            }
-            details.append(summary,list);
-            els.aislesRoot.append(details);
-          }
-        };
-
         function decorateProducts(){
           const buttons=Array.from(document.querySelectorAll('#products-list .product-add'));
           buttons.forEach(button=>{
@@ -404,7 +233,7 @@
           if(event.target===choiceDialog)closeDialog(choiceDialog);
         });
 
-        render();
+        decorateProducts();
       })();
       <\/script>
     </body>`);
