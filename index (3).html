@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f6f4ed">
+  <title>Clair Courses</title>
+  <style>
+    html,body{
+      min-height:100%;
+      margin:0;
+      background:#f6f4ed;
+      color:#203128;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+    }
+    .loading{
+      display:grid;
+      min-height:100vh;
+      place-items:center;
+      padding:24px;
+      text-align:center
+    }
+    .loading strong{font-size:1.35rem}
+    .loading p{color:#66736b;line-height:1.45}
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">
+    <div>
+      <strong>Clair Courses</strong>
+      <p>Ouverture de votre liste…</p>
+    </div>
+  </div>
+
+  <script>
+  (async()=>{
+    const commit="eb4e3ee8db453dc0983606251bac5943a085e44b";
+    const sources=[
+      `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html`,
+      `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html`
+    ];
+
+    let html="";
+    for(const source of sources){
+      try{
+        const response=await fetch(source,{cache:"no-store"});
+        if(response.ok){
+          html=await response.text();
+          break;
+        }
+      }catch(error){}
+    }
+
+    if(!html){
+      document.getElementById("loading").innerHTML=
+        '<div><strong>Clair Courses ne peut pas s’ouvrir.</strong>'+
+        '<p>Vérifiez la connexion puis rechargez la page.</p>'+
+        '<button onclick="location.reload()" style="min-height:48px;padding:0 18px;border:0;border-radius:13px;color:white;background:#2f6b4f;font-weight:800">Réessayer</button></div>';
+      return;
+    }
+
+    html=html
+      .replace('const APP_VERSION=904;','const APP_VERSION=905;')
+      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="9.5";')
+      .replaceAll('V9.4','V9.5')
+      .replaceAll('Version 9.4','Version 9.5');
+
+    html=html.replace('</style>',`
+      .empty-state{display:none!important}
+      .products-panel>summary span:first-child{line-height:1.25}
+    </style>`);
+
+    html=html.replace('</body>',`
+      <script>
+      (()=>{        
+        const productSummary=document.querySelector('#products-panel > summary > span:first-child');
+        if(productSummary){
+          const count=productSummary.querySelector('small');
+          productSummary.textContent='Ajouter depuis mes produits ';
+          if(count)productSummary.append(count);
+        }
+
+        const oldButton=document.getElementById('bar-add');
+        if(oldButton){
+          const listButton=oldButton.cloneNode(true);
+          const icon=listButton.querySelector('.action-icon');
+          const labels=listButton.querySelectorAll('span');
+
+          if(icon)icon.textContent='📋';
+          if(labels.length>1)labels[labels.length-1].textContent='Liste';
+
+          oldButton.replaceWith(listButton);
+          listButton.addEventListener('click',()=>{
+            document.getElementById('list-title')?.scrollIntoView({
+              behavior:'smooth',
+              block:'start'
+            });
+          });
+        }
+      })();
+      <\/script>
+    </body>`);
+
+    document.open();
+    document.write(html);
+    document.close();
+  })();
+  </script>
+</body>
+</html>
