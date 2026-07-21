@@ -35,7 +35,7 @@
   <script>
   (async()=>{
     const commit="eb4e3ee8db453dc0983606251bac5943a085e44b";
-    const shellCacheKey="clairCourses.shell.v10.2";
+    const shellCacheKey="clairCourses.shell.v10.3";
     const sources=[
       `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html`,
       `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html`
@@ -66,10 +66,10 @@
     }
 
     html=html
-      .replace('const APP_VERSION=904;','const APP_VERSION=1002;')
-      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.2";')
-      .replaceAll('V9.4','V10.2')
-      .replaceAll('Version 9.4','Version 10.2');
+      .replace('const APP_VERSION=904;','const APP_VERSION=1003;')
+      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.3";')
+      .replaceAll('V9.4','V10.3')
+      .replaceAll('Version 9.4','Version 10.3');
 
     // Deux rayons voisins : d’abord les légumes, puis les fruits.
     html=html
@@ -83,7 +83,7 @@
       )
       .replace(
         '  "Fruits et légumes":["pdt","patate","patates","abricot","ail","ananas","aubergine","avocat","banane","betterave","brocoli","carotte","céleri","champignon","chou","citron","clémentine","concombre","courgette","échalote","épinard","fraise","framboise","haricot vert","kiwi","mâche","mandarine","melon","navet","oignon","orange","pamplemousse","poire","poireau","poivron","pomme","pomme de terre","raisin","salade","tomate"],',
-        '  "Légumes":["pdt","patate","patates","ail","aubergine","betterave","brocoli","carotte","céleri","champignon","chou","concombre","courgette","échalote","épinard","haricot vert","mâche","navet","oignon","poireau","poivron","pomme de terre","salade","tomate"],\\n  "Fruits":["abricot","ananas","avocat","banane","cerise","citron","clémentine","fraise","framboise","kiwi","mandarine","mangue","melon","nectarine","orange","pamplemousse","pastèque","pêche","poire","pomme","prune","raisin"],'
+        '  "Légumes":["pdt","patate","patates","ail","aubergine","betterave","brocoli","carotte","céleri","champignon","chou","concombre","courgette","échalote","épinard","haricot vert","mâche","navet","oignon","poireau","poivron","pomme de terre","salade","tomate"],\n  "Fruits":["abricot","ananas","avocat","banane","cerise","citron","clémentine","fraise","framboise","kiwi","mandarine","mangue","melon","nectarine","orange","pamplemousse","pastèque","pêche","poire","pomme","prune","raisin"],'
       )
       .replace(
         '  "fruits legumes":"Fruits et légumes","fruits et legumes":"Fruits et légumes","legumes":"Fruits et légumes",',
