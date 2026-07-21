@@ -35,7 +35,7 @@
   <script>
   (async()=>{
     const commit="eb4e3ee8db453dc0983606251bac5943a085e44b";
-    const shellCacheKey="clairCourses.shell.v10.3";
+    const shellCacheKey="clairCourses.shell.v10.4";
     const sources=[
       `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html`,
       `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html`
@@ -66,28 +66,20 @@
     }
 
     html=html
-      .replace('const APP_VERSION=904;','const APP_VERSION=1003;')
-      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.3";')
-      .replaceAll('V9.4','V10.3')
-      .replaceAll('Version 9.4','Version 10.3');
+      .replace('const APP_VERSION=904;','const APP_VERSION=1004;')
+      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.4";')
+      .replaceAll('V9.4','V10.4')
+      .replaceAll('Version 9.4','Version 10.4');
 
-    // Deux rayons voisins : d’abord les légumes, puis les fruits.
+    // Un seul rayon : légumes et herbes d’abord, puis fruits.
     html=html
       .replace(
-        'const AISLES=["Eau","Épicerie","Fruits et légumes","Boucherie","Charcuterie","Poissonnerie","Boulangerie","Conserves","Crèmerie","Surgelés","Boissons","Hygiène","Maison","Divers"];',
-        'const AISLES=["Eau","Épicerie","Légumes","Fruits","Boucherie","Charcuterie","Poissonnerie","Boulangerie","Conserves","Crèmerie","Surgelés","Boissons","Hygiène","Maison","Divers"];'
-      )
-      .replace(
-        'const CLASSIFICATION_ORDER=["Eau","Charcuterie","Conserves","Surgelés","Boissons","Poissonnerie","Boucherie","Crèmerie","Boulangerie","Épicerie","Fruits et légumes","Hygiène","Maison"];',
-        'const CLASSIFICATION_ORDER=["Eau","Charcuterie","Conserves","Surgelés","Boissons","Poissonnerie","Boucherie","Crèmerie","Boulangerie","Épicerie","Légumes","Fruits","Hygiène","Maison"];'
-      )
-      .replace(
         '  "Fruits et légumes":["pdt","patate","patates","abricot","ail","ananas","aubergine","avocat","banane","betterave","brocoli","carotte","céleri","champignon","chou","citron","clémentine","concombre","courgette","échalote","épinard","fraise","framboise","haricot vert","kiwi","mâche","mandarine","melon","navet","oignon","orange","pamplemousse","poire","poireau","poivron","pomme","pomme de terre","raisin","salade","tomate"],',
-        '  "Légumes":["pdt","patate","patates","ail","aubergine","betterave","brocoli","carotte","céleri","champignon","chou","concombre","courgette","échalote","épinard","haricot vert","mâche","navet","oignon","poireau","poivron","pomme de terre","salade","tomate"],\n  "Fruits":["abricot","ananas","avocat","banane","cerise","citron","clémentine","fraise","framboise","kiwi","mandarine","mangue","melon","nectarine","orange","pamplemousse","pastèque","pêche","poire","pomme","prune","raisin"],'
+        '  "Fruits et légumes":["pdt","patate","patates","ail","aubergine","avocat","basilic","betterave","brocoli","carotte","céleri","champignon","chou","ciboulette","concombre","coriandre","courgette","échalote","épinard","haricot vert","mâche","menthe","navet","oignon","persil","poireau","poivron","pomme de terre","radis","romarin","salade","thym","tomate","abricot","ananas","banane","cerise","citron","clémentine","figue","fraise","framboise","kiwi","mandarine","mangue","melon","mirabelle","nectarine","orange","pamplemousse","pastèque","pêche","poire","pomme","prune","raisin"],'
       )
       .replace(
         '  "fruits legumes":"Fruits et légumes","fruits et legumes":"Fruits et légumes","legumes":"Fruits et légumes",',
-        '  "fruits legumes":"Fruits et légumes","fruits et legumes":"Fruits et légumes","legumes":"Légumes","fruits":"Fruits",'
+        '  "fruits legumes":"Fruits et légumes","fruits et legumes":"Fruits et légumes","legumes":"Fruits et légumes","fruits":"Fruits et légumes",'
       );
 
     html=html.replace('</style>',`
@@ -293,6 +285,66 @@
           return copy;
         }
 
+        const PRODUCE_AISLE='Fruits et légumes';
+        const VEGETABLE_WORDS=[
+          'ail','aubergine','avocat','basilic','betterave','brocoli','carotte','celeri','champignon','chou',
+          'ciboulette','concombre','coriandre','courgette','echalote','epinard','haricot vert','mache','menthe',
+          'navet','oignon','persil','poireau','poivron','pomme de terre','radis','romarin','salade','thym','tomate'
+        ];
+        const FRUIT_WORDS=[
+          'abricot','ananas','banane','cerise','citron','clementine','figue','fraise','framboise','kiwi','mandarine',
+          'mangue','melon','mirabelle','nectarine','orange','pamplemousse','pasteque','peche','poire','pomme','prune','raisin'
+        ];
+
+        function includesProduceWord(value,words){
+          const normalized=normalize(value);
+          return words.some(word=>normalized.includes(normalize(word)));
+        }
+
+        function fakeProduceHeading(entry){
+          const name=normalize(entry && entry.name);
+          const quantity=clean(entry && entry.quantity,80);
+          return !quantity && ['fruits','legumes','fruits legumes','fruits et legumes'].includes(name);
+        }
+
+        function normalizeProduceEntry(entry){
+          if(!entry)return entry;
+          const copy={...entry};
+          const label=(copy.name||'')+' '+(copy.quantity||'');
+          const oldProduceAisle=copy.aisle==='Légumes'||copy.aisle==='Fruits';
+          const canReclassify=oldProduceAisle||copy.aisle===PRODUCE_AISLE||copy.aisle==='Divers';
+          if(oldProduceAisle||(canReclassify&&(includesProduceWord(label,VEGETABLE_WORDS)||includesProduceWord(label,FRUIT_WORDS)))){
+            copy.aisle=PRODUCE_AISLE;
+          }
+          return copy;
+        }
+
+        function produceRank(entry){
+          const label=(entry.name||'')+' '+(entry.quantity||'');
+          if(includesProduceWord(label,VEGETABLE_WORDS))return 0;
+          if(includesProduceWord(label,FRUIT_WORDS))return 1;
+          return 0;
+        }
+
+        function sortProduceItems(items){
+          const produce=items
+            .filter(item=>item.aisle===PRODUCE_AISLE)
+            .map((item,index)=>({item,index}))
+            .sort((a,b)=>produceRank(a.item)-produceRank(b.item)||a.index-b.index)
+            .map(entry=>entry.item);
+          let position=0;
+          return items.map(item=>item.aisle===PRODUCE_AISLE?produce[position++]:item);
+        }
+
+        function normalizeProduceState(){
+          state.items=sortProduceItems(consolidateItems(state.items
+            .filter(item=>!fakeProduceHeading(item))
+            .map(normalizeProduceEntry)));
+          state.products=uniqueProducts(state.products
+            .filter(product=>!fakeProduceHeading(product))
+            .map(normalizeProduceEntry));
+        }
+
         function normalizeGarlicState(){
           state.items=consolidateItems(state.items.map(normalizeGarlicEntry));
           state.products=uniqueProducts(state.products.map(normalizeGarlicEntry));
@@ -300,12 +352,13 @@
 
         const baseAddOrMergeItem=addOrMergeItem;
         addOrMergeItem=function(entry){
-          return baseAddOrMergeItem(normalizeGarlicEntry(entry));
+          return baseAddOrMergeItem(normalizeProduceEntry(normalizeGarlicEntry(entry)));
         };
 
         const baseCommit=commit;
         commit=function(message){
           normalizeGarlicState();
+          normalizeProduceState();
           baseCommit(message);
         };
 
@@ -359,6 +412,7 @@
 
         const originalRender=render;
         render=function(){
+          normalizeProduceState();
           originalRender();
           decorateProducts();
         };
@@ -375,6 +429,7 @@
         }catch(error){}
 
         normalizeGarlicState();
+        normalizeProduceState();
         save();
         render();
         updateListNav();
