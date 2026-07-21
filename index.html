@@ -35,7 +35,7 @@
   <script>
   (async()=>{
     const commit="eb4e3ee8db453dc0983606251bac5943a085e44b";
-    const shellCacheKey="clairCourses.shell.v10.5";
+    const shellCacheKey="clairCourses.shell.v10.6";
     const sources=[
       `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${commit}/index.html`,
       `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${commit}/index.html`
@@ -59,19 +59,19 @@
 
     if(!html){
       document.getElementById("loading").innerHTML=
-        '<div><strong>Clair Courses ne peut pas s’ouvrir.</strong>'+ 
-        '<p>Vérifiez la connexion puis rechargez la page.</p>'+ 
+        '<div><strong>Clair Courses ne peut pas s’ouvrir.</strong>'+
+        '<p>Vérifiez la connexion puis rechargez la page.</p>'+
         '<button onclick="location.reload()" style="min-height:48px;padding:0 18px;border:0;border-radius:13px;color:white;background:#2f6b4f;font-weight:800">Réessayer</button></div>';
       return;
     }
 
     html=html
-      .replace('const APP_VERSION=904;','const APP_VERSION=1005;')
-      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.5";')
-      .replaceAll('V9.4','V10.5')
-      .replaceAll('Version 9.4','Version 10.5');
+      .replace('const APP_VERSION=904;','const APP_VERSION=1006;')
+      .replace('const APP_RELEASE="9.4";','const APP_RELEASE="10.6";')
+      .replaceAll('V9.4','V10.6')
+      .replaceAll('Version 9.4','Version 10.6');
 
-    // Un seul rayon Fruits et légumes : légumes et herbes d’abord, puis fruits.
+    // Un seul rayon : légumes et herbes d’abord, puis fruits.
     html=html
       .replace(
         '  "Fruits et légumes":["pdt","patate","patates","abricot","ail","ananas","aubergine","avocat","banane","betterave","brocoli","carotte","céleri","champignon","chou","citron","clémentine","concombre","courgette","échalote","épinard","fraise","framboise","haricot vert","kiwi","mâche","mandarine","melon","navet","oignon","orange","pamplemousse","poire","poireau","poivron","pomme","pomme de terre","raisin","salade","tomate"],',
@@ -109,9 +109,20 @@
         font-weight:950;
         line-height:1
       }
-      .product-add.is-present{border-color:#b7cfbe;color:var(--accent2);background:var(--accentSoft)}
-      .product-add.is-present:before{content:"✓";background:var(--accent2);font-size:1.05rem}
-      .action.has-items{color:#fff;background:var(--accent)}
+      .product-add.is-present{
+        border-color:#b7cfbe;
+        color:var(--accent2);
+        background:var(--accentSoft)
+      }
+      .product-add.is-present:before{
+        content:"✓";
+        background:var(--accent2);
+        font-size:1.05rem
+      }
+      .action.has-items{
+        color:#fff;
+        background:var(--accent)
+      }
     </style>`);
 
     html=html.replace('</body>',`
@@ -127,7 +138,7 @@
       </dialog>
 
       <script>
-      (()=>{
+      (()=>{        
         const productSummary=document.querySelector('#products-panel > summary > span:first-child');
         if(productSummary){
           const count=productSummary.querySelector('small');
@@ -141,16 +152,24 @@
           listNavButton=oldButton.cloneNode(true);
           const icon=listNavButton.querySelector('.action-icon');
           const labels=listNavButton.querySelectorAll('span');
+
           if(icon)icon.textContent='📋';
           if(labels.length>1)labels[labels.length-1].textContent='Liste';
+
           oldButton.replaceWith(listNavButton);
           listNavButton.addEventListener('click',()=>{
-            document.getElementById('list-title')?.scrollIntoView({behavior:'smooth',block:'start'});
+            document.getElementById('list-title')?.scrollIntoView({
+              behavior:'smooth',
+              block:'start'
+            });
           });
         }
 
         function goToList(){
-          document.getElementById('list-title')?.scrollIntoView({behavior:'smooth',block:'start'});
+          document.getElementById('list-title')?.scrollIntoView({
+            behavior:'smooth',
+            block:'start'
+          });
         }
 
         function updateListNav(){
@@ -186,11 +205,12 @@
         const choiceTitle=document.getElementById('choice-title');
         const choiceList=document.getElementById('choice-list');
         const choiceClose=document.getElementById('choice-close');
+        let pendingProduct=null;
 
         function productChoices(product){
           const raw=clean(product && product.quantity,80);
           if(!raw)return [];
-          return raw.split(/\\s*[|;]\\s*/).map(value=>clean(value,80)).filter(Boolean);
+          return raw.split(/\s*[|;]\s*/).map(value=>clean(value,80)).filter(Boolean);
         }
 
         function addChosenProduct(product,quantity){
@@ -202,9 +222,11 @@
           closeDialog(choiceDialog);
           commit();
           showToast(product.name+' ajouté à la liste.','Voir la liste',goToList);
+          pendingProduct=null;
         }
 
         function openChoiceDialog(product,choices){
+          pendingProduct=product;
           choiceTitle.textContent=product.name;
           choiceList.innerHTML='';
           choices.forEach((choice,index)=>{
@@ -227,8 +249,84 @@
         QUANTITY_UNIT_ALIASES["tetes"]={kind:"count",factor:1,unit:"tête"};
         COUNT_LABELS["tête"]=["tête","têtes"];
 
+        // V10.6 : « eau » doit être reconnu comme un mot, jamais à l’intérieur de « veau ».
+        classify=function(label){
+          const normalizedLabel=normalize(label);
+          const paddedLabel=' '+normalizedLabel+' ';
+          const hasExactKeyword=word=>paddedLabel.includes(' '+normalize(word)+' ');
+
+          if((KEYWORDS["Eau"]||[]).some(hasExactKeyword))return "Eau";
+
+          for(const aisle of CLASSIFICATION_ORDER){
+            if(aisle==="Eau")continue;
+            if((KEYWORDS[aisle]||[]).some(word=>normalizedLabel.includes(normalize(word))))return aisle;
+          }
+          return "Divers";
+        };
+
+        const NON_ARTICLE_HEADINGS_V106=new Set([
+          "viande et poisson","viandes et poisson","viande et poissons","viandes et poissons",
+          "viande poisson","viandes poisson"
+        ]);
+        const MEAT_FISH_AISLES_V106=new Set(["Boucherie","Charcuterie","Poissonnerie"]);
+
+        function fakeGroupHeadingV106(entry){
+          if(!entry)return false;
+          return !clean(entry.quantity,80)&&NON_ARTICLE_HEADINGS_V106.has(normalize(entry.name));
+        }
+
+        function normalizeClassificationEntryV106(entry){
+          if(!entry)return entry;
+          const copy={...entry};
+          const suggested=classify((copy.name||'')+' '+(copy.quantity||''));
+
+          if(copy.aisle==="Eau"&&suggested!=="Eau"){
+            copy.aisle=suggested;
+          }else if(copy.aisle==="Divers"&&suggested!=="Divers"){
+            copy.aisle=suggested;
+          }else if(MEAT_FISH_AISLES_V106.has(suggested)&&copy.aisle!==suggested){
+            copy.aisle=suggested;
+          }
+          return copy;
+        }
+
+        function normalizeClassificationStateV106(){
+          state.items=consolidateItems(state.items
+            .filter(item=>!fakeGroupHeadingV106(item))
+            .map(normalizeClassificationEntryV106));
+          state.products=uniqueProducts(state.products
+            .filter(product=>!fakeGroupHeadingV106(product))
+            .map(normalizeClassificationEntryV106));
+        }
+
+        // Un titre général « Viandes et poisson » sert seulement de séparation :
+        // il ne devient plus un article et chaque produit retrouve son vrai rayon.
+        parseChat=function(text){
+          let aisle=null;
+          const rows=[];
+          for(const raw of text.split(/\r?\n/)){
+            const cleanedHeading=normalize(
+              raw.replace(/^\s*[-•–—*✓✔☐☑]+\s*/,"").replace(/[:：]\s*$/,"")
+            );
+            if(NON_ARTICLE_HEADINGS_V106.has(cleanedHeading)){
+              aisle=null;
+              continue;
+            }
+
+            const parsed=parseLine(raw,aisle);
+            if(!parsed)continue;
+            if(parsed.heading){
+              aisle=parsed.heading;
+              continue;
+            }
+            parsed.aisle=aisle||parsed.aisle||classify((parsed.name||'')+' '+(parsed.quantity||''));
+            rows.push(normalizeClassificationEntryV106(parsed));
+          }
+          return rows;
+        };
+
         function numberIn(value){
-          const match=String(value||"").match(/\\d+(?:[.,]\\d+)?/);
+          const match=String(value||"").match(/\d+(?:[.,]\d+)?/);
           return match?decimal(match[0]):null;
         }
 
@@ -240,17 +338,22 @@
           const plainGarlic=name==="ail"||name==="ail frais";
           const cloveName=/^gousses? d ail$/.test(name);
           const headName=/^tetes? d ail$/.test(name);
+
           if(!plainGarlic&&!cloveName&&!headName)return copy;
+
           copy.name="Ail";
-          if(cloveName||/\\bgousses?\\b/.test(quantity)){
+
+          if(cloveName||/\bgousses?\b/.test(quantity)){
             copy.quantity="1 tête";
             return copy;
           }
-          if(headName||/\\btetes?\\b/.test(quantity)){
+
+          if(headName||/\btetes?\b/.test(quantity)){
             const count=numberIn(copy.quantity)||numberIn(copy.name)||1;
             copy.quantity=formatQuantity({kind:"count",unit:"tête",base:count});
             return copy;
           }
+
           const count=numberIn(copy.quantity);
           copy.quantity=count
             ? formatQuantity({kind:"count",unit:"tête",base:Math.max(1,count)})
@@ -259,7 +362,6 @@
         }
 
         const PRODUCE_AISLE='Fruits et légumes';
-        const AUTO_AISLE='__AUTO__';
         const VEGETABLE_WORDS=[
           'ail','aubergine','avocat','basilic','betterave','brocoli','carotte','celeri','champignon','chou',
           'ciboulette','concombre','coriandre','courgette','echalote','epinard','haricot vert','mache','menthe',
@@ -270,60 +372,15 @@
           'mangue','melon','mirabelle','nectarine','orange','pamplemousse','pasteque','peche','poire','pomme','prune','raisin'
         ];
 
-        const HEADING_ONLY_NAMES=new Set([
-          'fruits','legumes','fruits legumes','fruits et legumes',
-          'viande','viandes','poisson','poissons','viande et poisson','viandes et poisson','viande et poissons','viandes et poissons',
-          'boucherie','charcuterie','poissonnerie','boucherie et poissonnerie','viandes charcuterie et poissons',
-          'epicerie','cremerie','produits frais','produits laitiers','boulangerie','conserves','surgeles','boissons','hygiene','maison','entretien','divers'
-        ]);
-
-        const baseHeadingFrom=headingFrom;
-        headingFrom=function(line){
-          const cleaned=normalize(String(line||'').replace(/[:：]$/,''));
-          const combined=new Set([
-            'viande et poisson','viandes et poisson','viande et poissons','viandes et poissons',
-            'viande poisson','viandes poisson','viande poissons','viandes poissons',
-            'boucherie et poissonnerie','boucherie poissonnerie','viandes charcuterie et poissons'
-          ]);
-          if(combined.has(cleaned))return AUTO_AISLE;
-          const extra={
-            'fruits':PRODUCE_AISLE,
-            'viande':'Boucherie',
-            'poisson':'Poissonnerie',
-            'produits laitiers':'Crèmerie',
-            'frais':'Crèmerie'
-          };
-          return extra[cleaned]||baseHeadingFrom(line);
-        };
-
-        parseChat=function(text){
-          let aisle=null;
-          const rows=[];
-          for(const raw of text.split(/\\r?\\n/)){
-            const parsed=parseLine(raw,aisle===AUTO_AISLE?null:aisle);
-            if(!parsed)continue;
-            if(parsed.heading){
-              aisle=parsed.heading;
-              continue;
-            }
-            parsed.aisle=aisle===AUTO_AISLE
-              ? classify((parsed.name||'')+' '+(parsed.quantity||''))
-              : (aisle||parsed.aisle||classify((parsed.name||'')+' '+(parsed.quantity||'')));
-            rows.push(parsed);
-          }
-          return rows;
-        };
-
         function includesProduceWord(value,words){
           const normalized=normalize(value);
           return words.some(word=>normalized.includes(normalize(word)));
         }
 
-        function isHeadingEntry(entry){
-          if(!entry)return false;
-          const name=normalize(entry.name||'');
-          const quantity=clean(entry.quantity||'',80);
-          return !quantity && HEADING_ONLY_NAMES.has(name);
+        function fakeProduceHeading(entry){
+          const name=normalize(entry && entry.name);
+          const quantity=clean(entry && entry.quantity,80);
+          return !quantity && ['fruits','legumes','fruits legumes','fruits et legumes'].includes(name);
         }
 
         function normalizeProduceEntry(entry){
@@ -335,18 +392,6 @@
           if(oldProduceAisle||(canReclassify&&(includesProduceWord(label,VEGETABLE_WORDS)||includesProduceWord(label,FRUIT_WORDS)))){
             copy.aisle=PRODUCE_AISLE;
           }
-          return copy;
-        }
-
-        function repairWrongAisle(entry){
-          if(!entry)return entry;
-          const copy=normalizeProduceEntry(entry);
-          const suggested=classify((copy.name||'')+' '+(copy.quantity||''));
-          const current=copy.aisle;
-          const meatFamily=['Boucherie','Charcuterie','Poissonnerie'];
-          if(current===PRODUCE_AISLE && suggested!==PRODUCE_AISLE && suggested!=='Divers')copy.aisle=suggested;
-          else if(current==='Divers' && suggested!=='Divers')copy.aisle=suggested;
-          else if(meatFamily.includes(current) && meatFamily.includes(suggested))copy.aisle=suggested;
           return copy;
         }
 
@@ -367,39 +412,50 @@
           return items.map(item=>item.aisle===PRODUCE_AISLE?produce[position++]:item);
         }
 
-        function normalizeState(){
+        function normalizeProduceState(){
           state.items=sortProduceItems(consolidateItems(state.items
-            .filter(item=>!isHeadingEntry(item))
-            .map(normalizeGarlicEntry)
-            .map(repairWrongAisle)));
+            .filter(item=>!fakeProduceHeading(item))
+            .map(normalizeProduceEntry)));
           state.products=uniqueProducts(state.products
-            .filter(product=>!isHeadingEntry(product))
-            .map(normalizeGarlicEntry)
-            .map(repairWrongAisle));
+            .filter(product=>!fakeProduceHeading(product))
+            .map(normalizeProduceEntry));
+        }
+
+        function normalizeGarlicState(){
+          state.items=consolidateItems(state.items.map(normalizeGarlicEntry));
+          state.products=uniqueProducts(state.products.map(normalizeGarlicEntry));
         }
 
         const baseAddOrMergeItem=addOrMergeItem;
         addOrMergeItem=function(entry){
-          if(isHeadingEntry(entry))return {status:'unchanged',item:null};
-          return baseAddOrMergeItem(repairWrongAisle(normalizeGarlicEntry(entry)));
+          return baseAddOrMergeItem(
+            normalizeClassificationEntryV106(
+              normalizeProduceEntry(normalizeGarlicEntry(entry))
+            )
+          );
         };
 
         const baseCommit=commit;
         commit=function(message){
-          normalizeState();
+          normalizeGarlicState();
+          normalizeProduceState();
+          normalizeClassificationStateV106();
           baseCommit(message);
         };
 
         addProductToList=function(product){
           const choices=productChoices(product);
+
           if(itemExists(product)){
             showToast(product.name+' est déjà dans la liste.','Voir la liste',goToList);
             return;
           }
+
           if(choices.length>1){
             openChoiceDialog(product,choices);
             return;
           }
+
           addOrMergeItem({
             name:product.name,
             quantity:choices.length===1?choices[0]:product.quantity,
@@ -415,14 +471,21 @@
             const name=button.querySelector('strong')?.textContent||'';
             const product=state.products.find(entry=>entry.name===name);
             if(!product)return;
+
             const small=button.querySelector('small');
             const present=itemExists(product);
             const choices=productChoices(product);
+
             button.classList.toggle('is-present',present);
+
             if(small){
-              if(present)small.textContent='✓ Dans la liste · '+product.aisle;
-              else if(choices.length>1)small.textContent='Touchez pour choisir · '+product.aisle;
-              else small.textContent='Touchez pour ajouter · '+product.aisle;
+              if(present){
+                small.textContent='✓ Dans la liste · '+product.aisle;
+              }else if(choices.length>1){
+                small.textContent='Touchez pour choisir · '+product.aisle;
+              }else{
+                small.textContent='Touchez pour ajouter · '+product.aisle;
+              }
             }
           });
           updateListNav();
@@ -430,22 +493,26 @@
 
         const originalRender=render;
         render=function(){
-          normalizeState();
+          normalizeProduceState();
+          normalizeClassificationStateV106();
           originalRender();
           decorateProducts();
         };
 
-        const migrationKey='clairCourses.v10.5.repair-headings';
+        const migrationKey='clairCourses.v10.conditionnements';
         try{
           if(!localStorage.getItem(migrationKey)){
             const courgette=state.products.find(product=>productKey(product.name)==='courgette');
-            if(courgette && !clean(courgette.quantity,80))courgette.quantity='à l’unité | filet de 4/5';
-            normalizeState();
+            if(courgette && !clean(courgette.quantity,80)){
+              courgette.quantity='à l’unité | filet de 4/5';
+            }
             localStorage.setItem(migrationKey,'1');
           }
         }catch(error){}
 
-        normalizeState();
+        normalizeGarlicState();
+        normalizeProduceState();
+        normalizeClassificationStateV106();
         save();
         render();
         updateListNav();
