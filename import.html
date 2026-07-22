@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f6f4ed">
+  <title>Import vers Clair Courses</title>
+  <style>
+    :root{color-scheme:light;--bg:#f6f4ed;--surface:#fffefa;--text:#203128;--muted:#66736b;--accent:#2f6b4f;--line:#d9ded7}
+    *{box-sizing:border-box}body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;color:var(--text);background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    main{width:min(440px,100%);padding:26px;border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:0 16px 45px rgba(36,61,48,.12);text-align:center}
+    .icon{font-size:42px}h1{margin:12px 0 8px;font-size:1.45rem}p{margin:0;color:var(--muted);line-height:1.5}.status{margin-top:14px;color:var(--accent);font-weight:800}a{display:inline-flex;min-height:48px;margin-top:18px;padding:0 18px;align-items:center;justify-content:center;border-radius:13px;color:#fff;background:var(--accent);font-weight:850;text-decoration:none}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="icon">🛒</div>
+    <h1>Clair Courses</h1>
+    <p id="message">Réception de la liste depuis Mon carnet…</p>
+    <div class="status" id="status">Import en cours</div>
+    <a id="openButton" href="./" hidden>Ouvrir Clair Courses</a>
+  </main>
+<script>
+(()=>{
+  "use strict";
+  const STORAGE_KEY="clairCourses.state";
+  const APP_VERSION=1009;
+  const AISLES=["Eau","Épicerie","Fruits et légumes","Boucherie","Charcuterie","Poissonnerie","Boulangerie","Conserves","Crèmerie","Surgelés","Boissons","Hygiène","Maison","Divers"];
+  const ORDER=["Eau","Charcuterie","Conserves","Surgelés","Boissons","Poissonnerie","Boucherie","Crèmerie","Boulangerie","Épicerie","Fruits et légumes","Hygiène","Maison"];
+  const KEYWORDS={
+    "Eau":["eau","eaux","pack d eau","bouteille d eau","bouteilles d eau"],
+    "Épicerie":["café","céréale","chocolat","biscuit","farine","huile","moutarde","pâtes","riz","semoule","sarrasin","sel","sucre","thé","vinaigre","épice","sauce","condiment","gnocchi","bouillon","fumet","vin blanc","cannelle","garam masala"],
+    "Fruits et légumes":["pdt","patate","patates","ail","aubergine","avocat","basilic","betterave","brocoli","carotte","céleri","champignon","chou","ciboulette","concombre","coriandre","courgette","échalote","épinard","haricot vert","mâche","maïs","mais","menthe","navet","oignon","persil","poireau","poivron","pomme de terre","radis","romarin","salade","thym","tomate","abricot","ananas","banane","cerise","citron","clémentine","figue","fraise","framboise","kiwi","mandarine","mangue","melon","mirabelle","nectarine","orange","pamplemousse","pastèque","pêche","poire","pomme","prune","raisin"],
+    "Boucherie":["agneau","bavette","boeuf","bœuf","canard","chipolata","côte de porc","dinde","entrecôte","escalope","filet mignon","lapin","merguez","porc","poulet","rôti","saucisse","steak","veau","viande"],
+    "Charcuterie":["andouillette","bacon","boudin","chorizo","jambon","lardon","lardons","mortadelle","pâté","pate","rillettes","salami","saucisson","terrine"],
+    "Poissonnerie":["bar","cabillaud","calamar","crevette","daurade","dorade","huître","limande","maquereau","moule","poisson","saumon","sardine fraîche","sole","thon frais","truite"],
+    "Boulangerie":["baguette","brioche","pain","viennoiserie","pâte feuilletée"],
+    "Conserves":["conserve","en boîte","en boite","boîte de thon","boite de thon","thon au naturel","sardines en boîte","sardines en boite","maïs en boîte","mais en boite","petits pois en boîte","petits pois en boite","haricots en boîte","haricots en boite"],
+    "Crèmerie":["beurre","camembert","crème","emmental","faisselle","fromage","lait","mozzarella","œuf","oeuf","parmesan","yaourt","yogourt"],
+    "Surgelés":["surgelé","glace"],
+    "Boissons":["jus","limonade","soda","sirop"],
+    "Hygiène":["dentifrice","déodorant","gel douche","savon","shampoing","papier toilette"],
+    "Maison":["aluminium","essuie-tout","papier cuisson","sac-poubelle","sacs-poubelle","éponge","lessive","liquide vaisselle"]
+  };
+  const HEADING={"eau":"Eau","eaux":"Eau","epicerie":"Épicerie","epiceries":"Épicerie","fruit":"Fruits et légumes","fruits":"Fruits et légumes","legume":"Fruits et légumes","legumes":"Fruits et légumes","fruits et legumes":"Fruits et légumes","boucherie":"Boucherie","viande":"Boucherie","viandes":"Boucherie","charcuterie":"Charcuterie","poissonnerie":"Poissonnerie","poisson":"Poissonnerie","boulangerie":"Boulangerie","conserve":"Conserves","conserves":"Conserves","cremerie":"Crèmerie","produits frais":"Crèmerie","surgele":"Surgelés","surgeles":"Surgelés","boisson":"Boissons","boissons":"Boissons","hygiene":"Hygiène","maison":"Maison","entretien":"Maison","divers":"Divers"};
+  const status=document.getElementById("status"),message=document.getElementById("message"),openButton=document.getElementById("openButton");
+  const clean=(v,max=220)=>String(v??"").replace(/\s+/g," ").trim().slice(0,max);
+  const normalize=v=>String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[’']/g," ").replace(/[^a-z0-9]+/g," ").trim();
+  const key=v=>normalize(v).replace(/\s+/g,"-");
+  const uid=prefix=>`${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+  function semantic(label,word){const a=normalize(label).split(" "),b=normalize(word).split(" ");if(!b.length||b.length>a.length)return false;for(let i=0;i<=a.length-b.length;i++){let ok=true;for(let j=0;j<b.length;j++){const x=a[i+j],y=b[j];if(x!==y&&x!==`${y}s`&&x!==`${y}x`&&!(y.endsWith("s")&&x===y.slice(0,-1))){ok=false;break}}if(ok)return true}return false}
+  function classify(label){for(const aisle of ORDER)if((KEYWORDS[aisle]||[]).some(word=>semantic(label,word)))return aisle;return "Divers"}
+  function parseLine(raw,currentAisle){let line=clean(String(raw).replace(/^\s*[-•·▪▫◦‣⁃–—*✓✔☐☑]+\s*/,"").replace(/\*\*/g,""));if(!line)return null;const heading=HEADING[normalize(line)];if(heading)return {heading};if(["liste","courses","liste des courses","liste de courses","a acheter","achats"].includes(normalize(line)))return null;let name=line,quantity="";const sep=line.match(/^(.+?)\s+(?:—|–)\s+(.+)$/);if(sep){name=clean(sep[1],140);quantity=clean(sep[2],80)}else{const prefix=line.match(/^(\d+(?:[.,]\d+)?\s*(?:(?:petit(?:e)?|grand(?:e)?)\s+)?(?:kg|g|l|cl|ml|bo[iî]tes?|paquets?|filets?|bouteilles?|pots?|tranches?|pi[eè]ces?|barquettes?|sachets?|gousses?|t[eê]tes?|[eé]pis?|bouquets?))\s*(?:(?:de)\s+|d[’']\s*)?(.+)$/i);if(prefix){quantity=clean(prefix[1],80);name=clean(prefix[2],140)}else{const number=line.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/);if(number){quantity=number[1];name=clean(number[2],140)}}}
+    name=name.replace(/^[dD][e’']\s+/,"").trim();if(!name)return null;name=name.charAt(0).toUpperCase()+name.slice(1);return {name,quantity,aisle:classify(`${currentAisle||""} ${name} ${quantity} ${line}`)}
+  }
+  function parse(text){let aisle="",rows=[];for(const raw of String(text||"").split(/\r?\n/)){const item=parseLine(raw,aisle);if(!item)continue;if(item.heading){aisle=item.heading;continue}if(item.aisle==="Divers"&&AISLES.includes(aisle))item.aisle=aisle;rows.push(item)}return rows}
+  function mergeQuantity(a,b){a=clean(a,80);b=clean(b,80);if(!a)return b;if(!b||normalize(a)===normalize(b))return a;return `${a} + ${b}`}
+  try{
+    const hash=location.hash.startsWith("#mc=")?location.hash.slice(4):"";
+    const text=hash?decodeURIComponent(hash):"";
+    const rows=parse(text);
+    if(!rows.length)throw new Error("Aucun article reconnu");
+    let raw={};try{raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")||{}}catch(_){raw={}}
+    const source=raw&&raw.state?raw.state:raw;
+    const state={version:APP_VERSION,items:Array.isArray(source.items)?source.items:[],products:Array.isArray(source.products)?source.products:[],updatedAt:Date.now()};
+    let added=0,merged=0,reactivated=0;
+    for(const row of rows){const existing=state.items.find(item=>key(item.name)===key(row.name));if(!existing){state.items.push({id:uid("item"),name:row.name,quantity:row.quantity,aisle:row.aisle,checked:false,createdAt:Date.now()+added});added++;continue}if(existing.checked){existing.checked=false;existing.quantity=row.quantity||existing.quantity;existing.aisle=row.aisle||existing.aisle;existing.createdAt=Date.now()+reactivated;reactivated++;continue}const next=mergeQuantity(existing.quantity,row.quantity);if(next!==existing.quantity){existing.quantity=next;merged++}if(existing.aisle==="Divers"&&row.aisle!=="Divers")existing.aisle=row.aisle}
+    state.updatedAt=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    const details=[added?`${added} ajouté${added>1?"s":""}`:"",merged?`${merged} regroupé${merged>1?"s":""}`:"",reactivated?`${reactivated} réactivé${reactivated>1?"s":""}`:""].filter(Boolean).join(" · ");
+    message.textContent="La liste a bien été ajoutée à Clair Courses.";status.textContent=details||"Liste reçue";history.replaceState(null,"",location.pathname);setTimeout(()=>location.replace("./"),850);
+  }catch(error){message.textContent="L’import direct n’a pas pu être terminé.";status.textContent=error?.message||"Erreur d’import";openButton.hidden=false}
+})();
+</script>
+</body>
+</html>
