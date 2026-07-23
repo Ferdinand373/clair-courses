@@ -29,7 +29,7 @@
   const ORDER=["Eau","Charcuterie","Conserves","Surgelés","Boissons","Poissonnerie","Boucherie","Crèmerie","Boulangerie","Épicerie","Fruits et légumes","Hygiène","Maison"];
   const KEYWORDS={
     "Eau":["eau","eaux","pack d eau","bouteille d eau","bouteilles d eau"],
-    "Épicerie":["café","céréale","chocolat","biscuit","farine","huile","moutarde","pâtes","riz","semoule","sarrasin","sel","sucre","thé","vinaigre","épice","sauce","condiment","gnocchi","bouillon","fumet","vin blanc","cannelle","garam masala"],
+    "Épicerie":["café","céréale","chocolat","biscuit","farine","huile","moutarde","pâtes","riz","semoule","sarrasin","sel","sucre","thé","vinaigre","épice","sauce","condiment","gnocchi","bouillon","fumet","vin blanc","cannelle","garam masala","paprika","chapelure","panko","cornichon","câpre","capre","mayonnaise"],
     "Fruits et légumes":["pdt","patate","patates","ail","aubergine","avocat","basilic","betterave","brocoli","carotte","céleri","champignon","chou","ciboulette","concombre","coriandre","courgette","échalote","épinard","haricot vert","mâche","maïs","mais","menthe","navet","oignon","persil","poireau","poivron","pomme de terre","radis","romarin","salade","thym","tomate","abricot","ananas","banane","cerise","citron","clémentine","figue","fraise","framboise","kiwi","mandarine","mangue","melon","mirabelle","nectarine","orange","pamplemousse","pastèque","pêche","poire","pomme","prune","raisin"],
     "Boucherie":["agneau","bavette","boeuf","bœuf","canard","chipolata","côte de porc","dinde","entrecôte","escalope","filet mignon","lapin","merguez","porc","poulet","rôti","saucisse","steak","veau","viande"],
     "Charcuterie":["andouillette","bacon","boudin","chorizo","jambon","lardon","lardons","mortadelle","pâté","pate","rillettes","salami","saucisson","terrine"],
@@ -50,11 +50,64 @@
   const uid=prefix=>`${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
   function semantic(label,word){const a=normalize(label).split(" "),b=normalize(word).split(" ");if(!b.length||b.length>a.length)return false;for(let i=0;i<=a.length-b.length;i++){let ok=true;for(let j=0;j<b.length;j++){const x=a[i+j],y=b[j];if(x!==y&&x!==`${y}s`&&x!==`${y}x`&&!(y.endsWith("s")&&x===y.slice(0,-1))){ok=false;break}}if(ok)return true}return false}
   function classify(label){for(const aisle of ORDER)if((KEYWORDS[aisle]||[]).some(word=>semantic(label,word)))return aisle;return "Divers"}
-  function parseLine(raw,currentAisle){let line=clean(String(raw).replace(/^\s*[-•·▪▫◦‣⁃–—*✓✔☐☑]+\s*/,"").replace(/\*\*/g,""));if(!line)return null;const heading=HEADING[normalize(line)];if(heading)return {heading};if(["liste","courses","liste des courses","liste de courses","a acheter","achats"].includes(normalize(line)))return null;let name=line,quantity="";const sep=line.match(/^(.+?)\s+(?:—|–)\s+(.+)$/);if(sep){name=clean(sep[1],140);quantity=clean(sep[2],80)}else{const prefix=line.match(/^(\d+(?:[.,]\d+)?\s*(?:(?:petit(?:e)?|grand(?:e)?)\s+)?(?:kg|g|l|cl|ml|bo[iî]tes?|paquets?|filets?|bouteilles?|pots?|tranches?|pi[eè]ces?|barquettes?|sachets?|gousses?|t[eê]tes?|[eé]pis?|bouquets?))\s*(?:(?:de)\s+|d[’']\s*)?(.+)$/i);if(prefix){quantity=clean(prefix[1],80);name=clean(prefix[2],140)}else{const number=line.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/);if(number){quantity=number[1];name=clean(number[2],140)}}}
-    name=name.replace(/^[dD][e’']\s+/,"").trim();if(!name)return null;name=name.charAt(0).toUpperCase()+name.slice(1);return {name,quantity,aisle:classify(`${currentAisle||""} ${name} ${quantity} ${line}`)}
+  function capitalize(value){const text=clean(value,140);return text?text.charAt(0).toUpperCase()+text.slice(1):""}
+  function tidyIngredientName(value){
+    let name=clean(value,140)
+      .replace(/\s*,\s*idéalement\s+(?:du|de la)\s+panko\b/i," panko")
+      .replace(/\bou\s+de\s+/gi," ou ")
+      .replace(/\([^)]*(?:facultatif|optionnel|pour servir|selon le goût)[^)]*\)/gi," ")
+      .replace(/^\s*(?:du|de la|des|le|la|les|un|une)\s+/i,"")
+      .replace(/^\s*d[’']\s*/i,"")
+      .replace(/\s*,\s*(?:en|avec|pour|afin|à servir|au moment de|de préférence)\b.*$/i,"")
+      .replace(/\s+(?:finement\s+)?(?:désossé(?:e|es|s)?|écrasé(?:e|es|s)?|haché(?:e|es|s)?|émincé(?:e|es|s)?|coupé(?:e|es|s)?|rincé(?:e|es|s)?|égoutté(?:e|es|s)?|pelé(?:e|es|s)?|épépiné(?:e|es|s)?|cuit(?:e|es|s)?)\s*$/i,"")
+      .replace(/[.,;:]+$/g,"")
+      .replace(/\s+/g," ")
+      .trim();
+    if(!/^petits? pois\b/i.test(name))name=name.replace(/^(?:petit(?:e|es|s)?|grand(?:e|es|s)?|gros(?:se|ses|s)?)\s+/i,"");
+    return capitalize(name);
+  }
+  function parseLine(raw,currentAisle){
+    let line=clean(String(raw).replace(/^\s*[-•·▪▫◦‣⁃–—*✓✔☐☑]+\s*/,"").replace(/\*\*/g,""));
+    if(!line)return null;
+    const heading=HEADING[normalize(line)];
+    if(heading)return {heading};
+    if(["liste","courses","liste des courses","liste de courses","a acheter","achats"].includes(normalize(line)))return null;
+
+    const juice=line.match(/^(?:le\s+)?(?:jus|zeste)\s+de\s+(\d+(?:[.,]\d+)?)\s+(?:(?:petit(?:e|es|s)?|grand(?:e|es|s)?|gros(?:se|ses|s)?)\s+)?(citrons?|oranges?|pamplemousses?|clémentines?|mandarines?)\b/i);
+    if(juice){
+      const quantity=clean(juice[1],80);
+      const name=capitalize(juice[2]);
+      return {name,quantity,aisle:classify(name)};
+    }
+
+    let name=line,quantity="";
+    const sep=line.match(/^(.+?)\s+(?:—|–)\s+(.+)$/);
+    if(sep){
+      name=clean(sep[1],140);
+      quantity=clean(sep[2],80);
+    }else{
+      const prefix=line.match(/^(\d+(?:[.,]\d+)?\s*(?:(?:petit(?:e)?|grand(?:e)?)\s+)?(?:gousses?|t[eê]tes?|bâtons?|batons?|bo[iî]tes?|paquets?|filets?|bouteilles?|pots?|tranches?|pi[eè]ces?|barquettes?|sachets?|[eé]pis?|bouquets?|kg|cl|ml|g|l))\b\s*(?:(?:de)\s+|d[’']\s*)?(.+)$/i);
+      if(prefix){
+        quantity=clean(prefix[1],80);
+        name=clean(prefix[2],140);
+      }else{
+        const number=line.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/);
+        if(number){quantity=number[1];name=clean(number[2],140)}
+      }
+    }
+    name=tidyIngredientName(name);
+    if(!name)return null;
+    return {name,quantity,aisle:classify(`${name} ${quantity}`)};
   }
   function parse(text){let aisle="",rows=[];for(const raw of String(text||"").split(/\r?\n/)){const item=parseLine(raw,aisle);if(!item)continue;if(item.heading){aisle=item.heading;continue}if(item.aisle==="Divers"&&AISLES.includes(aisle))item.aisle=aisle;rows.push(item)}return rows}
   function mergeQuantity(a,b){a=clean(a,80);b=clean(b,80);if(!a)return b;if(!b||normalize(a)===normalize(b))return a;return `${a} + ${b}`}
+  function repairLegacyItem(item){
+    let combined=clean([item?.quantity,item?.name].filter(Boolean).join(" "),220);
+    combined=combined.replace(/^(\d+(?:[.,]\d+)?)\s*g\s+ousses?\b/i,"$1 gousses");
+    const repaired=parseLine(combined,"");
+    if(repaired&&!repaired.heading){item.name=repaired.name;item.quantity=repaired.quantity;item.aisle=repaired.aisle}
+    return item;
+  }
   try{
     const hash=location.hash.startsWith("#mc=")?location.hash.slice(4):"";
     const text=hash?decodeURIComponent(hash):"";
@@ -62,7 +115,7 @@
     if(!rows.length)throw new Error("Aucun article reconnu");
     let raw={};try{raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")||{}}catch(_){raw={}}
     const source=raw&&raw.state?raw.state:raw;
-    const state={version:APP_VERSION,items:Array.isArray(source.items)?source.items:[],products:Array.isArray(source.products)?source.products:[],updatedAt:Date.now()};
+    const state={version:APP_VERSION,items:Array.isArray(source.items)?source.items.map(repairLegacyItem):[],products:Array.isArray(source.products)?source.products:[],updatedAt:Date.now()};
     let added=0,merged=0,reactivated=0;
     for(const row of rows){const existing=state.items.find(item=>key(item.name)===key(row.name));if(!existing){state.items.push({id:uid("item"),name:row.name,quantity:row.quantity,aisle:row.aisle,checked:false,createdAt:Date.now()+added});added++;continue}if(existing.checked){existing.checked=false;existing.quantity=row.quantity||existing.quantity;existing.aisle=row.aisle||existing.aisle;existing.createdAt=Date.now()+reactivated;reactivated++;continue}const next=mergeQuantity(existing.quantity,row.quantity);if(next!==existing.quantity){existing.quantity=next;merged++}if(existing.aisle==="Divers"&&row.aisle!=="Divers")existing.aisle=row.aisle}
     state.updatedAt=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
