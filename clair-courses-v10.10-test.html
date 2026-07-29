@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f4ed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Clair Courses">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Clair Courses — V10.10 test</title>
+  <style>
+    :root { color-scheme:light; --bg:#f6f4ed; --surface:#fffefa; --text:#203128; --muted:#66736b; --accent:#2f6b4f; }
+    * { box-sizing:border-box; }
+    html,body { min-height:100%; }
+    body { margin:0; display:grid; place-items:center; padding:28px; color:var(--text); background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    .boot { width:min(520px,100%); padding:30px 24px; border-radius:26px; background:var(--surface); text-align:center; box-shadow:0 18px 45px rgba(36,61,48,.12); }
+    .mark { width:62px; height:62px; margin:0 auto 18px; display:grid; place-items:center; border-radius:18px; color:#fff; background:var(--accent); font-size:30px; }
+    h1 { margin:0 0 10px; font-size:29px; }
+    p { margin:0; color:var(--muted); line-height:1.5; }
+    .loader { width:42px; height:42px; margin:24px auto 0; border:4px solid rgba(47,107,79,.15); border-top-color:var(--accent); border-radius:50%; animation:spin .85s linear infinite; }
+    .error { display:none; margin-top:20px; padding:14px; border-radius:14px; color:#6f2f2a; background:#f3e1dc; text-align:left; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <main class="boot" aria-live="polite">
+    <div class="mark">🛒</div>
+    <h1>Clair Courses</h1>
+    <p id="status">Ouverture de la liste avec le nouveau copier-coller…</p>
+    <div class="loader" id="loader" aria-hidden="true"></div>
+    <div class="error" id="error"></div>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const STABLE_COMMIT = 'acb52ba8f4b1f9d78f2c3f55c2d3d6362342bca0';
+      const SOURCES = [
+        `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${STABLE_COMMIT}/index.html`,
+        `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${STABLE_COMMIT}/index.html`
+      ];
+      const SOURCE_CACHE = `clair-courses-source-${STABLE_COMMIT}-v1010-copy-paste`;
+      const SOURCE_KEY = new Request('./source-v109-v1010-copy-paste.html');
+
+      const status = document.getElementById('status');
+      const loader = document.getElementById('loader');
+      const errorBox = document.getElementById('error');
+
+      function isValidSource(html) {
+        return typeof html === 'string'
+          && html.length > 15000
+          && html.includes('<!doctype html>')
+          && html.includes('const APP_VERSION=1009;')
+          && html.includes('function parseChat')
+          && html.includes('function importChat')
+          && !html.includes('data-v1010-copy-paste');
+      }
+
+      function replaceRequired(html, before, after, label) {
+        if (!html.includes(before)) {
+          throw new Error(`Correction impossible : ${label} introuvable`);
+        }
+        return html.replace(before, after);
+      }
+
+      function patchCopyPasteV1010(html) {
+        let patched = html;
+
+        patched = replaceRequired(patched, '<span class="version-pill">V10.9</span>', '<span class="version-pill">V10.10</span>', 'numéro de version');
+        patched = replaceRequired(patched, 'const APP_RELEASE="10.9";', 'const APP_RELEASE="10.10";', 'version interne');
+        patched = replaceRequired(patched, 'Clair Courses — Version 10.9 stable', 'Clair Courses — Version 10.10 test', 'version des réglages');
+
+        patched = replaceRequired(
+          patched,
+          '<button class="primary-action alt" id="quick-chat" type="button"><span>✨</span>Coller depuis Chat</button>',
+          '<button class="primary-action alt" id="quick-chat" type="button"><span>📋</span>Coller une liste</button>',
+          'bouton principal de collage'
+        );
+        patched = replaceRequired(patched, '<span class="action-icon">✨</span><span>Chat</span>', '<span class="action-icon">📋</span><span>Coller</span>', 'bouton inférieur de collage');
+        patched = replaceRequired(patched, 'Coller la liste préparée par Chat', 'Coller une liste de courses', 'titre de la fenêtre de collage');
+        patched = replaceRequired(patched, 'Ajoutez un article ou collez la liste préparée avec Chat.', 'Ajoutez un article ou collez une liste de courses.', 'texte de la liste vide');
+        patched = replaceRequired(patched, 'Ajoutez un article, collez la liste préparée avec Chat ou ouvrez Mes produits.', 'Ajoutez un article, collez une liste de courses ou ouvrez Mes produits.', 'aide de la liste vide');
+        patched = replaceRequired(
+          patched,
+          '<label>Liste de courses<span class="label-hint">Les titres de rayons ne deviennent jamais des articles.</span><textarea class="field" id="chat-text"',
+          '<label>Liste de courses<span class="label-hint">Les mesures de recette sont converties en produits à acheter. Les choix mémorisés se règlent dans « Mes produits ».</span><textarea class="field" id="chat-text"',
+          'aide de la zone de collage'
+        );
+
+        patched = replaceRequired(
+          patched,
+          'const DEFAULT_PRODUCTS=[\n    {name:"Eau",quantity:"",aisle:"Eau"},{name:"Pain",quantity:"",aisle:"Boulangerie"},\n    {name:"Lait",quantity:"",aisle:"Crèmerie"},{name:"Beurre",quantity:"",aisle:"Crèmerie"},\n    {name:"Café",quantity:"",aisle:"Épicerie"},{name:"Papier aluminium",quantity:"",aisle:"Maison"},\n    {name:"Sacs-poubelle",quantity:"",aisle:"Maison"},{name:"Courgettes",quantity:"à l’unité | filet de 4/5",aisle:"Fruits et légumes"}\n  ];',
+          'const DEFAULT_PRODUCTS=[\n    {name:"Eau",quantity:"",aisle:"Eau"},{name:"Pain",quantity:"",aisle:"Boulangerie"},\n    {name:"Lait",quantity:"",aisle:"Crèmerie"},{name:"Beurre",quantity:"",aisle:"Crèmerie"},\n    {name:"Café",quantity:"",aisle:"Épicerie"},{name:"Papier aluminium",quantity:"",aisle:"Maison"},\n    {name:"Sacs-poubelle",quantity:"",aisle:"Maison"},{name:"Courgettes",quantity:"à l’unité | filet de 4/5",aisle:"Fruits et légumes"},\n    {name:"Câpres",quantity:"1 pot",aisle:"Épicerie"},{name:"Moutarde",quantity:"1 pot",aisle:"Épicerie"},\n    {name:"Jus de veau",quantity:"1 pot",aisle:"Épicerie"},{name:"Crème liquide",quantity:"1 brique",aisle:"Crèmerie"},\n    {name:"Crème fraîche",quantity:"1 pot",aisle:"Crèmerie"},{name:"Concentré de tomate",quantity:"1 tube",aisle:"Épicerie"},\n    {name:"Bouillon",quantity:"1 boîte",aisle:"Épicerie"},{name:"Lait de coco",quantity:"1 boîte",aisle:"Épicerie"},\n    {name:"Sauce soja",quantity:"1 bouteille",aisle:"Épicerie"}\n  ];',
+          'produits de conditionnement'
+        );
+
+        patched = replaceRequired(
+          patched,
+          '"Épicerie":["café","céréale","chocolat","biscuit","farine","huile","moutarde","pâtes","riz","semoule","sel","sucre","thé","vinaigre","épice","sauce","condiment","gnocchi"],',
+          '"Épicerie":["café","céréale","chocolat","biscuit","farine","huile","moutarde","pâtes","riz","semoule","sel","sucre","thé","vinaigre","épice","sauce","condiment","gnocchi","câpre","câpres","jus de veau","fond de veau","concentré de tomate","bouillon","lait de coco"],',
+          'classement des produits conditionnés'
+        );
+
+        const oldParseChat = '  function parseChat(text){let aisle=null;const rows=[];for(const raw of String(text||"").split(/\\r?\\n/)){const parsed=parseLine(raw,aisle);if(!parsed||parsed.skip)continue;if(parsed.heading){aisle=parsed.heading;continue}parsed.aisle=resolveAisle(parsed.name,parsed.quantity,parsed.aisle||aisle);if(!fakeHeading(parsed))rows.push(parsed)}return rows}';
+        const newParseChat = `  const PURCHASE_RULES=[
+    {name:"Crème fraîche",aliases:["creme fraiche"],quantity:"1 pot",aisle:"Crèmerie"},
+    {name:"Crème liquide",aliases:["creme liquide","creme fleurette"],quantity:"1 brique",aisle:"Crèmerie"},
+    {name:"Câpres",aliases:["capre","capres"],quantity:"1 pot",aisle:"Épicerie"},
+    {name:"Moutarde",aliases:["moutarde"],quantity:"1 pot",aisle:"Épicerie"},
+    {name:"Jus de veau",aliases:["jus de veau","jus veau","fond de veau","fond veau"],quantity:"1 pot",aisle:"Épicerie"},
+    {name:"Concentré de tomate",aliases:["concentre de tomate","concentre tomate"],quantity:"1 tube",aisle:"Épicerie"},
+    {name:"Bouillon",aliases:["cube de bouillon","bouillon cube","bouillon de volaille","bouillon de boeuf","bouillon de legumes"],quantity:"1 boîte",aisle:"Épicerie"},
+    {name:"Lait de coco",aliases:["lait de coco"],quantity:"1 boîte",aisle:"Épicerie"},
+    {name:"Sauce soja",aliases:["sauce soja","sauce de soja"],quantity:"1 bouteille",aisle:"Épicerie"},
+    {name:"Crème",aliases:["creme"],quantity:"1 brique",aisle:"Crèmerie"}
+  ];
+  function spoonIngredient(raw){const line=clean(String(raw||"").replace(/^\\s*[-•·▪▫◦‣⁃–—*✓✔☐☑]+\\s*/,"").replace(/\\*\\*/g,""),220);const match=line.match(/^(?:\\d+(?:[.,]\\d+)?|[¼½¾])\\s*(?:(?:c(?:uill(?:e|è)re)?s?|cuill(?:e|è)res?)\\.?\\s*(?:a|à)\\s*(?:soupe|cafe|café)|c\\.?\\s*(?:a|à)\\s*(?:soupe|cafe|café)|cas|cac)\\s*(?:de|d[’'])?\\s+(.+)$/i);return match?clean(match[1],140):""}
+  function isRecipeMeasure(raw){const line=clean(String(raw||"").replace(/^\\s*[-•·▪▫◦‣⁃–—*✓✔☐☑]+\\s*/,""),220);return Boolean(spoonIngredient(line)||/^(?:\\d+(?:[.,]\\d+)?|[¼½¾])\\s*(?:kg|g|l|cl|ml)\\b/i.test(line))}
+  function purchaseRuleFor(name){return PURCHASE_RULES.find(rule=>rule.aliases.some(alias=>hasSemanticKeyword(name,alias)))||null}
+  function savedPurchaseProduct(name){return state.products.find(product=>productKey(product.name)===productKey(name))||null}
+  function firstProductChoice(product){const choices=productChoices(product);return choices[0]||clean(product?.quantity,80)}
+  function purchaseRow(parsed,raw){let row={...parsed};const spoon=spoonIngredient(raw);if(spoon){row.name=spoon.charAt(0).toUpperCase()+spoon.slice(1);row.quantity=""}const rule=purchaseRuleFor(row.name);if(rule){const saved=savedPurchaseProduct(rule.name);return {name:saved?.name||rule.name,quantity:firstProductChoice(saved)||rule.quantity,aisle:saved?.aisle||rule.aisle}}const saved=savedPurchaseProduct(row.name);if(saved&&firstProductChoice(saved)&&isRecipeMeasure(raw))return {name:saved.name,quantity:firstProductChoice(saved),aisle:saved.aisle};return row}
+  function ensurePurchaseProducts(){for(const rule of PURCHASE_RULES){if(!savedPurchaseProduct(rule.name))state.products.push(makeProduct({name:rule.name,quantity:rule.quantity,aisle:rule.aisle}))}}
+  function parseChat(text){let aisle=null;const rows=[];for(const raw of String(text||"").split(/\\r?\\n/)){const parsed=parseLine(raw,aisle);if(!parsed||parsed.skip)continue;if(parsed.heading){aisle=parsed.heading;continue}const purchased=purchaseRow(parsed,raw);purchased.aisle=resolveAisle(purchased.name,purchased.quantity,purchased.aisle||aisle,raw);if(!fakeHeading(purchased))rows.push(purchased)}return rows}`;
+        patched = replaceRequired(patched, oldParseChat, newParseChat, 'conversion des mesures de recette');
+
+        patched = replaceRequired(
+          patched,
+          '  let state=loadState();\n  let usage=loadJson(USAGE_KEY,{});',
+          '  let state=loadState();\n  ensurePurchaseProducts();\n  let usage=loadJson(USAGE_KEY,{});',
+          'mémorisation des conditionnements'
+        );
+
+        patched = replaceRequired(patched, '<body>', '<body data-v1010-copy-paste="true">', 'marqueur de la version');
+        return patched;
+      }
+
+      async function installWorker() {
+        if (!("serviceWorker" in navigator) || location.protocol === 'file:') return;
+        try {
+          const registration = await navigator.serviceWorker.register('./sw.js');
+          await registration.update();
+        } catch (_) {
+          // La liste reste utilisable même sans mode hors connexion.
+        }
+      }
+
+      async function fetchStableSource() {
+        let lastError = null;
+        for (const url of SOURCES) {
+          try {
+            const response = await fetch(url, { cache:'no-store', mode:'cors' });
+            if (!response.ok) throw new Error(`Réponse ${response.status}`);
+            const html = await response.text();
+            if (!isValidSource(html)) throw new Error('Source reçue incomplète');
+            return html;
+          } catch (error) {
+            lastError = error;
+          }
+        }
+        throw lastError || new Error('Source stable inaccessible');
+      }
+
+      async function readSavedSource() {
+        if (!("caches" in window)) return null;
+        const cache = await caches.open(SOURCE_CACHE);
+        const saved = await cache.match(SOURCE_KEY);
+        if (!saved) return null;
+        const html = await saved.text();
+        return isValidSource(html) ? html : null;
+      }
+
+      async function saveSource(html) {
+        if (!("caches" in window)) return;
+        const cache = await caches.open(SOURCE_CACHE);
+        await cache.put(SOURCE_KEY, new Response(html, { headers:{'content-type':'text/html; charset=utf-8'} }));
+      }
+
+      function showFailure(message) {
+        loader.style.display = 'none';
+        status.textContent = 'Clair Courses V10.10 n’a pas pu s’ouvrir.';
+        errorBox.style.display = 'block';
+        errorBox.textContent = message;
+      }
+
+      async function boot() {
+        await installWorker();
+        let html = null;
+        try {
+          html = await fetchStableSource();
+          await saveSource(html);
+        } catch (_) {
+          html = await readSavedSource();
+        }
+        if (!html) {
+          showFailure('Une connexion est nécessaire lors de la toute première ouverture. Votre liste actuelle reste intacte.');
+          return;
+        }
+        const patchedHtml = patchCopyPasteV1010(html);
+        status.textContent = 'Clair Courses V10.10 est prêt.';
+        document.open();
+        document.write(patchedHtml);
+        document.close();
+      }
+
+      boot().catch(error => showFailure(error?.message || 'Rechargez cette page une fois.'));
+    })();
+  </script>
+</body>
+</html>
