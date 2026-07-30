@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f4ed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Clair Courses">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Clair Courses — V10.12 test corrigé</title>
+  <style>
+    :root{color-scheme:light;--bg:#f6f4ed;--surface:#fffefa;--text:#203128;--muted:#66736b;--accent:#2f6b4f;--danger:#8b3c35}
+    *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;display:grid;place-items:center;padding:28px;color:var(--text);background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .boot{width:min(520px,100%);padding:30px 24px;border-radius:26px;background:var(--surface);text-align:center;box-shadow:0 18px 45px rgba(36,61,48,.12)}
+    .mark{width:62px;height:62px;margin:0 auto 18px;display:grid;place-items:center;border-radius:18px;color:#fff;background:var(--accent);font-size:30px}
+    h1{margin:0 0 10px;font-size:29px}p{margin:0;color:var(--muted);line-height:1.5}.loader{width:42px;height:42px;margin:24px auto 0;border:4px solid rgba(47,107,79,.15);border-top-color:var(--accent);border-radius:50%;animation:spin .85s linear infinite}.error{display:none;margin-top:20px;padding:14px;border-radius:14px;color:#6f2f2a;background:#f3e1dc;text-align:left}@keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <main class="boot" aria-live="polite">
+    <div class="mark">🛒</div>
+    <h1>Clair Courses</h1>
+    <p id="status">Ouverture de la V10.12 corrigée…</p>
+    <div class="loader" id="loader" aria-hidden="true"></div>
+    <div class="error" id="error"></div>
+  </main>
+<script>
+(()=>{
+  'use strict';
+  const STABLE_COMMIT='acb52ba8f4b1f9d78f2c3f55c2d3d6362342bca0';
+  const SOURCES=[
+    `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${STABLE_COMMIT}/index.html?v=1012`,
+    `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${STABLE_COMMIT}/index.html?v=1012`
+  ];
+  const SOURCE_CACHE=`clair-courses-source-${STABLE_COMMIT}-v1012-corrected`;
+  const SOURCE_KEY=new Request('./source-v109-v1012-corrected.html');
+  const status=document.getElementById('status');
+  const loader=document.getElementById('loader');
+  const errorBox=document.getElementById('error');
+
+  function valid(html){return typeof html==='string'&&html.length>15000&&html.includes('<!doctype html>')&&html.includes('const APP_VERSION=1009;')&&html.includes('function parseChat')&&html.includes('function importChat')&&!html.includes('data-v1012-corrected')}
+  function req(html,before,after,label){if(!html.includes(before))throw new Error(`Correction impossible : ${label} introuvable`);return html.replace(before,after)}
+  function injectBeforeBodyEnd(html,code){const marker='</body>';if(!html.includes(marker))throw new Error('Fin de page introuvable');return html.replace(marker,`${code}\n${marker}`)}
+
+  function patch(html){
+    let p=html;
+    p=req(p,'<span class="version-pill">V10.9</span>','<span class="version-pill">V10.12</span>','numéro de version');
+    p=req(p,'const APP_RELEASE="10.9";','const APP_RELEASE="10.12";','version interne');
+    p=req(p,'Clair Courses — Version 10.9 stable','Clair Courses — Version 10.12 test corrigé','version des réglages');
+    p=req(p,'<button class="primary-action alt" id="quick-chat" type="button"><span>✨</span>Coller depuis Chat</button>','<button class="primary-action" id="quick-chat" type="button"><span>📋</span>Coller une liste</button>','bouton principal');
+    p=req(p,'<span class="action-icon">✨</span><span>Chat</span>','<span class="action-icon">📋</span><span>Coller</span>','bouton inférieur');
+    p=req(p,'Coller la liste préparée par Chat','Coller la liste copiée','titre de collage');
+    p=req(p,'Ajoutez un article ou collez la liste préparée avec Chat.','Ajoutez un article ou collez une liste de courses.','texte liste vide');
+    p=req(p,'Ajoutez un article, collez la liste préparée avec Chat ou ouvrez Mes produits.','Ajoutez un article, collez une liste de courses ou ouvrez Mes produits.','aide liste vide');
+    p=req(p,'<label>Liste de courses<span class="label-hint">Les titres de rayons ne deviennent jamais des articles.</span><textarea class="field" id="chat-text"','<label>Liste de courses<span class="label-hint">Touchez « Coller le texte copié », puis « Ajouter la liste ».</span><textarea class="field" id="chat-text"','aide collage');
+    p=req(p,'<button class="secondary-button" id="paste-button" type="button">Coller depuis le presse-papiers</button>','<button class="primary-button" id="paste-button" type="button">📋 Coller le texte copié</button><p id="paste-help" style="margin:-4px 0 0;color:#66736b;font-size:.88rem;line-height:1.4">Les mesures de recette seront converties au moment de l’ajout.</p>','bouton presse-papiers');
+
+    p=req(p,
+`  function classify(label){
+    for(const aisle of CLASSIFICATION_ORDER){if((KEYWORDS[aisle]||[]).some(word=>hasSemanticKeyword(label,word)))return aisle}
+    return "Divers";
+  }`,
+`  function classify(label){
+    if(["câpre","capre","jus de veau","fond de veau","concentré de tomate","concentre de tomate","bouillon","lait de coco","sauce soja","moutarde","huile d olive","vinaigre"].some(word=>hasSemanticKeyword(label,word)))return "Épicerie";
+    if(["crème liquide","creme liquide","crème fraîche","creme fraiche","crème fleurette","creme fleurette"].some(word=>hasSemanticKeyword(label,word)))return "Crèmerie";
+    for(const aisle of CLASSIFICATION_ORDER){if((KEYWORDS[aisle]||[]).some(word=>hasSemanticKeyword(label,word)))return aisle}
+    return "Divers";
+  }`,'classement prioritaire');
+
+    p=req(p,'<body>','<body data-v1012-corrected="true">','marqueur');
+
+    const safeEnhancement=`<style id="v1012-ui-fix">
+#quick-chat{background:#2f6b4f!important;color:#fff!important;opacity:1!important;pointer-events:auto!important}
+#paste-button{min-height:54px;opacity:1!important;pointer-events:auto!important}
+#chat-text{min-height:210px}
+</style>
+<script id="v1012-conversion-script">(()=>{
+ const byId=id=>document.getElementById(id);
+ const plain=value=>String(value||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[’']/g,' ').replace(/[^a-z0-9]+/g,' ').trim();
+ const has=(text,phrase)=>(' '+text+' ').includes(' '+phrase+' ');
+ const rules=[
+  {aliases:['creme fraiche'],line:'Crème fraîche — 1 pot'},
+  {aliases:['creme liquide','creme fleurette'],line:'Crème liquide — 1 brique'},
+  {aliases:['jus de veau','fond de veau'],line:'Jus de veau — 1 pot'},
+  {aliases:['concentre de tomate'],line:'Concentré de tomate — 1 tube'},
+  {aliases:['lait de coco'],line:'Lait de coco — 1 boîte'},
+  {aliases:['sauce soja','sauce de soja'],line:'Sauce soja — 1 bouteille'},
+  {aliases:['cube de bouillon','bouillon'],line:'Bouillon — 1 boîte'},
+  {aliases:['capre','capres'],line:'Câpres — 1 pot'},
+  {aliases:['moutarde'],line:'Moutarde — 1 pot'},
+  {aliases:['huile d olive'],line:'Huile d’olive — 1 bouteille'},
+  {aliases:['vinaigre'],line:'Vinaigre — 1 bouteille'},
+  {aliases:['creme'],line:'Crème liquide — 1 brique'}
+ ];
+ const convertLine=raw=>{const key=plain(raw);if(!key)return raw;for(const rule of rules){if(rule.aliases.some(alias=>has(key,alias)))return rule.line}return raw};
+ const convertText=text=>String(text||'').split(/\\r?\\n/).map(convertLine).join('\\n');
+ const area=byId('chat-text'),form=byId('chat-form'),help=byId('paste-help');
+ if(form&&area){form.addEventListener('submit',()=>{area.value=convertText(area.value);area.dispatchEvent(new Event('input',{bubbles:true}));if(help)help.textContent='Liste convertie et ajoutée dans les rayons.'},true)}
+ window.__V1012_READY__=Boolean(byId('quick-chat')&&form&&area&&byId('paste-button'));
+})();<\/script>`;
+    p=injectBeforeBodyEnd(p,safeEnhancement);
+    return p;
+  }
+
+  async function fetchSource(){let last=null;for(const url of SOURCES){try{const r=await fetch(url,{cache:'no-store',mode:'cors'});if(!r.ok)throw new Error(`Réponse ${r.status}`);const h=await r.text();if(!valid(h))throw new Error('Source incomplète');return h}catch(e){last=e}}throw last||new Error('Source inaccessible')}
+  async function readCache(){if(!('caches'in window))return null;const c=await caches.open(SOURCE_CACHE);const r=await c.match(SOURCE_KEY);if(!r)return null;const h=await r.text();return valid(h)?h:null}
+  async function saveCache(h){if(!('caches'in window))return;const c=await caches.open(SOURCE_CACHE);await c.put(SOURCE_KEY,new Response(h,{headers:{'content-type':'text/html;charset=utf-8'}}))}
+  function fail(m){loader.style.display='none';status.textContent='Clair Courses V10.12 n’a pas pu s’ouvrir.';errorBox.style.display='block';errorBox.textContent=m}
+  async function boot(){let h=null;try{h=await fetchSource();await saveCache(h)}catch(_){h=await readCache()}if(!h){fail('Une connexion est nécessaire lors de la première ouverture. Votre liste actuelle reste intacte.');return}const out=patch(h);status.textContent='Clair Courses V10.12 est prêt.';document.open();document.write(out);document.close()}
+  boot().catch(e=>fail(e?.message||'Rechargez cette page une fois.'));
+})();
+</script>
+</body>
+</html>
