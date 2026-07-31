@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f4ed">
+<title>Clair Courses V11.2 test</title>
+<style>
+html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center}
+.boot strong{font-size:1.35rem}.boot p{color:#66736b;line-height:1.45}
+</style>
+</head>
+<body>
+<div class="boot" id="boot"><div><strong>Clair Courses V11.2 test</strong><p>Ouverture de la version de test protégée…</p></div></div>
+<script>
+(async()=>{
+'use strict';
+
+const COMMIT='acb52ba8f4b1f9d78f2c3f55c2d3d6362342bca0';
+const CACHE_KEY='clairCourses.shell.v11.2.test';
+const SOURCES=[
+  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${COMMIT}/index.html?v=112t`,
+  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${COMMIT}/index.html?v=112t`
+];
+
+let html='';
+for(const url of SOURCES){
+  try{
+    const r=await fetch(url,{cache:'no-store'});
+    if(r.ok){
+      const t=await r.text();
+      if(t.includes('const APP_VERSION=1009;')){
+        html=t;
+        try{localStorage.setItem(CACHE_KEY,t)}catch{}
+        break;
+      }
+    }
+  }catch{}
+}
+
+if(!html){
+  try{html=localStorage.getItem(CACHE_KEY)||''}catch{}
+}
+if(!html){
+  document.getElementById('boot').innerHTML=
+    '<div><strong>Clair Courses ne peut pas s’ouvrir.</strong><p>Vérifiez la connexion, puis rechargez la page.</p></div>';
+  return;
+}
+
+/* Protection existante de « Mes produits » */
+const protection=`
+const PRODUCTS_SHADOW_KEY="clairCourses.products.secours.v109";
+function recoverSavedProducts(){
+  const candidates=[];
+  const add=value=>{
+    if(!Array.isArray(value))return;
+    const cleaned=value.map(makeProduct).filter(Boolean);
+    if(cleaned.length)candidates.push(cleaned);
+  };
+  try{add(JSON.parse(localStorage.getItem(PRODUCTS_SHADOW_KEY)||"[]"))}catch{}
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i); if(!key)continue;
+      let data=null; try{data=JSON.parse(localStorage.getItem(key)||"null")}catch{continue}
+      if(Array.isArray(data)){add(data);continue}
+      if(data&&typeof data==="object"){
+        add(data.products);add(data.favorites);add(data.habituels);add(data.favourites);add(data.favoris);
+        if(data.data&&typeof data.data==="object"){
+          add(data.data.products);add(data.data.favorites);add(data.data.habituels);
+        }
+      }
+    }
+  }catch{}
+  candidates.sort((a,b)=>b.length-a.length);
+  return candidates[0]||[];
+}
+`;
+
+html=html.replace(
+  'let state=loadState();',
+  protection+`
+let state=loadState();
+{
+  const recovered=recoverSavedProducts();
+  if(recovered.length>state.products.length){
+    state.products=uniqueProducts([...recovered,...state.products]);
+  }
+}`
+);
+
+html=html.replace(
+  'function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify({appVersion:APP_VERSION,release:APP_RELEASE,items:state.items,products:state.products,favorites:state.products}))}',
+  'function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify({appVersion:APP_VERSION,release:APP_RELEASE,items:state.items,products:state.products,favorites:state.products}));try{localStorage.setItem(PRODUCTS_SHADOW_KEY,JSON.stringify(state.products))}catch{}}'
+);
+
+/* 1. Titres de recette à ne jamais importer comme articles */
+html=html.replace(
+  'const NON_ARTICLE_HEADINGS=new Set(["liste","courses","liste des courses","liste de courses","a acheter","achats"]);',
+  'const NON_ARTICLE_HEADINGS=new Set(["liste","courses","liste des courses","liste de courses","a acheter","achats","le poisson","la viande","les legumes","les légumes","le beurre blanc","la sauce","la garniture","l accompagnement","accompagnement"]);'
+);
+
+/* 2. Regroupement par produit réel, sans tenir compte des précisions secondaires */
+html=html.replace(
+  'function productKey(value){const n=normalize(value);return NAME_ALIASES[n]||n}',
+  `function productKey(value){
+    let n=normalize(value)
+      .replace(/\\([^)]*\\)/g," ")
+      .replace(/^(?:le|la|les|un|une|des)\\s+/," ")
+      .replace(/\\s+/g," ")
+      .trim();
+
+    if(/\\bbeurre\\b/.test(n)) return "beurre";
+    if(/\\blieu jaune\\b/.test(n)&&/\\bpaves?\\b/.test(n)) return "pave lieu jaune";
+    if(/\\btomates?\\b/.test(n)&&/\\banciennes?\\b/.test(n)) return "tomate ancienne";
+    if(/\\bechalotes?\\b/.test(n)) return "echalote";
+    if(/\\bharicots? verts?\\b/.test(n)) return "haricot vert";
+    if(/\\bpommes? de terre\\b/.test(n)) return "pomme de terre";
+    if(/\\bvin blanc\\b/.test(n)) return "vin blanc";
+    if(/\\bfleur de sel\\b/.test(n)) return "fleur de sel";
+    if(/\\bpoivre(?: du moulin)?\\b/.test(n)) return "poivre";
+    return NAME_ALIASES[n]||n;
+  }`
+);
+
+/* 3. Classement prioritaire des produits visibles dans les tests */
+html=html.replace(
+  'function classify(label){\n    for(const aisle of CLASSIFICATION_ORDER){if((KEYWORDS[aisle]||[]).some(word=>hasSemanticKeyword(label,word)))return aisle}\n    return "Divers";\n  }',
+  `function classify(label){
+    const n=normalize(label);
+    if(/\\b(?:echalote|echalotes|haricot vert|haricots verts|tomate|tomates|pomme de terre|pommes de terre|ail)\\b/.test(n))return "Fruits et légumes";
+    if(/\\b(?:lieu jaune|poisson|saumon|cabillaud|dorade|thon)\\b/.test(n))return "Poissonnerie";
+    if(/\\b(?:beurre|creme|crème|lait|fromage)\\b/.test(n))return "Crèmerie";
+    if(/\\b(?:vin blanc|muscadet|vin rouge|cidre|biere|bière)\\b/.test(n))return "Boissons";
+    if(/\\b(?:huile d olive|vinaigre|fleur de sel|sel|poivre)\\b/.test(n))return "Épicerie";
+    for(const aisle of CLASSIFICATION_ORDER){
+      if((KEYWORDS[aisle]||[]).some(word=>hasSemanticKeyword(label,word)))return aisle;
+    }
+    return "Divers";
+  }`
+);
+
+
+/* 4. Afficher le conditionnement d'achat pour le vin, tout en gardant
+      la quantité exacte de la recette en mémoire pour les regroupements. */
+html=html.replace('function renderItems(){','function renderItemsBase(){');
+
+html=html.replace(
+  'function renderProducts(){',
+  `function purchaseDisplayQuantity(item){
+    const exact=clean(item?.quantity,80);
+    const parsed=parseQuantity(exact);
+    const name=normalize(item?.name);
+    if(parsed&&parsed.kind==="volume"&&/(?:^| )(?:vin|muscadet)(?: |$)/.test(name)){
+      const bottles=Math.max(1,Math.ceil(parsed.base/750));
+      return \`${"${bottles}"} bouteille${"${bottles>1?\"s\":\"\"}"}\`;
+    }
+    return exact;
+  }
+  function withPurchaseQuantities(callback){
+    const originals=state.items.map(item=>[item,item.quantity]);
+    for(const [item] of originals)item.quantity=purchaseDisplayQuantity(item);
+    try{return callback()}
+    finally{for(const [item,quantity] of originals)item.quantity=quantity}
+  }
+  function renderItems(){return withPurchaseQuantities(()=>renderItemsBase())}
+  function renderProducts(){`
+);
+
+html=html.replace('function buildShareText(){','function buildShareTextBase(){');
+
+html=html.replace(
+  '  async function shareList(){',
+  `  function buildShareText(){return withPurchaseQuantities(()=>buildShareTextBase())}
+  async function shareList(){`
+);
+
+/* Identification claire de la version de test */
+html=html.replace(
+  '</body>',
+  `<script>
+  (()=>{try{
+    const badge=document.querySelector('.version-pill');
+    if(badge)badge.textContent='V11.2 TEST';
+    document.title='Clair Courses V11.2 test';
+  }catch{}})();
+  <\/script></body>`
+);
+
+document.open();
+document.write(html);
+document.close();
+})();
+</script>
+</body>
+</html>
