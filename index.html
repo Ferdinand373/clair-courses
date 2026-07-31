@@ -138,6 +138,41 @@ html=html.replace(
   }`
 );
 
+
+/* 4. Afficher le conditionnement d'achat pour le vin, tout en gardant
+      la quantité exacte de la recette en mémoire pour les regroupements. */
+html=html.replace('function renderItems(){','function renderItemsBase(){');
+
+html=html.replace(
+  'function renderProducts(){',
+  `function purchaseDisplayQuantity(item){
+    const exact=clean(item?.quantity,80);
+    const parsed=parseQuantity(exact);
+    const name=normalize(item?.name);
+    if(parsed&&parsed.kind==="volume"&&/(?:^| )(?:vin|muscadet)(?: |$)/.test(name)){
+      const bottles=Math.max(1,Math.ceil(parsed.base/750));
+      return \`${"${bottles}"} bouteille${"${bottles>1?\"s\":\"\"}"}\`;
+    }
+    return exact;
+  }
+  function withPurchaseQuantities(callback){
+    const originals=state.items.map(item=>[item,item.quantity]);
+    for(const [item] of originals)item.quantity=purchaseDisplayQuantity(item);
+    try{return callback()}
+    finally{for(const [item,quantity] of originals)item.quantity=quantity}
+  }
+  function renderItems(){return withPurchaseQuantities(()=>renderItemsBase())}
+  function renderProducts(){`
+);
+
+html=html.replace('function buildShareText(){','function buildShareTextBase(){');
+
+html=html.replace(
+  '  async function shareList(){',
+  `  function buildShareText(){return withPurchaseQuantities(()=>buildShareTextBase())}
+  async function shareList(){`
+);
+
 /* Identification claire de la version de test */
 html=html.replace(
   '</body>',
