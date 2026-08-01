@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f4ed">
-<title>Clair Courses V11.2</title>
+<title>Clair Courses V11.3</title>
 <style>
 html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center}
@@ -10,16 +10,16 @@ html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:
 </style>
 </head>
 <body>
-<div class="boot" id="boot"><div><strong>Clair Courses V11.2</strong><p>Ouverture et protection de « Mes produits »…</p></div></div>
+<div class="boot" id="boot"><div><strong>Clair Courses V11.3</strong><p>Ouverture et protection de « Mes produits »…</p></div></div>
 <script>
 (async()=>{
 'use strict';
 
 const COMMIT='acb52ba8f4b1f9d78f2c3f55c2d3d6362342bca0';
-const CACHE_KEY='clairCourses.shell.v11.2.production';
+const CACHE_KEY='clairCourses.shell.v11.3.production';
 const SOURCES=[
-  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${COMMIT}/index.html?v=112p`,
-  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${COMMIT}/index.html?v=112p`
+  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${COMMIT}/index.html?v=113p`,
+  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${COMMIT}/index.html?v=113p`
 ];
 
 let html='';
@@ -173,14 +173,14 @@ html=html.replace(
   async function shareList(){`
 );
 
-/* Identification claire de la version de production */
+/* Identification claire de la version définitive */
 html=html.replace(
   '</body>',
   `<script>
   (()=>{try{
     const badge=document.querySelector('.version-pill');
-    if(badge)badge.textContent='V11.2';
-    document.title='Clair Courses V11.2';
+    if(badge)badge.textContent='V11.3';
+    document.title='Clair Courses V11.3';
   }catch{}})();
   <\/script></body>`
 );
