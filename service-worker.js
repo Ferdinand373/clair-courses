@@ -1,5 +1,78 @@
 "use strict";
-const VERSION="8.03.0-final",CACHE="clair-courses-"+VERSION,FILES=["./","./index.html","./manifest.webmanifest","./assets/icon.svg","./assets/icon-180.png","./assets/icon-192.png","./assets/icon-512.png"];
-self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES.map(x=>new Request(x,{cache:"reload"})))))});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("clair-courses-")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener("fetch",e=>{const r=e.request,u=new URL(r.url);if(r.method!=="GET"||u.origin!==location.origin)return;if(r.mode==="navigate"){e.respondWith(fetch(r,{cache:"no-store"}).then(res=>{if(res.ok)caches.open(CACHE).then(c=>c.put("./index.html",res.clone()));return res}).catch(()=>caches.match("./index.html").then(x=>x||caches.match("./"))));return}e.respondWith(caches.match(r).then(cached=>cached||fetch(r).then(res=>{if(res.ok)caches.open(CACHE).then(c=>c.put(r,res.clone()));return res})))});
+
+const CACHE_NAME = "clair-courses-v11.4";
+const CORE_FILES = [
+  "./",
+  "./index.html",
+  "./import.html",
+  "./manifest.webmanifest",
+  "./assets/icon.svg",
+  "./assets/icon-180.png",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png"
+];
+
+self.addEventListener("install", event => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    for (const path of CORE_FILES) {
+      try {
+        const response = await fetch(new Request(path, { cache: "reload" }));
+        if (response.ok) await cache.put(path, response.clone());
+      } catch (_) {}
+    }
+    await self.skipWaiting();
+  })());
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil((async () => {
+    const names = await caches.keys();
+    await Promise.all(
+      names
+        .filter(name =>
+          (name.startsWith("clair-courses-") || name.startsWith("mon-carnet-cuisine-"))
+          && name !== CACHE_NAME
+        )
+        .map(name => caches.delete(name))
+    );
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener("fetch", event => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (request.mode === "navigate") {
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request, { cache: "no-store" });
+        if (response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, response.clone());
+        }
+        return response;
+      } catch (_) {
+        return (await caches.match(request))
+          || (await caches.match("./index.html"))
+          || (await caches.match("./"))
+          || Response.error();
+      }
+    })());
+    return;
+  }
+
+  event.respondWith((async () => {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  })());
+});

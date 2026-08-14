@@ -2,14 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f4ed">
-<title>Import vers Clair Courses V11.3</title>
+<title>Import vers Clair Courses V11.4</title>
 <style>
 :root{--bg:#f6f4ed;--surface:#fffefa;--text:#203128;--muted:#66736b;--accent:#2f6b4f;--line:#d9ded7}
 *{box-sizing:border-box}body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;color:var(--text);background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 main{width:min(440px,100%);padding:26px;border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:0 16px 45px rgba(36,61,48,.12);text-align:center}
 .icon{font-size:42px}h1{margin:12px 0 8px;font-size:1.45rem}p{margin:0;color:var(--muted);line-height:1.5}.status{margin-top:14px;color:var(--accent);font-weight:800}a{display:inline-flex;min-height:48px;margin-top:18px;padding:0 18px;align-items:center;justify-content:center;border-radius:13px;color:#fff;background:var(--accent);font-weight:850;text-decoration:none}
 </style></head>
-<body><main><div class="icon">🛒</div><h1>Clair Courses</h1><p id="message">Réception de la liste depuis Mon Carnet…</p><div class="status" id="status">Import en cours</div><a id="openButton" href="./" hidden>Ouvrir Clair Courses</a></main>
+<body><main><div class="icon">🛒</div><h1>Clair Courses</h1><p id="message">Réception de la liste validée…</p><div class="status" id="status">Import en cours</div><a id="openButton" href="./" hidden>Ouvrir Clair Courses</a></main>
 <script>
 (()=>{"use strict";
 const STORAGE="clairCourses.state",HISTORY="clairCourses.monCarnet.importHistory.v1",PREFIX="monCarnet.clairCourses.transfer.v1:";

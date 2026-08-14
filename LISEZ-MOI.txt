@@ -1,9 +1,12 @@
-CLAIR COURSES V8.01
+CLAIR COURSES V11.4 — CORRECTIF DES PRODUITS PARASITES
 
-Cette étape ajoute le nouvel écran d’accueil :
-- résumé des articles et rayons restants ;
-- estimation simple du temps de courses ;
-- grand bouton « Commencer les courses » ;
-- accès direct à « Nouvelle liste » et à l’import depuis Chat.
+Remplacer les fichiers de la V11.3 par ceux de cette archive, sans supprimer le dépôt ni les données du navigateur.
 
-Les fonctions existantes sont conservées.
+Au premier démarrage, Clair Courses :
+- conserve les vrais produits et la liste de courses ;
+- retire seulement les identifiants exacts de recettes Clair Repas ajoutés par erreur ;
+- ne parcourt plus les stockages des autres applications ;
+- ne modifie aucune donnée de Clair Repas ni de Mon Carnet.
+
+Commit conseillé :
+Clair Courses V11.4 — corriger les produits parasites issus du stockage partagé
