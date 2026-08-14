@@ -1,12 +1,13 @@
-CLAIR COURSES V11.4 — CORRECTIF DES PRODUITS PARASITES
+CLAIR COURSES V11.5 — CORRECTIF DU TRANSFERT DES RECETTES
 
-Remplacer les fichiers de la V11.3 par ceux de cette archive, sans supprimer le dépôt ni les données du navigateur.
+Remplacer les fichiers de la V11.4 par ceux de cette archive, sans supprimer le dépôt ni les données du navigateur.
 
-Au premier démarrage, Clair Courses :
-- conserve les vrais produits et la liste de courses ;
-- retire seulement les identifiants exacts de recettes Clair Repas ajoutés par erreur ;
-- ne parcourt plus les stockages des autres applications ;
-- ne modifie aucune donnée de Clair Repas ni de Mon Carnet.
+Le correctif :
+- transforme une dose de moutarde issue d’une recette en conditionnement d’achat ;
+- conserve le libellé exact « Moutarde à l’ancienne » ;
+- remplace une ancienne ligne « 1 c. à soupe » au lieu de créer un doublon ;
+- ne touche pas à « Mes produits » ;
+- conserve toutes les protections et données de la V11.4.
 
 Commit conseillé :
-Clair Courses V11.4 — corriger les produits parasites issus du stockage partagé
+Clair Courses V11.5 — corriger le transfert de la moutarde à l’ancienne

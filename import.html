@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f4ed">
-<title>Import vers Clair Courses V11.4</title>
+<title>Import vers Clair Courses V11.5</title>
 <style>
 :root{--bg:#f6f4ed;--surface:#fffefa;--text:#203128;--muted:#66736b;--accent:#2f6b4f;--line:#d9ded7}
 *{box-sizing:border-box}body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;color:var(--text);background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -54,7 +54,10 @@ function packageSpoon(name){
  if(/\bcapres?\b/.test(n))return["Câpres","1 petit bocal","Épicerie","capre"];
  if(/\bcornichons?\b/.test(n))return["Cornichons","1 petit bocal","Épicerie","cornichon"];
  if(/\bketchup\b/.test(n))return["Ketchup","1 flacon","Épicerie","ketchup"];
- if(/\bmoutarde\b/.test(n))return["Moutarde","1 pot","Épicerie","moutarde"];
+ // Une quantité de recette devient un conditionnement d'achat, mais le type
+ // culinaire reste exact : moutarde, moutarde de Dijon et moutarde à
+ // l'ancienne ne doivent jamais être confondues.
+ if(/\bmoutarde\b/.test(n))return[cap(name),"1 pot","Épicerie",productKey(name)];
  if(/\bmayonnaise\b/.test(n))return["Mayonnaise","1 pot","Épicerie","mayonnaise"];
  if(/\bconcentre\s+de\s+tomate\b/.test(n))return["Concentré de tomate","1 tube","Épicerie","concentre de tomate"];
  if(/\b(?:sauce soja|mirin|vinaigre|huile)\b/.test(n))return[cap(name),"1 bouteille","Épicerie",productKey(name)];
@@ -66,8 +69,8 @@ function tidy(v){return cap(clean(v,140).replace(/^\s*(?:du|de la|des|le|la|les|
 function parseLine(raw,current=""){
  let line=clean(String(raw).replace(/^\s*[-•·▪▫◦‣⁃–—*✓✔☐☑]+\s*/,"").replace(/\*\*/g,""));if(!line)return null;
  const cit=citrus(line);if(cit)return cit;
- const sp=line.match(/^(\d+(?:[.,]\d+)?|[½⅓⅔¼¾⅛⅜⅝⅞])\s*(?:c\.?\s*[àa]\s*[sc]\.?|c\.?\s*[àa]\s*(?:soupe|caf[ée])|cuill[èe]res?\s+[àa]\s+(?:soupe|caf[ée]))\s*(?:de\s+|d[’']\s*)?(.+)$/i);
- if(sp){const p=packageSpoon(tidy(sp[2]));if(p)return{name:p[0],quantity:p[1],aisle:p[2],productKey:p[3]}}
+ const sp=line.match(/^(\d+(?:[.,]\d+)?|[½⅓⅔¼¾⅛⅜⅝⅞])\s*(?:c\.?\s*[àa]\s*(?:soupe|caf[ée]|[sc])\.?|cuill[èe]res?\s+[àa]\s+(?:soupe|caf[ée]))\s*(?:de\s+|d[’']\s*)?(.+)$/i);
+ if(sp){const p=packageSpoon(tidy(sp[2]));if(p)return{name:p[0],quantity:p[1],aisle:p[2],productKey:p[3],purchasePackage:true}}
  let name=line,quantity="",m=line.match(/^(.+?)\s+(?:—|–)\s+(.+)$/);
  if(m){name=m[1];quantity=m[2]}else{
   m=line.match(/^(\d+(?:[.,]\d+)?\s*(?:(?:petit(?:e|es|s)?|grand(?:e|es|s)?)\s+)?(?:gousses?|t[eê]tes?|bâtons?|batons?|bo[iî]tes?|bocaux|bocal|paquets?|filets?|flacons?|tubes?|bouteilles?|pots?|tranches?|pi[eè]ces?|barquettes?|sachets?|[eé]pis?|bouquets?|bottes?|kg|cl|ml|g|l))\b\s*(?:de\s+|d[’']\s*)?(.+)$/i);
@@ -80,14 +83,14 @@ function parseText(text){let current="",rows=[];for(const raw of String(text||""
 function contractRows(c){
  if(!c||Number(c.schemaVersion)!==1||!Array.isArray(c.items))return[];
  return c.items.filter(i=>i&&i.selected!==false).map(i=>{
-  const purchase=clean(i.purchaseLabel||i.text||""),parsed=parseLine(purchase,i.aisle||"");let name=clean(i.displayName||parsed?.name||i.productKey||"",140),q=parsed?.quantity||"",a=parsed?.aisle||"Divers",k=clean(i.productKey||"",140)||productKey(name);
+  const purchase=clean(i.purchaseLabel||i.text||""),parsed=parseLine(purchase,i.aisle||"");let name=clean(i.displayName||parsed?.name||i.productKey||"",140),q=parsed?.quantity||"",a=parsed?.aisle||"Divers",k=clean(i.productKey||"",140)||productKey(name),purchasePackage=Boolean(parsed?.purchasePackage);
   const cit=citrus(purchase)||citrus(name);if(cit){name=cit.name;q=cit.quantity;a=cit.aisle;k=cit.productKey}else{
    const spoon=/\bc a (?:s|c|soupe|cafe)\b/.test(norm(i.exactUnit))||/^\s*(?:\d|[½⅓⅔¼¾⅛⅜⅝⅞]).*(?:c\.?\s*[àa]\s*[sc]|cuill[èe]re)/i.test(purchase);
-   if(spoon){const p=packageSpoon(name||parsed?.name||purchase);if(p){name=p[0];q=p[1];a=p[2];k=p[3]}}
+   if(spoon){const p=packageSpoon(name||parsed?.name||purchase);if(p){name=p[0];q=p[1];a=p[2];k=p[3];purchasePackage=true}}
   }
   if(!q&&i.exactQuantity!=null&&i.exactQuantity!==""){const u=clean(i.exactUnit||"",40);q=`${String(i.exactQuantity).replace(".",",")}${u&&u!=="unité"?` ${u}`:""}`}
   const n=norm(`${purchase} ${name} ${q}`);if(/\b(?:jus|fond)\s+de\s+veau\b|\bfumet\s+de\s+poisson\b/.test(n))a="Épicerie";else if(/\b(?:boite|boites|conserve)\b/.test(n)&&/\b(?:thon|sardines?|tomates?|mais|petits? pois|haricots?)\b/.test(n))a="Conserves";else if(AISLES.includes(i.aisle)&&i.aisle!=="Divers")a=i.aisle;
-  return{name:tidy(name),quantity:clean(q,80),aisle:a==="Divers"?aisle(name,q):a,productKey:k||productKey(name)}
+  return{name:tidy(name),quantity:clean(q,80),aisle:a==="Divers"?aisle(name,q):a,productKey:k||productKey(name),purchasePackage}
  }).filter(r=>r.name)
 }
 function fingerprint(v){let h=0x811c9dc5;for(const ch of String(v)){h^=ch.charCodeAt(0);h=Math.imul(h,0x01000193)}return`fnv1a:${(h>>>0).toString(16).padStart(8,"0")}`}
@@ -99,9 +102,23 @@ function readContract(){
 function returnUrl(){const r=new URLSearchParams(location.search).get("return");if(!r)return"./";try{const u=new URL(r,location.href);return u.origin===location.origin?u.toString():"./"}catch{return"./"}}
 function duplicate(fp,ms){if(!fp)return false;const now=Date.now(),h=(json(localStorage.getItem(HISTORY)||"[]",[])||[]).filter(x=>now-Number(x.at||0)<604800000),yes=h.some(x=>x.fingerprint===fp&&now-Number(x.at||0)<ms);if(!yes){h.unshift({fingerprint:fp,at:now});try{localStorage.setItem(HISTORY,JSON.stringify(h.slice(0,40)))}catch{}}return yes}
 function merge(a,b,structured){a=clean(a,80);b=clean(b,80);if(!a)return b;if(!b)return a;if(!structured&&norm(a)===norm(b))return a;const x=a.match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/),y=b.match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);if(x&&y&&norm(x[2])===norm(y[2]))return`${String(Number(x[1].replace(",","."))+Number(y[1].replace(",","."))).replace(".",",")}${x[2]?` ${x[2]}`:""}`;return norm(a)===norm(b)?`2 × ${a}`:`${a} + ${b}`}
+function comparableProductKey(item){
+ const parsed=parseLine(item?.name||"");
+ return productKey(parsed?.name||item?.name||"");
+}
 function apply(rows,structured){
  let raw=json(localStorage.getItem(STORAGE)||"{}",{})||{},src=raw.state||raw,state={...src,version:src.version||1009,appVersion:src.appVersion||1009,items:Array.isArray(src.items)?src.items:[],products:Array.isArray(src.products)?src.products:[],updatedAt:Date.now()},added=0,merged=0,reactivated=0;
- for(const r of rows){const k=r.productKey||productKey(r.name),e=state.items.find(i=>(i.productKey||productKey(i.name))===k);if(!e){state.items.push({id:uid("item"),name:r.name,quantity:r.quantity,aisle:r.aisle,productKey:k,checked:false,createdAt:Date.now()+added++});continue}if(e.checked){Object.assign(e,{checked:false,name:r.name,quantity:r.quantity||e.quantity,aisle:r.aisle,productKey:k,createdAt:Date.now()+reactivated++});continue}const q=merge(e.quantity,r.quantity,structured);if(q!==e.quantity){e.quantity=q;merged++}e.name=r.name;e.aisle=r.aisle;e.productKey=k}
+ for(const r of rows){
+  const k=r.productKey||productKey(r.name),nameKey=productKey(r.name);
+  const e=state.items.find(i=>(i.productKey||productKey(i.name))===k||comparableProductKey(i)===nameKey);
+  if(!e){state.items.push({id:uid("item"),name:r.name,quantity:r.quantity,aisle:r.aisle,productKey:k,checked:false,createdAt:Date.now()+added++});continue}
+  if(e.checked){Object.assign(e,{checked:false,name:r.name,quantity:r.quantity||e.quantity,aisle:r.aisle,productKey:k,createdAt:Date.now()+reactivated++});continue}
+  // Pour un condiment acheté en pot/flacon, une ancienne dose de recette
+  // (par ex. « 1 c. à soupe ») est remplacée, jamais additionnée au pot.
+  const q=r.purchasePackage?r.quantity:merge(e.quantity,r.quantity,structured);
+  if(q!==e.quantity){e.quantity=q;merged++}
+  e.name=r.name;e.aisle=r.aisle;e.productKey=k
+ }
  state.updatedAt=Date.now();localStorage.setItem(STORAGE,JSON.stringify(state));return{added,merged,reactivated}
 }
 try{

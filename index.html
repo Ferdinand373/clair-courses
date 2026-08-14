@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f4ed">
-<title>Clair Courses V11.4</title>
+<title>Clair Courses V11.5</title>
 <style>
 html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center}
@@ -10,13 +10,13 @@ html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:
 </style>
 </head>
 <body>
-<div class="boot" id="boot"><div><strong>Clair Courses V11.4</strong><p>Ouverture et vérification de vos données…</p></div></div>
+<div class="boot" id="boot"><div><strong>Clair Courses V11.5</strong><p>Ouverture et vérification de vos données…</p></div></div>
 <script>
 (async()=>{
 'use strict';
 
 const COMMIT='acb52ba8f4b1f9d78f2c3f55c2d3d6362342bca0';
-const CACHE_KEY='clairCourses.shell.v11.4.production';
+const CACHE_KEY='clairCourses.shell.v11.5.production';
 const SOURCES=[
   `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${COMMIT}/index.html?v=114p`,
   `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${COMMIT}/index.html?v=114p`
@@ -40,6 +40,7 @@ for(const url of SOURCES){
 if(!html){
   try{
     html=localStorage.getItem(CACHE_KEY)
+      ||localStorage.getItem('clairCourses.shell.v11.4.production')
       ||localStorage.getItem('clairCourses.shell.v11.3.production')
       ||'';
   }catch{}
@@ -51,11 +52,11 @@ if(!html){
 }
 
 /*
- * V11.4 — cloisonnement des données locales.
+ * V11.5 — cloisonnement des données locales et transfert d'achat fiable.
  *
  * Clair Courses et Clair Repas sont publiés sous la même origine GitHub Pages.
  * La V11.3 parcourait donc, par erreur, toutes les clés localStorage et pouvait
- * interpréter des identifiants de recettes comme des produits. La V11.4 ne lit
+ * interpréter des identifiants de recettes comme des produits. La V11.5 ne lit
  * plus que les clés appartenant explicitement à Clair Courses et retire, lors
  * de la migration, uniquement les identifiants exacts connus de Clair Repas.
  */
@@ -193,8 +194,8 @@ html=html.replace(
   `<script>
   (()=>{try{
     const badge=document.querySelector('.version-pill');
-    if(badge)badge.textContent='V11.4';
-    document.title='Clair Courses V11.4';
+    if(badge)badge.textContent='V11.5';
+    document.title='Clair Courses V11.5';
   }catch{}})();
   <\/script></body>`
 );
