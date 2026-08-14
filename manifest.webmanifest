@@ -1,28 +1,23 @@
 {
-  "name": "Clair Courses",
-  "short_name": "Clair Courses",
-  "description": "Ma liste de courses, simplement.",
+  "name": "Clair Repas",
+  "short_name": "Clair Repas",
+  "description": "Clair Repas propose les menus et prépare une liste contrôlée avant tout envoi manuel vers Clair Courses.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f6f4ed",
-  "theme_color": "#f6f4ed",
+  "background_color": "#f4efe7",
+  "theme_color": "#f4efe7",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "./assets/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./assets/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
-    },
-    {
-      "src": "./assets/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
     }
   ]
 }
