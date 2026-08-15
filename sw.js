@@ -1,5 +1,5 @@
 "use strict";
-const CACHE_NAME="clair-courses-v13.0-premium-20260816";
+const CACHE_NAME="clair-courses-v13.0.1-premium-20260816";
 const CORE_FILES=["./","./index.html","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",event=>{event.waitUntil((async()=>{const cache=await caches.open(CACHE_NAME);for(const path of CORE_FILES){try{const response=await fetch(new Request(path,{cache:"reload"}));if(response.ok)await cache.put(path,response.clone())}catch(_){}}await self.skipWaiting()})())});
 self.addEventListener("activate",event=>{event.waitUntil((async()=>{const names=await caches.keys();await Promise.all(names.filter(name=>name.startsWith("clair-courses-")&&name!==CACHE_NAME).map(name=>caches.delete(name)));await self.clients.claim()})())});
