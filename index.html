@@ -1,8 +1,10 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f4ed">
-<title>Clair Courses V11.7</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f4ed">
+<title>Clair Courses V11.8</title>
 <style>
 html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center}
@@ -10,501 +12,73 @@ html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:
 </style>
 </head>
 <body>
-<div class="boot" id="boot"><div><strong>Clair Courses V11.7</strong><p>Ouverture et vérification de vos données…</p></div></div>
+<div class="boot" id="boot"><div><strong>Clair Courses V11.8</strong><p>Ouverture et vérification de vos données…</p></div></div>
 <script>
 (async()=>{
 'use strict';
 
-const COMMIT='acb52ba8f4b1f9d78f2c3f55c2d3d6362342bca0';
-const CACHE_KEY='clairCourses.shell.v11.7.production';
+/*
+ * V11.8 — correctif ciblé :
+ * « Mes produits » est affiché en ordre alphabétique français A → Z.
+ *
+ * Cette enveloppe repart exactement de la V11.7 validée au commit ci-dessous,
+ * puis injecte uniquement le correctif de tri avant son exécution.
+ */
+const V117_COMMIT='ca971ada48ddaee0117fc8d5c8e14f6084cd0d11';
 const SOURCES=[
-  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${COMMIT}/index.html?v=114p`,
-  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${COMMIT}/index.html?v=114p`
+  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${V117_COMMIT}/index.html?v=118az`,
+  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${V117_COMMIT}/index.html?v=118az`
 ];
 
-let html='';
+let source='';
 for(const url of SOURCES){
   try{
-    const r=await fetch(url,{cache:'no-store'});
-    if(r.ok){
-      const t=await r.text();
-      if(t.includes('const APP_VERSION=1009;')){
-        html=t;
-        try{localStorage.setItem(CACHE_KEY,t)}catch{}
+    const response=await fetch(url,{cache:'no-store'});
+    if(response.ok){
+      const text=await response.text();
+      if(text.includes('Clair Courses V11.7')){
+        source=text;
         break;
       }
     }
   }catch{}
 }
 
-if(!html){
-  try{
-    html=localStorage.getItem(CACHE_KEY)
-      ||localStorage.getItem('clairCourses.shell.v11.6.production')
-      ||localStorage.getItem('clairCourses.shell.v11.5.production')
-      ||localStorage.getItem('clairCourses.shell.v11.4.production')
-      ||localStorage.getItem('clairCourses.shell.v11.3.production')
-      ||'';
-  }catch{}
-}
-if(!html){
+if(!source){
   document.getElementById('boot').innerHTML=
     '<div><strong>Clair Courses ne peut pas s’ouvrir.</strong><p>Vérifiez la connexion, puis rechargez la page.</p></div>';
   return;
 }
 
 /*
- * V11.7 — ajout manuel rapide et multiligne, sur la base fiable V11.6.
- *
- * Les articles cochés restent volontairement dans la liste active, mais ils
- * étaient masqués et exclus du compteur. Un ajout ultérieur pouvait alors les
- * réactiver. Cette version rend leur présence explicite et permet de supprimer
- * définitivement la liste active, sans toucher à « Mes produits ».
+ * Inséré dans le moteur V11.7 juste avant son document.open().
+ * On retire le classement par fréquence d'utilisation et on conserve
+ * uniquement un tri alphabétique localisé en français.
  */
-
-/* Action visible, compteur lisible et confirmation adaptée à l'iPhone. */
+const alphaPatch = `
+/* V11.8 — Mes produits : ordre alphabétique A → Z uniquement. */
 html=html.replace(
-  '</style>',
-  `.list-heading{align-items:center}.list-heading-main{min-width:0}.list-count{display:block;margin-top:3px}.new-list-visible{flex:0 0 auto;min-height:44px;padding:0 14px;border:1px solid #c7d1c9;border-radius:13px;color:var(--text);background:var(--surface);font-size:.86rem;font-weight:900}.new-list-copy{margin:0;color:var(--muted);line-height:1.5}@media(max-width:370px){.list-heading{gap:8px}.new-list-visible{padding:0 11px;font-size:.8rem}}</style>`
+  '.slice().sort((a,b)=>(Number(usage[productKey(b.name)])||0)-(Number(usage[productKey(a.name)])||0)||a.name.localeCompare(b.name,"fr"));',
+  '.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));'
 );
-
-html=html.replace(
-  '<div class="list-heading"><h2 id="list-title">Ma liste</h2><span class="list-count" id="list-count">0 restant</span></div>',
-  '<div class="list-heading"><div class="list-heading-main"><h2 id="list-title">Ma liste</h2><span class="list-count" id="list-count">Liste vide</span></div><button class="new-list-visible" id="new-list-button" type="button">Nouvelle liste</button></div>'
-);
-
-html=html.replace(
-  '          <button class="secondary-button" id="new-list-button" type="button">Vider toute la liste</button>\n',
-  ''
-);
-
-html=html.replace(
-  '<dialog id="item-dialog">',
-  `<dialog id="new-list-dialog">
-  <div class="dialog-card">
-    <div class="dialog-header"><h2>Commencer une nouvelle liste ?</h2><button class="close-button" id="new-list-close" type="button" aria-label="Fermer">×</button></div>
-    <p class="new-list-copy">Tous les articles de la liste actuelle seront supprimés.</p>
-    <div class="dialog-actions"><button class="secondary-button" id="new-list-cancel" type="button">Annuler</button><button class="primary-button" id="new-list-confirm" type="button">Nouvelle liste</button></div>
-  </div>
-</dialog>
-
-<dialog id="item-dialog">`
-);
-
-html=html.replace(
-  'Clair Courses — Version 10.9 stable',
-  'Clair Courses — Version 11.7 stable'
-);
-
-const protection=`
-const PRODUCTS_SHADOW_KEY="clairCourses.products.secours.v109";
-const LEGACY_PREVIOUS_LIST_KEYS=[PREVIOUS_KEY,"clairCourses.previousList.v8"];
-function clearActiveListResidues(){
-  for(const key of LEGACY_PREVIOUS_LIST_KEYS){
-    try{localStorage.removeItem(key)}catch{}
-  }
-}
-const CLAIR_REPAS_RECIPE_IDS=new Set(["a001","a002","a003","a004","a005","a006","a007","a008","a009","a010","a011","a012","a013","a014","a015","a016","a017","a018","a019","a020","a021","a022","a023","a024","a025","a026","a027","a028","a029","a030","a031","a032","a033","a034","a035","a036","a037","a038","a039","a040","a041","a042","a043","a044","a045","a046","a047","a048","a049","a050","a051","a052","a053","a054","a055","a056","a057","a058","a059","a060","a061","a062","a063","a064","a065","a066","a067","a068","a069","a070","a071","a072","a073","a074","a075","a076","a077","a078","a079","a080","a081","a082","a083","a084","a085","a086","a087","a088","a089","a090","a091","a092","a093","a094","a095","a096","a097","a098","a099","a100","b401","b402","b403","b404","b405","b406","b407","b408","b409","b410","b411","b412","b413","b414","b415","b416","b417","b418","c401","c402","c403","c404","c405","c406","c407","c408","c409","c410","c411","c412","c413","c414","d001","d002","d003","d004","d005","d006","d007","d008","d009","d010","d011","d012","d013","d014","d015","d016","d017","d018","d019","d020","d021","d022","d023","d024","d025","d026","d027","d028","d029","d030","d031","d032","d033","d034","d035","d036","d037","d038","d039","d040","d041","d042","d043","d044","d045","d046","d047","d048","d049","d050","d051","d052","d053","d054","d055","d056","d057","d058","d059","d060","d061","d062","d063","d064","d065","d066","d067","d068","d069","d070","d071","d072","d073","d074","d075","d076","d077","d078","d079","d080","d081","d082","d083","d084","d085","d086","d087","d088","d089","d090","d091","d092","d093","d094","d095","d096","d097","d098","d099","d100","e01","e02","e03","e04","e05","e06","e07","e08","e09","e10","e100","e11","e12","e13","e14","e15","e16","e17","e18","e19","e20","e21","e22","e23","e24","e25","e26","e27","e28","e29","e30","e31","e32","e33","e34","e35","e36","e37","e38","e39","e40","e41","e42","e43","e44","e45","e46","e47","e48","e49","e50","e51","e52","e53","e54","e55","e56","e57","e58","e59","e60","e61","e62","e63","e64","e65","e66","e67","e68","e70","e71","e72","e73","e74","e75","e76","e77","e78","e79","e80","e81","e82","e83","e84","e85","e86","e87","e88","e89","e90","e91","e92","e93","e94","e95","e96","e97","e98","e99","ge-boulettes-courge-epinards-polenta","ge-boulettes-couscous-legumes","ge-boulettes-curry-chou-fleur","ge-boulettes-gingembre-riz","ge-boulettes-gnocchi-epinards","ge-boulettes-gratin-poireaux","ge-boulettes-grenailles-legumes","ge-boulettes-mediterraneenne-haricots","ge-boulettes-nouilles-legumes","ge-boulettes-ratatouille-boulgour","ge-boulettes-spaetzle-poireaux","ge-boulettes-tomate-polenta","ge-crevettes-curry-chou-fleur","ge-crevettes-gingembre-riz","ge-crevettes-gnocchi-epinards","ge-crevettes-grenailles-legumes","ge-crevettes-mediterraneenne-haricots","ge-crevettes-nouilles-legumes","ge-crevettes-poelee-pommes-epinards","ge-crevettes-poelee-riz-courgette","ge-crevettes-ratatouille-boulgour","ge-crevettes-salade-boulgour-betterave","ge-crevettes-salade-lentilles-carottes","ge-crevettes-salade-pates-crudites","ge-crevettes-salade-pommes-haricots","ge-crevettes-salade-quinoa-legumes","ge-crevettes-salade-riz-concombre","ge-crevettes-verts-quinoa","ge-crevettes-wraps-chauds","ge-dinde-courge-epinards-polenta","ge-dinde-couscous-legumes","ge-dinde-curry-chou-fleur","ge-dinde-gingembre-riz","ge-dinde-gnocchi-epinards","ge-dinde-gratin-poireaux","ge-dinde-grenailles-legumes","ge-dinde-lentilles-carottes","ge-dinde-mediterraneenne-haricots","ge-dinde-nouilles-legumes","ge-dinde-poelee-pommes-epinards","ge-dinde-poelee-riz-courgette","ge-dinde-potee-legere","ge-dinde-ratatouille-boulgour","ge-dinde-salade-boulgour-betterave","ge-dinde-salade-lentilles-carottes","ge-dinde-salade-pates-crudites","ge-dinde-salade-pommes-haricots","ge-dinde-salade-quinoa-legumes","ge-dinde-salade-riz-concombre","ge-dinde-soupe-complete","ge-dinde-spaetzle-poireaux","ge-dinde-tomate-polenta","ge-dinde-verts-quinoa","ge-dinde-wraps-chauds","ge-falafels-couscous-legumes","ge-falafels-grenailles-legumes","ge-falafels-ratatouille-boulgour","ge-falafels-wraps-chauds","ge-jambon-gratin-poireaux","ge-jambon-lentilles-carottes","ge-jambon-mediterraneenne-haricots","ge-jambon-poelee-pommes-epinards","ge-jambon-potee-legere","ge-jambon-salade-boulgour-betterave","ge-jambon-salade-lentilles-carottes","ge-jambon-salade-pates-crudites","ge-jambon-salade-pommes-haricots","ge-jambon-salade-quinoa-legumes","ge-jambon-salade-riz-concombre","ge-jambon-soupe-complete","ge-jambon-spaetzle-poireaux","ge-oeufs-salade-boulgour-betterave","ge-oeufs-salade-lentilles-carottes","ge-oeufs-salade-pates-crudites","ge-oeufs-salade-pommes-haricots","ge-oeufs-salade-quinoa-legumes","ge-oeufs-salade-riz-concombre","ge-omelette-asperges-petits-pois","ge-omelette-brocoli-cheddar","ge-omelette-champignons-pommes","ge-omelette-courge-comte","ge-omelette-courgette-feta","ge-omelette-epinards-ricotta","ge-omelette-jambon-petits-pois","ge-omelette-poireaux-fromage","ge-omelette-poivron-chorizo","ge-omelette-pommes-oignons-salade","ge-omelette-ratatouille-mozzarella","ge-omelette-saumon-epinards","ge-omelette-thon-courgette","ge-omelette-tomate-mozzarella","ge-pois-chiches-courge-epinards-polenta","ge-pois-chiches-couscous-legumes","ge-pois-chiches-curry-chou-fleur","ge-pois-chiches-gnocchi-epinards","ge-pois-chiches-gratin-poireaux","ge-pois-chiches-grenailles-legumes","ge-pois-chiches-nouilles-legumes","ge-pois-chiches-poelee-pommes-epinards","ge-pois-chiches-poelee-riz-courgette","ge-pois-chiches-potee-legere","ge-pois-chiches-salade-boulgour-betterave","ge-pois-chiches-salade-lentilles-carottes","ge-pois-chiches-salade-pates-crudites","ge-pois-chiches-salade-pommes-haricots","ge-pois-chiches-salade-quinoa-legumes","ge-pois-chiches-salade-riz-concombre","ge-pois-chiches-soupe-complete","ge-pois-chiches-tomate-polenta","ge-pois-chiches-wraps-chauds","ge-poisson-blanc-courge-epinards-polenta","ge-poisson-blanc-couscous-legumes","ge-poisson-blanc-curry-chou-fleur","ge-poisson-blanc-gnocchi-epinards","ge-poisson-blanc-gratin-poireaux","ge-poisson-blanc-grenailles-legumes","ge-poisson-blanc-mediterraneenne-haricots","ge-poisson-blanc-poelee-riz-courgette","ge-poisson-blanc-potee-legere","ge-poisson-blanc-ratatouille-boulgour","ge-poisson-blanc-soupe-complete","ge-poisson-blanc-tomate-polenta","ge-poisson-blanc-verts-quinoa","ge-poisson-blanc-wraps-chauds","ge-poulet-courge-epinards-polenta","ge-poulet-couscous-legumes","ge-poulet-curry-chou-fleur","ge-poulet-gingembre-riz","ge-poulet-gnocchi-epinards","ge-poulet-gratin-poireaux","ge-poulet-grenailles-legumes","ge-poulet-lentilles-carottes","ge-poulet-mediterraneenne-haricots","ge-poulet-nouilles-legumes","ge-poulet-poelee-pommes-epinards","ge-poulet-poelee-riz-courgette","ge-poulet-potee-legere","ge-poulet-ratatouille-boulgour","ge-poulet-salade-boulgour-betterave","ge-poulet-salade-lentilles-carottes","ge-poulet-salade-pates-crudites","ge-poulet-salade-pommes-haricots","ge-poulet-salade-quinoa-legumes","ge-poulet-salade-riz-concombre","ge-poulet-soupe-complete","ge-poulet-spaetzle-poireaux","ge-poulet-tomate-polenta","ge-poulet-verts-quinoa","ge-poulet-wraps-chauds","ge-saucisses-grenailles-legumes","ge-saucisses-lentilles-carottes","ge-saucisses-poelee-pommes-epinards","ge-saucisses-poelee-riz-courgette","ge-saucisses-potee-legere","ge-saucisses-spaetzle-poireaux","ge-saucisses-tomate-polenta","ge-saumon-courge-epinards-polenta","ge-saumon-curry-chou-fleur","ge-saumon-fume-salade-boulgour-betterave","ge-saumon-fume-salade-lentilles-carottes","ge-saumon-fume-salade-pates-crudites","ge-saumon-fume-salade-pommes-haricots","ge-saumon-fume-salade-quinoa-legumes","ge-saumon-fume-salade-riz-concombre","ge-saumon-gingembre-riz","ge-saumon-gnocchi-epinards","ge-saumon-gratin-poireaux","ge-saumon-grenailles-legumes","ge-saumon-poelee-pommes-epinards","ge-saumon-poelee-riz-courgette","ge-saumon-verts-quinoa","ge-soupe-chou-fleur-poireau-jambon","ge-soupe-chou-fleur-poireau-oeufs","ge-soupe-chou-fleur-poireau-poulet","ge-soupe-courge-carotte-jambon","ge-soupe-courge-carotte-oeufs","ge-soupe-courge-carotte-poulet","ge-soupe-courgette-petits-pois-jambon","ge-soupe-courgette-petits-pois-oeufs","ge-soupe-courgette-petits-pois-poulet","ge-soupe-legumes-haricots-jambon","ge-soupe-legumes-haricots-oeufs","ge-soupe-legumes-haricots-poulet","ge-soupe-poireaux-jambon","ge-soupe-poireaux-oeufs","ge-soupe-poireaux-poulet","ge-soupe-tomate-lentilles-jambon","ge-soupe-tomate-lentilles-oeufs","ge-soupe-tomate-lentilles-poulet","ge-thon-salade-boulgour-betterave","ge-thon-salade-lentilles-carottes","ge-thon-salade-pates-crudites","ge-thon-salade-pommes-haricots","ge-thon-salade-quinoa-legumes","ge-thon-salade-riz-concombre","ge-tofu-curry-chou-fleur","ge-tofu-gingembre-riz","ge-tofu-ratatouille-boulgour","ge-tofu-spaetzle-poireaux","ge-tofu-verts-quinoa","gn-boeuf-ail-persil","gn-boeuf-champignons-polenta","gn-boeuf-haricots-riz","gn-boeuf-provencale","gn-boeuf-ratatouille","gn-boeuf-soja-miel","gn-boeuf-tomate-basilic","gn-boulettes-champignons-polenta","gn-boulettes-haricots-riz","gn-boulettes-legumes-racines","gn-boulettes-moutarde-champignons","gn-boulettes-paprika-grenailles","gn-boulettes-ratatouille","gn-boulettes-tomate-basilic","gn-cotes-porc-champignons-polenta","gn-cotes-porc-grillade-mais","gn-cotes-porc-haricots-riz","gn-cotes-porc-legumes-racines","gn-cotes-porc-moutarde-champignons","gn-cotes-porc-paprika-grenailles","gn-cotes-porc-provencale","gn-cotes-porc-ratatouille","gn-crevettes-ail-persil","gn-crevettes-citron-herbes","gn-crevettes-curry-doux","gn-crevettes-haricots-riz","gn-crevettes-provencale","gn-crevettes-ratatouille","gn-crevettes-soja-miel","gn-crevettes-tomate-basilic","gn-dinde-champignons-polenta","gn-dinde-citron-herbes","gn-dinde-curry-doux","gn-dinde-grillade-mais","gn-dinde-haricots-riz","gn-dinde-legumes-racines","gn-dinde-moutarde-champignons","gn-dinde-paprika-grenailles","gn-dinde-poireaux-creme","gn-dinde-provencale","gn-dinde-ratatouille","gn-dinde-soja-miel","gn-dinde-tomate-basilic","gn-falafels-legumes-racines","gn-falafels-paprika-grenailles","gn-filet-mignon-ail-persil","gn-filet-mignon-champignons-polenta","gn-filet-mignon-citron-herbes","gn-filet-mignon-grillade-mais","gn-filet-mignon-haricots-riz","gn-filet-mignon-moutarde-champignons","gn-filet-mignon-poireaux-creme","gn-filet-mignon-ratatouille","gn-filet-mignon-tomate-basilic","gn-pois-chiches-champignons-polenta","gn-pois-chiches-curry-doux","gn-pois-chiches-haricots-riz","gn-pois-chiches-legumes-racines","gn-pois-chiches-paprika-grenailles","gn-pois-chiches-ratatouille","gn-pois-chiches-soja-miel","gn-pois-chiches-tomate-basilic","gn-poisson-blanc-ail-persil","gn-poisson-blanc-citron-herbes","gn-poisson-blanc-curry-doux","gn-poisson-blanc-haricots-riz","gn-poisson-blanc-moutarde-champignons","gn-poisson-blanc-paprika-grenailles","gn-poisson-blanc-poireaux-creme","gn-poisson-blanc-provencale","gn-poisson-blanc-ratatouille","gn-poisson-blanc-tomate-basilic","gn-poulet-ail-persil","gn-poulet-champignons-polenta","gn-poulet-citron-herbes","gn-poulet-curry-doux","gn-poulet-grillade-mais","gn-poulet-haricots-riz","gn-poulet-legumes-racines","gn-poulet-moutarde-champignons","gn-poulet-paprika-grenailles","gn-poulet-poireaux-creme","gn-poulet-provencale","gn-poulet-ratatouille","gn-poulet-soja-miel","gn-poulet-tomate-basilic","gn-saucisses-grillade-mais","gn-saucisses-legumes-racines","gn-saucisses-paprika-grenailles","gn-saucisses-provencale","gn-saucisses-ratatouille","gn-saumon-ail-persil","gn-saumon-citron-herbes","gn-saumon-curry-doux","gn-saumon-grillade-mais","gn-saumon-haricots-riz","gn-saumon-moutarde-champignons","gn-saumon-paprika-grenailles","gn-saumon-poireaux-creme","gn-saumon-provencale","gn-saumon-ratatouille","gn-saumon-soja-miel","gn-saumon-tomate-basilic","gn2-boeuf-basquaise-riz","gn2-boeuf-gingembre-sesame","gn2-boeuf-italienne-polenta","gn2-boulettes-airfryer-boulgour","gn2-boulettes-italienne-polenta","gn2-boulettes-mediterraneenne-four","gn2-boulettes-toscane-haricots","gn2-cotes-porc-airfryer-boulgour","gn2-cotes-porc-allemande-chou-pomme","gn2-cotes-porc-cidre-ecrase","gn2-cotes-porc-estragon-petits-pois","gn2-cotes-porc-grillade-persillee","gn2-crevettes-coco-citron-vert","gn2-crevettes-gingembre-sesame","gn2-crevettes-grecque-orzo","gn2-crevettes-italienne-polenta","gn2-crevettes-pesto-haricots","gn2-crevettes-riz-espagnol","gn2-dinde-airfryer-boulgour","gn2-dinde-allemande-chou-pomme","gn2-dinde-basquaise-riz","gn2-dinde-cidre-ecrase","gn2-dinde-coco-citron-vert","gn2-dinde-estragon-petits-pois","gn2-dinde-gingembre-sesame","gn2-dinde-grecque-orzo","gn2-dinde-grillade-persillee","gn2-dinde-italienne-polenta","gn2-dinde-mediterraneenne-four","gn2-dinde-pesto-haricots","gn2-dinde-riz-espagnol","gn2-dinde-toscane-haricots","gn2-falafels-airfryer-boulgour","gn2-falafels-mediterraneenne-four","gn2-filet-mignon-airfryer-boulgour","gn2-filet-mignon-allemande-chou-pomme","gn2-filet-mignon-basquaise-riz","gn2-filet-mignon-cidre-ecrase","gn2-filet-mignon-estragon-petits-pois","gn2-filet-mignon-grecque-orzo","gn2-filet-mignon-grillade-persillee","gn2-filet-mignon-italienne-polenta","gn2-filet-mignon-mediterraneenne-four","gn2-filet-mignon-toscane-haricots","gn2-pois-chiches-coco-citron-vert","gn2-pois-chiches-mediterraneenne-four","gn2-poisson-blanc-airfryer-boulgour","gn2-poisson-blanc-basquaise-riz","gn2-poisson-blanc-coco-citron-vert","gn2-poisson-blanc-estragon-petits-pois","gn2-poisson-blanc-gingembre-sesame","gn2-poisson-blanc-grecque-orzo","gn2-poisson-blanc-italienne-polenta","gn2-poisson-blanc-mediterraneenne-four","gn2-poisson-blanc-pesto-haricots","gn2-poisson-blanc-riz-espagnol","gn2-poisson-blanc-toscane-haricots","gn2-poulet-airfryer-boulgour","gn2-poulet-basquaise-riz","gn2-poulet-cidre-ecrase","gn2-poulet-coco-citron-vert","gn2-poulet-estragon-petits-pois","gn2-poulet-gingembre-sesame","gn2-poulet-grecque-orzo","gn2-poulet-grillade-persillee","gn2-poulet-italienne-polenta","gn2-poulet-mediterraneenne-four","gn2-poulet-pesto-haricots","gn2-poulet-riz-espagnol","gn2-poulet-toscane-haricots","gn2-saucisses-allemande-chou-pomme","gn2-saucisses-grillade-persillee","gn2-saucisses-riz-espagnol","gn2-saucisses-toscane-haricots","gn2-saumon-airfryer-boulgour","gn2-saumon-coco-citron-vert","gn2-saumon-estragon-petits-pois","gn2-saumon-gingembre-sesame","gn2-saumon-grecque-orzo","gn2-saumon-grillade-persillee","gn2-saumon-italienne-polenta","gn2-saumon-mediterraneenne-four","gn2-saumon-pesto-haricots","gn2-saumon-toscane-haricots","gn2-tofu-airfryer-boulgour","gn2-tofu-coco-citron-vert","gn2-tofu-gingembre-sesame","gn2-tofu-grecque-orzo","gn2-tofu-italienne-polenta","gn2-tofu-mediterraneenne-four","gn2-tofu-pesto-haricots","gn2-tofu-riz-espagnol","gn2-tofu-toscane-haricots","gn2-veau-allemande-chou-pomme","gn2-veau-cidre-ecrase","gn2-veau-estragon-petits-pois","gn2-veau-grillade-persillee","n01","n02","n03","n04","n05","n06","n07","n08","n09","n10","n100","n11","n12","n13","n14","n15","n16","n17","n18","n19","n20","n21","n22","n23","n24","n25","n26","n27","n28","n29","n30","n31","n32","n33","n34","n35","n36","n37","n38","n39","n40","n41","n42","n43","n44","n45","n46","n47","n48","n49","n50","n51","n52","n53","n54","n55","n56","n57","n58","n59","n60","n61","n62","n63","n64","n65","n66","n67","n68","n69","n70","n71","n72","n73","n74","n75","n76","n77","n78","n79","n80","n81","n82","n83","n84","n85","n86","n88","n90","n91","n92","n93","n94","n95","n96","n97","n98","n99","q401","q402","q403","q404","q405","q406","q407","q408","q409","q410","s401","s402","s403","s404","s405","s406","s407","s408","s409","s410","s411","s412","s413","s414","s415","s416","s417","s418","s419","s420","t401","t402","t403","t404","t405","t406","t407","t408","t409","t410","t411","t412","t413","t414","t415","t416","t417","t418","t419","t420","t421","v31e-bouillon-nouilles-boeuf","v31e-bouillon-nouilles-boulettes","v31e-bouillon-nouilles-cotes-porc","v31e-bouillon-nouilles-crevettes","v31e-bouillon-nouilles-dinde","v31e-bouillon-nouilles-filet-mignon","v31e-bouillon-nouilles-poisson-blanc","v31e-bouillon-nouilles-poulet","v31e-bouillon-nouilles-saumon","v31e-bouillon-nouilles-tofu","v31e-bowl-boulgour-boeuf","v31e-bowl-boulgour-boulettes","v31e-bowl-boulgour-cotes-porc","v31e-bowl-boulgour-crevettes","v31e-bowl-boulgour-dinde","v31e-bowl-boulgour-filet-mignon","v31e-bowl-boulgour-poisson-blanc","v31e-bowl-boulgour-poulet","v31e-bowl-boulgour-saumon","v31e-bowl-boulgour-tofu","v31e-crumble-sale-boulettes","v31e-crumble-sale-dinde","v31e-crumble-sale-falafels","v31e-crumble-sale-filet-mignon","v31e-crumble-sale-pois-chiches","v31e-crumble-sale-poisson-blanc","v31e-crumble-sale-poulet","v31e-crumble-sale-saucisses","v31e-crumble-sale-saumon","v31e-crumble-sale-tofu","v31e-galette-sarrasin-boeuf","v31e-galette-sarrasin-boulettes","v31e-galette-sarrasin-cotes-porc","v31e-galette-sarrasin-crevettes","v31e-galette-sarrasin-dinde","v31e-galette-sarrasin-filet-mignon","v31e-galette-sarrasin-poisson-blanc","v31e-galette-sarrasin-poulet","v31e-galette-sarrasin-saumon","v31e-galette-sarrasin-tofu","v31e-pita-chaude-boeuf","v31e-pita-chaude-boulettes","v31e-pita-chaude-cotes-porc","v31e-pita-chaude-crevettes","v31e-pita-chaude-dinde","v31e-pita-chaude-filet-mignon","v31e-pita-chaude-poisson-blanc","v31e-pita-chaude-poulet","v31e-pita-chaude-saumon","v31e-pita-chaude-tofu","v31e-pomme-terre-garnie-boulettes","v31e-pomme-terre-garnie-dinde","v31e-pomme-terre-garnie-falafels","v31e-pomme-terre-garnie-filet-mignon","v31e-pomme-terre-garnie-pois-chiches","v31e-pomme-terre-garnie-poisson-blanc","v31e-pomme-terre-garnie-poulet","v31e-pomme-terre-garnie-saucisses","v31e-pomme-terre-garnie-saumon","v31e-pomme-terre-garnie-tofu","v31e-quesadillas-boeuf","v31e-quesadillas-boulettes","v31e-quesadillas-cotes-porc","v31e-quesadillas-crevettes","v31e-quesadillas-dinde","v31e-quesadillas-filet-mignon","v31e-quesadillas-poisson-blanc","v31e-quesadillas-poulet","v31e-quesadillas-saumon","v31e-quesadillas-tofu","v31e-ragout-leger-boeuf","v31e-ragout-leger-boulettes","v31e-ragout-leger-cotes-porc","v31e-ragout-leger-crevettes","v31e-ragout-leger-dinde","v31e-ragout-leger-filet-mignon","v31e-ragout-leger-poisson-blanc","v31e-ragout-leger-poulet","v31e-ragout-leger-saumon","v31e-ragout-leger-tofu","v31e-riz-croustillant-boeuf","v31e-riz-croustillant-boulettes","v31e-riz-croustillant-cotes-porc","v31e-riz-croustillant-crevettes","v31e-riz-croustillant-dinde","v31e-riz-croustillant-filet-mignon","v31e-riz-croustillant-poisson-blanc","v31e-riz-croustillant-poulet","v31e-riz-croustillant-saumon","v31e-riz-croustillant-tofu","v31e-tartines-gratinees-boulettes","v31e-tartines-gratinees-cotes-porc","v31e-tartines-gratinees-crevettes","v31e-tartines-gratinees-dinde","v31e-tartines-gratinees-falafels","v31e-tartines-gratinees-filet-mignon","v31e-tartines-gratinees-poisson-blanc","v31e-tartines-gratinees-poulet","v31e-tartines-gratinees-saumon","v31e-tartines-gratinees-tofu","v31n-bowl-quinoa-courge-boulettes","v31n-bowl-quinoa-courge-dinde","v31n-bowl-quinoa-courge-falafels","v31n-bowl-quinoa-courge-filet-mignon","v31n-bowl-quinoa-courge-pois-chiches","v31n-bowl-quinoa-courge-poisson-blanc","v31n-bowl-quinoa-courge-poulet","v31n-bowl-quinoa-courge-saucisses","v31n-bowl-quinoa-courge-saumon","v31n-bowl-quinoa-courge-tofu","v31n-brochettes-tabboule-boeuf","v31n-brochettes-tabboule-cotes-porc","v31n-brochettes-tabboule-crevettes","v31n-brochettes-tabboule-dinde","v31n-brochettes-tabboule-filet-mignon","v31n-brochettes-tabboule-poisson-blanc","v31n-brochettes-tabboule-poulet","v31n-brochettes-tabboule-saucisses","v31n-brochettes-tabboule-saumon","v31n-brochettes-tabboule-tofu","v31n-couscous-minute-boeuf","v31n-couscous-minute-boulettes","v31n-couscous-minute-cotes-porc","v31n-couscous-minute-crevettes","v31n-couscous-minute-dinde","v31n-couscous-minute-filet-mignon","v31n-couscous-minute-poisson-blanc","v31n-couscous-minute-poulet","v31n-couscous-minute-saumon","v31n-couscous-minute-tofu","v31n-croustillant-coleslaw-boulettes","v31n-croustillant-coleslaw-cotes-porc","v31n-croustillant-coleslaw-crevettes","v31n-croustillant-coleslaw-dinde","v31n-croustillant-coleslaw-falafels","v31n-croustillant-coleslaw-filet-mignon","v31n-croustillant-coleslaw-poisson-blanc","v31n-croustillant-coleslaw-poulet","v31n-croustillant-coleslaw-saumon","v31n-croustillant-coleslaw-tofu","v31n-donburi-boeuf","v31n-donburi-boulettes","v31n-donburi-cotes-porc","v31n-donburi-crevettes","v31n-donburi-dinde","v31n-donburi-filet-mignon","v31n-donburi-poisson-blanc","v31n-donburi-poulet","v31n-donburi-saumon","v31n-donburi-tofu","v31n-gratin-chou-fleur-boulettes","v31n-gratin-chou-fleur-dinde","v31n-gratin-chou-fleur-falafels","v31n-gratin-chou-fleur-filet-mignon","v31n-gratin-chou-fleur-pois-chiches","v31n-gratin-chou-fleur-poisson-blanc","v31n-gratin-chou-fleur-poulet","v31n-gratin-chou-fleur-saucisses","v31n-gratin-chou-fleur-saumon","v31n-gratin-chou-fleur-tofu","v31n-nouilles-wok-boeuf","v31n-nouilles-wok-boulettes","v31n-nouilles-wok-cotes-porc","v31n-nouilles-wok-crevettes","v31n-nouilles-wok-dinde","v31n-nouilles-wok-filet-mignon","v31n-nouilles-wok-poisson-blanc","v31n-nouilles-wok-poulet","v31n-nouilles-wok-saumon","v31n-nouilles-wok-tofu","v31n-orzo-boeuf","v31n-orzo-boulettes","v31n-orzo-cotes-porc","v31n-orzo-crevettes","v31n-orzo-dinde","v31n-orzo-filet-mignon","v31n-orzo-poisson-blanc","v31n-orzo-poulet","v31n-orzo-saumon","v31n-orzo-tofu","v31n-papillote-fenouil-boulettes","v31n-papillote-fenouil-dinde","v31n-papillote-fenouil-falafels","v31n-papillote-fenouil-filet-mignon","v31n-papillote-fenouil-pois-chiches","v31n-papillote-fenouil-poisson-blanc","v31n-papillote-fenouil-poulet","v31n-papillote-fenouil-saucisses","v31n-papillote-fenouil-saumon","v31n-papillote-fenouil-tofu","v31n-tacos-boeuf","v31n-tacos-boulettes","v31n-tacos-cotes-porc","v31n-tacos-crevettes","v31n-tacos-dinde","v31n-tacos-filet-mignon","v31n-tacos-poisson-blanc","v31n-tacos-poulet","v31n-tacos-saumon","v31n-tacos-tofu","v39-amatriciana","v39-blanquette-veau","v39-boeuf-bourguignon","v39-brandade-morue","v39-cacio-e-pepe","v39-cannelloni-ricotta-epinards","v39-cassoulet","v39-choucroute-garnie","v39-coq-au-vin","v39-endives-jambon","v39-gratin-chou-fleur","v39-hachis-parmentier","v39-lasagnes-bolognaise","v39-lasagnes-ricotta-epinards","v39-linguine-vongole","v39-macaroni-jambon-fromage","v39-moules-marinieres","v39-paella","v39-pasta-alla-norma","v39-pates-pesto-genois","v39-penne-arrabbiata","v39-pot-au-feu","v39-quiche-lorraine","v39-roti-porc","v39-sole-meuniere","v39-spaghetti-aglio-olio","v39-spaghetti-bolognaise","v39-spaghetti-carbonara","v39-spaghetti-tomate-basilic","v39-tartiflette"]);
-function isClairRepasRecipeId(value){
-  return typeof value==="string"&&CLAIR_REPAS_RECIPE_IDS.has(value.trim());
-}
-function withoutClairRepasRecipeIds(values){
-  return Array.isArray(values)?values.filter(value=>!isClairRepasRecipeId(value?.name??value?.label??value?.article??value)):[];
-}
-function recoverSavedProducts(){
-  const recovered=[];
-  const add=value=>{
-    const cleaned=withoutClairRepasRecipeIds(value).map(makeProduct).filter(Boolean);
-    recovered.push(...cleaned);
-  };
-  try{
-    const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
-    const source=raw&&raw.state?raw.state:raw;
-    if(source&&typeof source==="object"){
-      add(source.products);add(source.favorites);add(source.habituels);add(source.favourites);add(source.favoris);
-    }
-  }catch{}
-  try{add(JSON.parse(localStorage.getItem(PRODUCTS_SHADOW_KEY)||"[]"))}catch{}
-  return uniqueProducts(recovered);
-}
-function protectClairCoursesState(){
-  state.items=withoutClairRepasRecipeIds(state.items);
-  state.products=uniqueProducts(withoutClairRepasRecipeIds(state.products));
-}
 `;
 
-html=html.replace(
-  'let state=loadState();',
-  protection+`
-let state=loadState();
-{
-  const recovered=recoverSavedProducts();
-  state.products=uniqueProducts([...state.products,...recovered]);
-  protectClairCoursesState();
-  if(!state.items.length)clearActiveListResidues();
-}`
-);
+if(!source.includes('document.open();')){
+  document.getElementById('boot').innerHTML=
+    '<div><strong>Clair Courses V11.8</strong><p>La base V11.7 attendue n’a pas été reconnue.</p></div>';
+  return;
+}
 
-html=html.replace(
-  'function save(){state.version=APP_VERSION;state.updatedAt=Date.now();try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));localStorage.setItem(USAGE_KEY,JSON.stringify(usage))}catch(error){showToast("L’enregistrement local est saturé.")}}',
-  'function save(){protectClairCoursesState();if(!state.items.length)clearActiveListResidues();state.version=APP_VERSION;state.updatedAt=Date.now();try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));localStorage.setItem(USAGE_KEY,JSON.stringify(usage));localStorage.setItem(PRODUCTS_SHADOW_KEY,JSON.stringify(state.products))}catch(error){showToast("L’enregistrement local est saturé.")}}'
-);
+source=source.replace('document.open();',alphaPatch+'\ndocument.open();');
 
-html=html.replace(
-  'shareButton:$("share-button"),newListButton:$("new-list-button"),exportButton:$("export-button")',
-  'shareButton:$("share-button"),newListButton:$("new-list-button"),newListDialog:$("new-list-dialog"),newListClose:$("new-list-close"),newListCancel:$("new-list-cancel"),newListConfirm:$("new-list-confirm"),exportButton:$("export-button")'
-);
-
-html=html.replace(
-  'function renderStatus(){const remaining=visibleItems().length,total=state.items.length,bought=total-remaining,percent=total?Math.round(bought*100/total):0;els.progressBadge.textContent=String(remaining);els.counterLabel.textContent=remaining===1?"article":"articles";els.progressPercent.textContent=`${percent} %`;els.progressFill.style.width=`${percent}%`;els.progressTrack.setAttribute("aria-valuenow",String(percent));els.progressTrack.setAttribute("aria-valuetext",`${percent} %`);els.listCount.textContent=`${remaining} restant${remaining>1?"s":""}`;els.emptyState.hidden=total>0;if(!total){els.statusMain.textContent="Votre liste est vide";els.statusSub.textContent="Ajoutez un article ou collez la liste préparée avec Chat."}else if(!remaining){els.statusMain.textContent="Courses terminées ✓";els.statusSub.textContent="Tout est coché. Votre liste reste enregistrée jusqu’à ce que vous choisissiez de la vider."}else{els.statusMain.textContent=remaining===1?"1 article à prendre":`${remaining} articles à prendre`;els.statusSub.textContent=bought?`${bought} déjà pris. Les lignes cochées disparaissent de la vue.`:"Votre liste est prête, classée par rayons."}els.barListLabel.textContent=remaining?`Liste (${remaining})`:"Liste";els.barList.classList.toggle("has-items",total>0)}',
-  `function renderStatus(){
-    const remaining=visibleItems().length,total=state.items.length,bought=total-remaining,percent=total?Math.round(bought*100/total):0;
-    const checkedLabel=bought+" coché"+(bought>1?"s":"");
-    const summary=!total?"Liste vide":bought?remaining+" à acheter · "+checkedLabel:remaining+" à acheter";
-    els.progressBadge.textContent=String(total);
-    els.counterLabel.textContent=total===1?"article":"articles";
-    els.progressPercent.textContent=percent+" %";
-    els.progressFill.style.width=percent+"%";
-    els.progressTrack.setAttribute("aria-valuenow",String(percent));
-    els.progressTrack.setAttribute("aria-valuetext",percent+" %");
-    els.listCount.textContent=summary;
-    els.statusMain.textContent=summary;
-    els.emptyState.hidden=remaining>0;
-    if(!total){
-      els.statusSub.textContent="Ajoutez un article ou collez la liste préparée avec Chat.";
-      els.emptyState.innerHTML="<strong>La liste est prête.</strong>Ajoutez un article, collez la liste préparée avec Chat ou ouvrez Mes produits.";
-    }else if(!remaining){
-      els.statusSub.textContent="Tous les articles sont cochés mais encore enregistrés. Utilisez « Nouvelle liste » pour repartir de zéro.";
-      els.emptyState.innerHTML="<strong>Tous les articles sont cochés.</strong>Ils restent enregistrés jusqu’à ce que vous choisissiez Nouvelle liste.";
-    }else if(bought){
-      els.statusSub.textContent="Les articles cochés restent enregistrés jusqu’à « Nouvelle liste ».";
-    }else{
-      els.statusSub.textContent="Votre liste est prête, classée par rayons.";
-    }
-    els.newListButton.disabled=!total;
-    els.restoreButton.disabled=!loadJson(PREVIOUS_KEY,[]).length;
-    els.barListLabel.textContent=total?"Liste ("+total+")":"Liste";
-    els.barList.classList.toggle("has-items",total>0);
-  }`
-);
-
-html=html.replace(
-  'function newList(){if(!state.items.length){showToast("La liste est déjà vide.");return}if(!confirm("Vider toute la liste ?"))return;snapshotPrevious();state.items=[];commit("La liste a été vidée.")}',
-  `function newList(){
-    if(!state.items.length){showToast("La liste est déjà vide.");return}
-    openDialog(els.newListDialog);
-  }
-  function confirmNewList(){
-    state.items=[];
-    clearActiveListResidues();
-    closeDialog(els.newListDialog);
-    commit("Nouvelle liste prête.");
-  }`
-);
-
-html=html.replace(
-  'els.shareButton.addEventListener("click",shareList);els.newListButton.addEventListener("click",newList);els.restoreButton.addEventListener("click",restorePrevious);',
-  'els.shareButton.addEventListener("click",shareList);els.newListButton.addEventListener("click",newList);els.newListConfirm.addEventListener("click",confirmNewList);els.restoreButton.addEventListener("click",restorePrevious);'
-);
-
-html=html.replace(
-  '[[els.itemClose,els.itemDialog],[els.itemCancel,els.itemDialog]',
-  '[[els.newListClose,els.newListDialog],[els.newListCancel,els.newListDialog],[els.itemClose,els.itemDialog],[els.itemCancel,els.itemDialog]'
-);
-
-html=html.replace(
-  '[els.itemDialog,els.productDialog,els.chatDialog,els.choiceDialog]',
-  '[els.newListDialog,els.itemDialog,els.productDialog,els.chatDialog,els.choiceDialog]'
-);
-
-/* 1. Titres de recette à ne jamais importer comme articles */
-html=html.replace(
-  'const NON_ARTICLE_HEADINGS=new Set(["liste","courses","liste des courses","liste de courses","a acheter","achats"]);',
-  'const NON_ARTICLE_HEADINGS=new Set(["liste","courses","liste des courses","liste de courses","a acheter","achats","le poisson","la viande","les legumes","les légumes","le beurre blanc","la sauce","la garniture","l accompagnement","accompagnement"]);'
-);
-
-/* 2. Regroupement par produit réel, sans tenir compte des précisions secondaires */
-html=html.replace(
-  'function productKey(value){const n=normalize(value);return NAME_ALIASES[n]||n}',
-  `function productKey(value){
-    let n=normalize(value)
-      .replace(/\\([^)]*\\)/g," ")
-      .replace(/^(?:le|la|les|un|une|des)\\s+/," ")
-      .replace(/\\s+/g," ")
-      .trim();
-
-    if(/\\bbeurre\\b/.test(n)) return "beurre";
-    if(/\\blieu jaune\\b/.test(n)&&/\\bpaves?\\b/.test(n)) return "pave lieu jaune";
-    if(/\\btomates?\\b/.test(n)&&/\\banciennes?\\b/.test(n)) return "tomate ancienne";
-    if(/\\bechalotes?\\b/.test(n)) return "echalote";
-    if(/\\bharicots? verts?\\b/.test(n)) return "haricot vert";
-    if(/\\bpommes? de terre\\b/.test(n)) return "pomme de terre";
-    if(/\\bvin blanc\\b/.test(n)) return "vin blanc";
-    if(/\\bfleur de sel\\b/.test(n)) return "fleur de sel";
-    if(/\\bpoivre(?: du moulin)?\\b/.test(n)) return "poivre";
-    return NAME_ALIASES[n]||n;
-  }`
-);
-
-/* 3. Classement prioritaire des produits visibles dans les tests */
-html=html.replace(
-  'function classify(label){\n    for(const aisle of CLASSIFICATION_ORDER){if((KEYWORDS[aisle]||[]).some(word=>hasSemanticKeyword(label,word)))return aisle}\n    return "Divers";\n  }',
-  `function classify(label){
-    const raw=clean(label,220).toLocaleLowerCase("fr");
-    const n=normalize(label);
-    if(raw.includes("pâté"))return "Charcuterie";
-    if(raw.includes("pâtes")||/(?:^| )pates(?: |$)/.test(n))return "Épicerie";
-    if(raw.includes("pâte"))return "Crèmerie";
-    if(/\\b(?:echalote|echalotes|haricot vert|haricots verts|tomate|tomates|pomme de terre|pommes de terre|ail)\\b/.test(n))return "Fruits et légumes";
-    if(/\\b(?:lieu jaune|poisson|saumon|cabillaud|dorade|thon)\\b/.test(n))return "Poissonnerie";
-    if(/\\b(?:beurre|creme|crème|lait|fromage)\\b/.test(n))return "Crèmerie";
-    if(/\\b(?:vin blanc|muscadet|vin rouge|cidre|biere|bière)\\b/.test(n))return "Boissons";
-    if(/\\b(?:huile d olive|vinaigre|fleur de sel|sel|poivre)\\b/.test(n))return "Épicerie";
-    for(const aisle of CLASSIFICATION_ORDER){
-      if((KEYWORDS[aisle]||[]).some(word=>hasSemanticKeyword(label,word)))return aisle;
-    }
-    return "Divers";
-  }`
-);
-
-
-/* 4. Afficher le conditionnement d'achat pour le vin, tout en gardant
-      la quantité exacte de la recette en mémoire pour les regroupements. */
-html=html.replace('function renderItems(){','function renderItemsBase(){');
-
-html=html.replace(
-  'function renderProducts(){',
-  `function purchaseDisplayQuantity(item){
-    const exact=clean(item?.quantity,80);
-    const parsed=parseQuantity(exact);
-    const name=normalize(item?.name);
-    if(parsed&&parsed.kind==="volume"&&/(?:^| )(?:vin|muscadet)(?: |$)/.test(name)){
-      const bottles=Math.max(1,Math.ceil(parsed.base/750));
-      return \`${"${bottles}"} bouteille${"${bottles>1?\"s\":\"\"}"}\`;
-    }
-    return exact;
-  }
-  function withPurchaseQuantities(callback){
-    const originals=state.items.map(item=>[item,item.quantity]);
-    for(const [item] of originals)item.quantity=purchaseDisplayQuantity(item);
-    try{return callback()}
-    finally{for(const [item,quantity] of originals)item.quantity=quantity}
-  }
-  function renderItems(){return withPurchaseQuantities(()=>renderItemsBase())}
-  function renderProducts(){`
-);
-
-html=html.replace('function buildShareText(){','function buildShareTextBase(){');
-
-html=html.replace(
-  '  async function shareList(){',
-  `  function buildShareText(){return withPurchaseQuantities(()=>buildShareTextBase())}
-  async function shareList(){`
-);
-
-/* V11.7 — saisie manuelle directe, avec le texte de l'utilisateur comme
-   référence visible. Le classement et le regroupement réutilisent les
-   fonctions existantes de Clair Courses. */
-html=html.replace(
-  '</style>',
-  `.manual-item-hint{margin:0;color:var(--muted);font-size:.86rem;line-height:1.45}.manual-multi-open{width:100%;min-height:48px;padding:0 14px;border:1px solid var(--line);border-radius:13px;color:var(--accent2);background:var(--accentSoft);font-weight:900}.manual-dialog-actions{position:sticky;bottom:-20px;z-index:2;padding-top:9px;padding-bottom:max(4px,env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(255,254,250,0),var(--surface) 9px)}#manual-multi-text{min-height:210px}.manual-entry-card{scroll-padding-bottom:76px}@media(max-height:650px){#manual-multi-text{min-height:135px}.manual-entry-card{gap:12px;padding:16px}}</style>`
-);
-
-html=html.replace(
-  /<dialog id="item-dialog">[\s\S]*?<\/dialog>\s*(?=<dialog id="product-dialog">)/,
-  `<dialog id="item-dialog">
-  <form class="dialog-card manual-entry-card" id="item-form">
-    <div class="dialog-header"><h2 id="item-dialog-title">Ajouter un article</h2><button class="close-button" id="item-close" type="button" aria-label="Fermer">×</button></div>
-    <p class="manual-item-hint">Écrivez simplement ce qu’il vous faut, quantité comprise.</p>
-    <div class="form-grid">
-      <label>Article<input class="field" id="item-name" type="text" maxlength="220" placeholder="Ex. 2 échines de porc" autocomplete="off" enterkeyhint="done" required></label>
-      <input id="item-quantity" type="hidden">
-      <label>Rayon<span class="label-hint">Laissez « Classement automatique », ou corrigez le rayon si nécessaire.</span><select class="field" id="item-aisle"></select></label>
-      <label class="save-product-choice"><input id="item-save-product" type="checkbox">Garder aussi dans Mes produits</label>
-      <button class="manual-multi-open" id="manual-multi-open" type="button">Ajouter plusieurs articles</button>
-    </div>
-    <div class="dialog-actions manual-dialog-actions"><button class="secondary-button" id="item-cancel" type="button">Annuler</button><button class="primary-button" id="item-submit" type="submit">Ajouter</button></div>
-  </form>
-</dialog>
-
-<dialog id="manual-multi-dialog">
-  <form class="dialog-card manual-entry-card" id="manual-multi-form">
-    <div class="dialog-header"><h2>Ajouter plusieurs articles</h2><button class="close-button" id="manual-multi-close" type="button" aria-label="Fermer">×</button></div>
-    <label>Un article par ligne<span class="label-hint">Les lignes vides seront ignorées. Le texte saisi restera affiché tel quel.</span><textarea class="field" id="manual-multi-text" maxlength="5000" placeholder="2 échines de porc&#10;1 kg de pommes de terre&#10;1 salade&#10;6 œufs" required></textarea></label>
-    <div class="dialog-actions manual-dialog-actions"><button class="secondary-button" id="manual-multi-cancel" type="button">Annuler</button><button class="primary-button" type="submit">Ajouter à la liste</button></div>
-  </form>
-</dialog>
-
-`
-);
-
-html=html.replace(
-  'itemDialog:$("item-dialog"),itemForm:$("item-form"),itemTitle:$("item-dialog-title"),itemClose:$("item-close"),itemCancel:$("item-cancel"),itemName:$("item-name"),itemQuantity:$("item-quantity"),itemAisle:$("item-aisle"),itemSaveProduct:$("item-save-product"),',
-  'itemDialog:$("item-dialog"),itemForm:$("item-form"),itemTitle:$("item-dialog-title"),itemClose:$("item-close"),itemCancel:$("item-cancel"),itemName:$("item-name"),itemQuantity:$("item-quantity"),itemAisle:$("item-aisle"),itemSaveProduct:$("item-save-product"),itemSubmit:$("item-submit"),manualMultiOpen:$("manual-multi-open"),manualMultiDialog:$("manual-multi-dialog"),manualMultiForm:$("manual-multi-form"),manualMultiText:$("manual-multi-text"),manualMultiClose:$("manual-multi-close"),manualMultiCancel:$("manual-multi-cancel"),'
-);
-
-html=html.replace(
-  'function fillAisles(){for(const select of [els.itemAisle,els.productAisle]){select.innerHTML=AISLES.map(aisle=>`<option value="${escapeHtml(aisle)}">${escapeHtml(aisle)}</option>`).join("")}}',
-  `function fillAisles(){
-    const options=AISLES.map(aisle=>'<option value="'+escapeHtml(aisle)+'">'+escapeHtml(aisle)+'</option>').join("");
-    els.itemAisle.innerHTML='<option value="">Classement automatique</option>'+options;
-    els.productAisle.innerHTML=options;
-  }`
-);
-
-const manualArticleLogic=`
-  function manualArticleParts(value){
-    const original=clean(value,220);
-    const match=original.match(/^(\\d+(?:[.,]\\d+)?|[½¼¾]|\\d+\\/\\d+)\\s*(?:(kg|g|l|cl|ml|unités?|pièces?|têtes?|gousses?|épis?|bouquets?|paquets?|filets?|boîtes?|boites?|bouteilles?|pots?|sachets?|barquettes?|tranches?|rouleaux?|morceaux?)\\b)?\\s*(?:(?:de)\\s+|d[’']\\s*)?(.+)$/i);
-    if(!match)return {original:original,quantity:"",productText:original};
-    const amount=clean(match[1],24),unit=clean(match[2]||"",40),productText=clean(match[3],160);
-    if(!productText)return {original:original,quantity:"",productText:original};
-    return {original:original,quantity:clean(amount+(unit?" "+unit:""),80),productText:productText};
-  }
-  function manualItemText(item){
-    return clean(item&&item.quantity?item.quantity+" "+item.name:item&&item.name,220);
-  }
-  function manualIdentity(value){
-    const parts=manualArticleParts(value);
-    return productKey(parts.productText);
-  }
-  function manualMergedQuantity(first,second){
-    const left=parseQuantity(first),right=parseQuantity(second);
-    if(!left||!right||left.kind!==right.kind)return "";
-    return formatQuantity({...left,base:left.base+right.base});
-  }
-  function addManualArticle(value,requestedAisle="",createdAt=Date.now()){
-    const parts=manualArticleParts(value);
-    if(!parts.original)return {status:"ignored",item:null};
-    const aisle=isAisle(requestedAisle)?requestedAisle:classify(parts.original);
-    const identity=productKey(parts.productText);
-    for(const existing of state.items){
-      if(manualIdentity(manualItemText(existing))!==identity)continue;
-      if(existing.checked){
-        existing.name=parts.original;
-        existing.quantity="";
-        existing.aisle=aisle;
-        existing.checked=false;
-        existing.createdAt=createdAt;
-        return {status:"reactivated",item:existing};
-      }
-      const previous=manualArticleParts(manualItemText(existing));
-      const merged=manualMergedQuantity(previous.quantity,parts.quantity);
-      if(merged){
-        if(existing.quantity){
-          existing.quantity=merged;
-        }else{
-          existing.name=clean(merged+" "+previous.productText,220);
-        }
-        existing.aisle=isAisle(existing.aisle)?existing.aisle:aisle;
-        return {status:"merged",item:existing};
-      }
-      if(normalize(manualItemText(existing))===normalize(parts.original))return {status:"unchanged",item:existing};
-    }
-    const item=makeItem({name:parts.original,quantity:"",aisle:aisle,checked:false,createdAt:createdAt});
-    if(!item)return {status:"ignored",item:null};
-    state.items.push(item);
-    return {status:"added",item:item};
-  }
-  function keepManualProduct(parts,aisle){
-    if(!els.itemSaveProduct.checked)return;
-    const name=parts.productText||parts.original;
-    if(state.products.some(product=>productKey(product.name)===productKey(name)))return;
-    state.products.push(makeProduct({name:name,quantity:parts.quantity,aisle:aisle}));
-  }
-  openItemDialog=function(item=null){
-    editingItemId=item&&item.id||null;
-    els.itemTitle.textContent=item?"Modifier l’article":"Ajouter un article";
-    els.itemName.value=item?manualItemText(item):"";
-    els.itemQuantity.value="";
-    els.itemAisle.value=item&&item.aisle||"";
-    els.itemSaveProduct.checked=false;
-    els.itemSubmit.textContent=item?"Enregistrer":"Ajouter";
-    els.manualMultiOpen.hidden=Boolean(item);
-    openDialog(els.itemDialog);
-    setTimeout(()=>els.itemName.focus(),50);
-  };
-  function submitManualItem(event){
-    event.preventDefault();
-    const text=clean(els.itemName.value,220);
-    if(!text)return;
-    const chosen=isAisle(els.itemAisle.value)?els.itemAisle.value:"";
-    const existing=editingItemId?state.items.find(item=>item.id===editingItemId):null;
-    let result;
-    if(existing){
-      existing.name=text;
-      existing.quantity="";
-      existing.aisle=chosen||classify(text);
-      existing.checked=false;
-      result={status:"edited",item:existing};
-    }else{
-      result=addManualArticle(text,chosen,Date.now());
-    }
-    if(!result.item)return;
-    keepManualProduct(manualArticleParts(text),result.item.aisle);
-    closeDialog(els.itemDialog);
-    commit();
-    const message=result.status==="merged"?"Quantités regroupées.":result.status==="reactivated"?"Article remis dans la liste.":result.status==="unchanged"?"Cet article est déjà dans la liste.":result.status==="edited"?"Article modifié.":"Article ajouté.";
-    showToast(message,"Ajouter un autre",()=>openItemDialog(),5000);
-  }
-  function openManualMulti(){
-    closeDialog(els.itemDialog);
-    els.manualMultiText.value="";
-    openDialog(els.manualMultiDialog);
-    setTimeout(()=>els.manualMultiText.focus(),50);
-  }
-  function submitManualMulti(event){
-    event.preventDefault();
-    const lines=String(els.manualMultiText.value||"").split(/\\r?\\n/).map(line=>clean(line,220)).filter(Boolean);
-    if(!lines.length){showToast("Écrivez au moins un article.");return}
-    const counts={added:0,merged:0,reactivated:0,unchanged:0,ignored:0};
-    const started=Date.now();
-    lines.forEach((line,index)=>{const result=addManualArticle(line,"",started+index);counts[result.status]=(counts[result.status]||0)+1});
-    closeDialog(els.manualMultiDialog);
-    els.manualMultiText.value="";
-    commit();
-    let message=counts.added+" article"+(counts.added>1?"s":"")+" ajouté"+(counts.added>1?"s":"");
-    if(counts.merged)message+=" · "+counts.merged+" regroupé"+(counts.merged>1?"s":"");
-    if(counts.reactivated)message+=" · "+counts.reactivated+" réactivé"+(counts.reactivated>1?"s":"");
-    if(counts.unchanged)message+=" · "+counts.unchanged+" déjà présent"+(counts.unchanged>1?"s":"");
-    showToast(message+".");
-  }
-`;
-
-html=html.replace(
-  '  function headingFrom(line){',
-  manualArticleLogic+'\n  function headingFrom(line){'
-);
-
-html=html.replace(
-  'els.itemForm.addEventListener("submit",submitItem);els.productForm.addEventListener("submit",submitProduct);els.chatForm.addEventListener("submit",importChat);',
-  'els.itemForm.addEventListener("submit",submitManualItem);els.manualMultiOpen.addEventListener("click",openManualMulti);els.manualMultiForm.addEventListener("submit",submitManualMulti);els.productForm.addEventListener("submit",submitProduct);els.chatForm.addEventListener("submit",importChat);'
-);
-
-html=html.replace(
-  '[[els.newListClose,els.newListDialog],[els.newListCancel,els.newListDialog],[els.itemClose,els.itemDialog],[els.itemCancel,els.itemDialog]',
-  '[[els.newListClose,els.newListDialog],[els.newListCancel,els.newListDialog],[els.itemClose,els.itemDialog],[els.itemCancel,els.itemDialog],[els.manualMultiClose,els.manualMultiDialog],[els.manualMultiCancel,els.manualMultiDialog]'
-);
-
-html=html.replace(
-  '[els.newListDialog,els.itemDialog,els.productDialog,els.chatDialog,els.choiceDialog]',
-  '[els.newListDialog,els.itemDialog,els.manualMultiDialog,els.productDialog,els.chatDialog,els.choiceDialog]'
-);
-
-/* Identification claire de la version définitive */
-html=html.replace(
-  '</body>',
-  `<script>
-  (()=>{try{
-    const badge=document.querySelector('.version-pill');
-    if(badge)badge.textContent='V11.7';
-    document.title='Clair Courses V11.7';
-  }catch{}})();
-  <\/script></body>`
-);
+/* Identification visuelle de cette correction, sans toucher aux données. */
+source=source.replaceAll('Clair Courses V11.7','Clair Courses V11.8');
+source=source.replaceAll('Version 11.7 stable','Version 11.8 stable');
+source=source.replaceAll("badge.textContent='V11.7'","badge.textContent='V11.8'");
+source=source.replaceAll("document.title='Clair Courses V11.7'","document.title='Clair Courses V11.8'");
 
 document.open();
-document.write(html);
+document.write(source);
 document.close();
 })();
 </script>
