@@ -1,13 +1,14 @@
-CLAIR COURSES V11.5 — CORRECTIF DU TRANSFERT DES RECETTES
+CLAIR COURSES V11.6 — CORRECTION DE L’ACCUMULATION DES COURSES
 
-Remplacer les fichiers de la V11.4 par ceux de cette archive, sans supprimer le dépôt ni les données du navigateur.
+Remplacer les fichiers de la V11.5 par ceux de cette archive, sans supprimer le dépôt ni les données du navigateur.
 
 Le correctif :
-- transforme une dose de moutarde issue d’une recette en conditionnement d’achat ;
-- conserve le libellé exact « Moutarde à l’ancienne » ;
-- remplace une ancienne ligne « 1 c. à soupe » au lieu de créer un doublon ;
-- ne touche pas à « Mes produits » ;
-- conserve toutes les protections et données de la V11.4.
+- affiche le nombre réel d’articles à acheter et cochés ;
+- ajoute une action visible « Nouvelle liste » avec confirmation ;
+- supprime réellement la liste active et ses anciens instantanés ;
+- empêche une ancienne liste de réapparaître après fermeture ou rafraîchissement ;
+- conserve « Mes produits », les préférences et les données permanentes ;
+- conserve l’import manuel depuis Clair Repas et tous les correctifs V11.5.
 
 Commit conseillé :
-Clair Courses V11.5 — corriger le transfert de la moutarde à l’ancienne
+Clair Courses V11.6 — corriger l’accumulation des anciennes courses

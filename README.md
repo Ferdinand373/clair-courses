@@ -1,16 +1,16 @@
-# Clair Courses V11.5
+# Clair Courses V11.6
 
-Correctif ciblé de la V11.4.
+Correctif ciblé de la V11.5 contre l’accumulation invisible des anciennes courses.
 
-- la récupération de « Mes produits » est désormais limitée aux clés de Clair Courses ;
-- les identifiants de recettes importés par erreur depuis Clair Repas sont retirés de « Mes produits » et de la liste courante ;
-- les vrais produits, quantités, rayons et données utilisateur restent conservés ;
-- aucune donnée de Clair Repas ou de Mon Carnet n’est modifiée ;
-- l’import manuel et validé depuis Clair Repas V4.3 reste opérationnel ;
-- « 1 c. à soupe de moutarde à l’ancienne » devient « Moutarde à l’ancienne — 1 pot » dans la liste de courses ;
-- les moutardes classique, de Dijon et à l’ancienne restent distinctes ;
-- une ancienne ligne dosée en cuillère est remplacée au prochain transfert au lieu d’être additionnée au pot ;
-- « Mes produits » n’est pas modifié par ce correctif ;
-- le cache hors ligne est identifié comme Clair Courses V11.5.
+- les articles cochés sont désormais comptés avec les articles restant à acheter ;
+- une liste entièrement cochée n’apparaît plus comme vide ;
+- l’action visible « Nouvelle liste » demande une confirmation avant toute suppression ;
+- après confirmation, la liste active contient exactement zéro article ;
+- les instantanés résiduels des anciennes listes V8/V9 sont supprimés afin qu’ils ne réapparaissent pas ;
+- une liste déjà vide est assainie au démarrage ;
+- « Mes produits », les usages, les rayons et les autres données permanentes sont conservés ;
+- l’import manuel depuis Clair Repas ajoute uniquement les nouveaux ingrédients à la liste active ;
+- les correctifs V11.5, dont la distinction des moutardes, restent opérationnels ;
+- le cache hors ligne est identifié comme Clair Courses V11.6.
 
-Les données et fonctions de la V11.4 sont conservées.
+L’apparence générale et le fonctionnement de Clair Courses V11.5 sont conservés.
