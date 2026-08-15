@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f4ed">
-<title>Clair Courses V11.6</title>
+<title>Clair Courses V11.7</title>
 <style>
 html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center}
@@ -10,13 +10,13 @@ html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:
 </style>
 </head>
 <body>
-<div class="boot" id="boot"><div><strong>Clair Courses V11.6</strong><p>Ouverture et vérification de vos données…</p></div></div>
+<div class="boot" id="boot"><div><strong>Clair Courses V11.7</strong><p>Ouverture et vérification de vos données…</p></div></div>
 <script>
 (async()=>{
 'use strict';
 
 const COMMIT='acb52ba8f4b1f9d78f2c3f55c2d3d6362342bca0';
-const CACHE_KEY='clairCourses.shell.v11.6.production';
+const CACHE_KEY='clairCourses.shell.v11.7.production';
 const SOURCES=[
   `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${COMMIT}/index.html?v=114p`,
   `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${COMMIT}/index.html?v=114p`
@@ -40,6 +40,7 @@ for(const url of SOURCES){
 if(!html){
   try{
     html=localStorage.getItem(CACHE_KEY)
+      ||localStorage.getItem('clairCourses.shell.v11.6.production')
       ||localStorage.getItem('clairCourses.shell.v11.5.production')
       ||localStorage.getItem('clairCourses.shell.v11.4.production')
       ||localStorage.getItem('clairCourses.shell.v11.3.production')
@@ -53,7 +54,7 @@ if(!html){
 }
 
 /*
- * V11.6 — nouvelle liste fiable et compteur fidèle au stockage actif.
+ * V11.7 — ajout manuel rapide et multiligne, sur la base fiable V11.6.
  *
  * Les articles cochés restent volontairement dans la liste active, mais ils
  * étaient masqués et exclus du compteur. Un ajout ultérieur pouvait alors les
@@ -92,7 +93,7 @@ html=html.replace(
 
 html=html.replace(
   'Clair Courses — Version 10.9 stable',
-  'Clair Courses — Version 11.6 stable'
+  'Clair Courses — Version 11.7 stable'
 );
 
 const protection=`
@@ -249,7 +250,11 @@ html=html.replace(
 html=html.replace(
   'function classify(label){\n    for(const aisle of CLASSIFICATION_ORDER){if((KEYWORDS[aisle]||[]).some(word=>hasSemanticKeyword(label,word)))return aisle}\n    return "Divers";\n  }',
   `function classify(label){
+    const raw=clean(label,220).toLocaleLowerCase("fr");
     const n=normalize(label);
+    if(raw.includes("pâté"))return "Charcuterie";
+    if(raw.includes("pâtes")||/(?:^| )pates(?: |$)/.test(n))return "Épicerie";
+    if(raw.includes("pâte"))return "Crèmerie";
     if(/\\b(?:echalote|echalotes|haricot vert|haricots verts|tomate|tomates|pomme de terre|pommes de terre|ail)\\b/.test(n))return "Fruits et légumes";
     if(/\\b(?:lieu jaune|poisson|saumon|cabillaud|dorade|thon)\\b/.test(n))return "Poissonnerie";
     if(/\\b(?:beurre|creme|crème|lait|fromage)\\b/.test(n))return "Crèmerie";
@@ -297,14 +302,203 @@ html=html.replace(
   async function shareList(){`
 );
 
+/* V11.7 — saisie manuelle directe, avec le texte de l'utilisateur comme
+   référence visible. Le classement et le regroupement réutilisent les
+   fonctions existantes de Clair Courses. */
+html=html.replace(
+  '</style>',
+  `.manual-item-hint{margin:0;color:var(--muted);font-size:.86rem;line-height:1.45}.manual-multi-open{width:100%;min-height:48px;padding:0 14px;border:1px solid var(--line);border-radius:13px;color:var(--accent2);background:var(--accentSoft);font-weight:900}.manual-dialog-actions{position:sticky;bottom:-20px;z-index:2;padding-top:9px;padding-bottom:max(4px,env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(255,254,250,0),var(--surface) 9px)}#manual-multi-text{min-height:210px}.manual-entry-card{scroll-padding-bottom:76px}@media(max-height:650px){#manual-multi-text{min-height:135px}.manual-entry-card{gap:12px;padding:16px}}</style>`
+);
+
+html=html.replace(
+  /<dialog id="item-dialog">[\s\S]*?<\/dialog>\s*(?=<dialog id="product-dialog">)/,
+  `<dialog id="item-dialog">
+  <form class="dialog-card manual-entry-card" id="item-form">
+    <div class="dialog-header"><h2 id="item-dialog-title">Ajouter un article</h2><button class="close-button" id="item-close" type="button" aria-label="Fermer">×</button></div>
+    <p class="manual-item-hint">Écrivez simplement ce qu’il vous faut, quantité comprise.</p>
+    <div class="form-grid">
+      <label>Article<input class="field" id="item-name" type="text" maxlength="220" placeholder="Ex. 2 échines de porc" autocomplete="off" enterkeyhint="done" required></label>
+      <input id="item-quantity" type="hidden">
+      <label>Rayon<span class="label-hint">Laissez « Classement automatique », ou corrigez le rayon si nécessaire.</span><select class="field" id="item-aisle"></select></label>
+      <label class="save-product-choice"><input id="item-save-product" type="checkbox">Garder aussi dans Mes produits</label>
+      <button class="manual-multi-open" id="manual-multi-open" type="button">Ajouter plusieurs articles</button>
+    </div>
+    <div class="dialog-actions manual-dialog-actions"><button class="secondary-button" id="item-cancel" type="button">Annuler</button><button class="primary-button" id="item-submit" type="submit">Ajouter</button></div>
+  </form>
+</dialog>
+
+<dialog id="manual-multi-dialog">
+  <form class="dialog-card manual-entry-card" id="manual-multi-form">
+    <div class="dialog-header"><h2>Ajouter plusieurs articles</h2><button class="close-button" id="manual-multi-close" type="button" aria-label="Fermer">×</button></div>
+    <label>Un article par ligne<span class="label-hint">Les lignes vides seront ignorées. Le texte saisi restera affiché tel quel.</span><textarea class="field" id="manual-multi-text" maxlength="5000" placeholder="2 échines de porc&#10;1 kg de pommes de terre&#10;1 salade&#10;6 œufs" required></textarea></label>
+    <div class="dialog-actions manual-dialog-actions"><button class="secondary-button" id="manual-multi-cancel" type="button">Annuler</button><button class="primary-button" type="submit">Ajouter à la liste</button></div>
+  </form>
+</dialog>
+
+`
+);
+
+html=html.replace(
+  'itemDialog:$("item-dialog"),itemForm:$("item-form"),itemTitle:$("item-dialog-title"),itemClose:$("item-close"),itemCancel:$("item-cancel"),itemName:$("item-name"),itemQuantity:$("item-quantity"),itemAisle:$("item-aisle"),itemSaveProduct:$("item-save-product"),',
+  'itemDialog:$("item-dialog"),itemForm:$("item-form"),itemTitle:$("item-dialog-title"),itemClose:$("item-close"),itemCancel:$("item-cancel"),itemName:$("item-name"),itemQuantity:$("item-quantity"),itemAisle:$("item-aisle"),itemSaveProduct:$("item-save-product"),itemSubmit:$("item-submit"),manualMultiOpen:$("manual-multi-open"),manualMultiDialog:$("manual-multi-dialog"),manualMultiForm:$("manual-multi-form"),manualMultiText:$("manual-multi-text"),manualMultiClose:$("manual-multi-close"),manualMultiCancel:$("manual-multi-cancel"),'
+);
+
+html=html.replace(
+  'function fillAisles(){for(const select of [els.itemAisle,els.productAisle]){select.innerHTML=AISLES.map(aisle=>`<option value="${escapeHtml(aisle)}">${escapeHtml(aisle)}</option>`).join("")}}',
+  `function fillAisles(){
+    const options=AISLES.map(aisle=>'<option value="'+escapeHtml(aisle)+'">'+escapeHtml(aisle)+'</option>').join("");
+    els.itemAisle.innerHTML='<option value="">Classement automatique</option>'+options;
+    els.productAisle.innerHTML=options;
+  }`
+);
+
+const manualArticleLogic=`
+  function manualArticleParts(value){
+    const original=clean(value,220);
+    const match=original.match(/^(\\d+(?:[.,]\\d+)?|[½¼¾]|\\d+\\/\\d+)\\s*(?:(kg|g|l|cl|ml|unités?|pièces?|têtes?|gousses?|épis?|bouquets?|paquets?|filets?|boîtes?|boites?|bouteilles?|pots?|sachets?|barquettes?|tranches?|rouleaux?|morceaux?)\\b)?\\s*(?:(?:de)\\s+|d[’']\\s*)?(.+)$/i);
+    if(!match)return {original:original,quantity:"",productText:original};
+    const amount=clean(match[1],24),unit=clean(match[2]||"",40),productText=clean(match[3],160);
+    if(!productText)return {original:original,quantity:"",productText:original};
+    return {original:original,quantity:clean(amount+(unit?" "+unit:""),80),productText:productText};
+  }
+  function manualItemText(item){
+    return clean(item&&item.quantity?item.quantity+" "+item.name:item&&item.name,220);
+  }
+  function manualIdentity(value){
+    const parts=manualArticleParts(value);
+    return productKey(parts.productText);
+  }
+  function manualMergedQuantity(first,second){
+    const left=parseQuantity(first),right=parseQuantity(second);
+    if(!left||!right||left.kind!==right.kind)return "";
+    return formatQuantity({...left,base:left.base+right.base});
+  }
+  function addManualArticle(value,requestedAisle="",createdAt=Date.now()){
+    const parts=manualArticleParts(value);
+    if(!parts.original)return {status:"ignored",item:null};
+    const aisle=isAisle(requestedAisle)?requestedAisle:classify(parts.original);
+    const identity=productKey(parts.productText);
+    for(const existing of state.items){
+      if(manualIdentity(manualItemText(existing))!==identity)continue;
+      if(existing.checked){
+        existing.name=parts.original;
+        existing.quantity="";
+        existing.aisle=aisle;
+        existing.checked=false;
+        existing.createdAt=createdAt;
+        return {status:"reactivated",item:existing};
+      }
+      const previous=manualArticleParts(manualItemText(existing));
+      const merged=manualMergedQuantity(previous.quantity,parts.quantity);
+      if(merged){
+        if(existing.quantity){
+          existing.quantity=merged;
+        }else{
+          existing.name=clean(merged+" "+previous.productText,220);
+        }
+        existing.aisle=isAisle(existing.aisle)?existing.aisle:aisle;
+        return {status:"merged",item:existing};
+      }
+      if(normalize(manualItemText(existing))===normalize(parts.original))return {status:"unchanged",item:existing};
+    }
+    const item=makeItem({name:parts.original,quantity:"",aisle:aisle,checked:false,createdAt:createdAt});
+    if(!item)return {status:"ignored",item:null};
+    state.items.push(item);
+    return {status:"added",item:item};
+  }
+  function keepManualProduct(parts,aisle){
+    if(!els.itemSaveProduct.checked)return;
+    const name=parts.productText||parts.original;
+    if(state.products.some(product=>productKey(product.name)===productKey(name)))return;
+    state.products.push(makeProduct({name:name,quantity:parts.quantity,aisle:aisle}));
+  }
+  openItemDialog=function(item=null){
+    editingItemId=item&&item.id||null;
+    els.itemTitle.textContent=item?"Modifier l’article":"Ajouter un article";
+    els.itemName.value=item?manualItemText(item):"";
+    els.itemQuantity.value="";
+    els.itemAisle.value=item&&item.aisle||"";
+    els.itemSaveProduct.checked=false;
+    els.itemSubmit.textContent=item?"Enregistrer":"Ajouter";
+    els.manualMultiOpen.hidden=Boolean(item);
+    openDialog(els.itemDialog);
+    setTimeout(()=>els.itemName.focus(),50);
+  };
+  function submitManualItem(event){
+    event.preventDefault();
+    const text=clean(els.itemName.value,220);
+    if(!text)return;
+    const chosen=isAisle(els.itemAisle.value)?els.itemAisle.value:"";
+    const existing=editingItemId?state.items.find(item=>item.id===editingItemId):null;
+    let result;
+    if(existing){
+      existing.name=text;
+      existing.quantity="";
+      existing.aisle=chosen||classify(text);
+      existing.checked=false;
+      result={status:"edited",item:existing};
+    }else{
+      result=addManualArticle(text,chosen,Date.now());
+    }
+    if(!result.item)return;
+    keepManualProduct(manualArticleParts(text),result.item.aisle);
+    closeDialog(els.itemDialog);
+    commit();
+    const message=result.status==="merged"?"Quantités regroupées.":result.status==="reactivated"?"Article remis dans la liste.":result.status==="unchanged"?"Cet article est déjà dans la liste.":result.status==="edited"?"Article modifié.":"Article ajouté.";
+    showToast(message,"Ajouter un autre",()=>openItemDialog(),5000);
+  }
+  function openManualMulti(){
+    closeDialog(els.itemDialog);
+    els.manualMultiText.value="";
+    openDialog(els.manualMultiDialog);
+    setTimeout(()=>els.manualMultiText.focus(),50);
+  }
+  function submitManualMulti(event){
+    event.preventDefault();
+    const lines=String(els.manualMultiText.value||"").split(/\\r?\\n/).map(line=>clean(line,220)).filter(Boolean);
+    if(!lines.length){showToast("Écrivez au moins un article.");return}
+    const counts={added:0,merged:0,reactivated:0,unchanged:0,ignored:0};
+    const started=Date.now();
+    lines.forEach((line,index)=>{const result=addManualArticle(line,"",started+index);counts[result.status]=(counts[result.status]||0)+1});
+    closeDialog(els.manualMultiDialog);
+    els.manualMultiText.value="";
+    commit();
+    let message=counts.added+" article"+(counts.added>1?"s":"")+" ajouté"+(counts.added>1?"s":"");
+    if(counts.merged)message+=" · "+counts.merged+" regroupé"+(counts.merged>1?"s":"");
+    if(counts.reactivated)message+=" · "+counts.reactivated+" réactivé"+(counts.reactivated>1?"s":"");
+    if(counts.unchanged)message+=" · "+counts.unchanged+" déjà présent"+(counts.unchanged>1?"s":"");
+    showToast(message+".");
+  }
+`;
+
+html=html.replace(
+  '  function headingFrom(line){',
+  manualArticleLogic+'\n  function headingFrom(line){'
+);
+
+html=html.replace(
+  'els.itemForm.addEventListener("submit",submitItem);els.productForm.addEventListener("submit",submitProduct);els.chatForm.addEventListener("submit",importChat);',
+  'els.itemForm.addEventListener("submit",submitManualItem);els.manualMultiOpen.addEventListener("click",openManualMulti);els.manualMultiForm.addEventListener("submit",submitManualMulti);els.productForm.addEventListener("submit",submitProduct);els.chatForm.addEventListener("submit",importChat);'
+);
+
+html=html.replace(
+  '[[els.newListClose,els.newListDialog],[els.newListCancel,els.newListDialog],[els.itemClose,els.itemDialog],[els.itemCancel,els.itemDialog]',
+  '[[els.newListClose,els.newListDialog],[els.newListCancel,els.newListDialog],[els.itemClose,els.itemDialog],[els.itemCancel,els.itemDialog],[els.manualMultiClose,els.manualMultiDialog],[els.manualMultiCancel,els.manualMultiDialog]'
+);
+
+html=html.replace(
+  '[els.newListDialog,els.itemDialog,els.productDialog,els.chatDialog,els.choiceDialog]',
+  '[els.newListDialog,els.itemDialog,els.manualMultiDialog,els.productDialog,els.chatDialog,els.choiceDialog]'
+);
+
 /* Identification claire de la version définitive */
 html=html.replace(
   '</body>',
   `<script>
   (()=>{try{
     const badge=document.querySelector('.version-pill');
-    if(badge)badge.textContent='V11.6';
-    document.title='Clair Courses V11.6';
+    if(badge)badge.textContent='V11.7';
+    document.title='Clair Courses V11.7';
   }catch{}})();
   <\/script></body>`
 );

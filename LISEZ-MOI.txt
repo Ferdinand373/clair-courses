@@ -1,14 +1,16 @@
-CLAIR COURSES V11.6 — CORRECTION DE L’ACCUMULATION DES COURSES
+CLAIR COURSES V11.7 — AJOUT MANUEL D’ARTICLES
 
-Remplacer les fichiers de la V11.5 par ceux de cette archive, sans supprimer le dépôt ni les données du navigateur.
+Remplacer les fichiers de la V11.6 par ceux de cette archive, sans supprimer le dépôt ni les données du navigateur.
 
-Le correctif :
-- affiche le nombre réel d’articles à acheter et cochés ;
-- ajoute une action visible « Nouvelle liste » avec confirmation ;
-- supprime réellement la liste active et ses anciens instantanés ;
-- empêche une ancienne liste de réapparaître après fermeture ou rafraîchissement ;
-- conserve « Mes produits », les préférences et les données permanentes ;
-- conserve l’import manuel depuis Clair Repas et tous les correctifs V11.5.
+Cette évolution ciblée :
+- permet d’écrire directement « 2 échines de porc » dans un seul champ ;
+- conserve le texte saisi et classe automatiquement l’article par rayon ;
+- permet de corriger le rayon ;
+- permet d’ajouter plusieurs articles, à raison d’un article par ligne ;
+- accepte un produit inconnu dans « Divers » ;
+- protège les distinctions pâtes / pâte / pâté et les autres variantes ;
+- regroupe uniquement les vrais doublons dont les quantités sont compatibles ;
+- conserve « Mes produits », les préférences, « Nouvelle liste » et l’import Clair Repas.
 
 Commit conseillé :
-Clair Courses V11.6 — corriger l’accumulation des anciennes courses
+Clair Courses V11.7 — ajouter les articles manuellement
