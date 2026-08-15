@@ -1,27 +1,23 @@
 {
   "name": "Clair Courses",
   "short_name": "Clair Courses",
-  "description": "Ma liste de courses, simplement.",
+  "description": "Ma liste de courses, simplement — édition Premium.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f6f4ed",
-  "theme_color": "#f6f4ed",
+  "background_color": "#eef6fb",
+  "theme_color": "#dceefa",
   "icons": [
     {
-      "src": "./assets/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "./assets/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "./assets/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
