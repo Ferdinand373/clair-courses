@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f4ed">
-<title>Clair Courses V11.8</title>
+<title>Clair Courses V11.9</title>
 <style>
 html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center}
@@ -12,22 +12,20 @@ html,body{min-height:100%;margin:0;background:#f6f4ed;color:#203128;font-family:
 </style>
 </head>
 <body>
-<div class="boot" id="boot"><div><strong>Clair Courses V11.8</strong><p>Ouverture et vérification de vos données…</p></div></div>
+<div class="boot" id="boot"><div><strong>Clair Courses V11.9</strong><p>Ouverture et vérification de vos données…</p></div></div>
 <script>
 (async()=>{
 'use strict';
 
 /*
- * V11.8 — correctif ciblé :
- * « Mes produits » est affiché en ordre alphabétique français A → Z.
- *
- * Cette enveloppe repart exactement de la V11.7 validée au commit ci-dessous,
- * puis injecte uniquement le correctif de tri avant son exécution.
+ * V11.9 — Mes produits enrichis.
+ * Repart de la V11.7 stable, conserve la protection V11.7 et le tri A→Z V11.8,
+ * puis enrichit uniquement le catalogue historique de 8 produits.
  */
 const V117_COMMIT='ca971ada48ddaee0117fc8d5c8e14f6084cd0d11';
 const SOURCES=[
-  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${V117_COMMIT}/index.html?v=118az`,
-  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${V117_COMMIT}/index.html?v=118az`
+  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${V117_COMMIT}/index.html?v=119products`,
+  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${V117_COMMIT}/index.html?v=119products`
 ];
 
 let source='';
@@ -50,32 +48,20 @@ if(!source){
   return;
 }
 
-/*
- * Inséré dans le moteur V11.7 juste avant son document.open().
- * On retire le classement par fréquence d'utilisation et on conserve
- * uniquement un tri alphabétique localisé en français.
- */
-const alphaPatch = `
-/* V11.8 — Mes produits : ordre alphabétique A → Z uniquement. */
-html=html.replace(
-  '.slice().sort((a,b)=>(Number(usage[productKey(b.name)])||0)-(Number(usage[productKey(a.name)])||0)||a.name.localeCompare(b.name,"fr"));',
-  '.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));'
-);
-`;
+const v119Patch="/* V11.9 — Mes produits enrichis : catalogue de base avec conditionnements réalistes.\n   La migration ne s'applique qu'aux 8 produits de base historiques. */\nconst V119_CATALOGUE=[{\"name\":\"Eau\",\"quantity\":\"1 pack de 6 × 1,5 L\",\"aisle\":\"Eau\"},{\"name\":\"Pain\",\"quantity\":\"1 baguette\",\"aisle\":\"Boulangerie\"},{\"name\":\"Lait\",\"quantity\":\"1 bouteille 1 L\",\"aisle\":\"Crèmerie\"},{\"name\":\"Beurre\",\"quantity\":\"1 plaquette 250 g\",\"aisle\":\"Crèmerie\"},{\"name\":\"Café\",\"quantity\":\"1 paquet 250 g\",\"aisle\":\"Épicerie\"},{\"name\":\"Papier aluminium\",\"quantity\":\"1 rouleau\",\"aisle\":\"Maison\"},{\"name\":\"Sacs-poubelle\",\"quantity\":\"1 rouleau\",\"aisle\":\"Maison\"},{\"name\":\"Courgettes\",\"quantity\":\"à l’unité\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Ail\",\"quantity\":\"1 tête\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Carottes\",\"quantity\":\"1 sachet 1 kg\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Citrons\",\"quantity\":\"2 pièces\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Oignons\",\"quantity\":\"1 filet 1 kg\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Pommes de terre\",\"quantity\":\"1 filet 2,5 kg\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Salade\",\"quantity\":\"1 pièce\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Tomates\",\"quantity\":\"1 barquette 500 g\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Œufs\",\"quantity\":\"1 boîte de 6\",\"aisle\":\"Crèmerie\"},{\"name\":\"Crème fraîche\",\"quantity\":\"1 pot 20 cl\",\"aisle\":\"Crèmerie\"},{\"name\":\"Fromage râpé\",\"quantity\":\"1 sachet 200 g\",\"aisle\":\"Crèmerie\"},{\"name\":\"Parmesan\",\"quantity\":\"1 sachet 100 g\",\"aisle\":\"Crèmerie\"},{\"name\":\"Yaourts nature\",\"quantity\":\"1 pack de 4\",\"aisle\":\"Crèmerie\"},{\"name\":\"Riz\",\"quantity\":\"1 paquet 1 kg\",\"aisle\":\"Épicerie\"},{\"name\":\"Pâtes\",\"quantity\":\"1 paquet 500 g\",\"aisle\":\"Épicerie\"},{\"name\":\"Semoule\",\"quantity\":\"1 paquet 500 g\",\"aisle\":\"Épicerie\"},{\"name\":\"Farine\",\"quantity\":\"1 paquet 1 kg\",\"aisle\":\"Épicerie\"},{\"name\":\"Sucre\",\"quantity\":\"1 paquet 1 kg\",\"aisle\":\"Épicerie\"},{\"name\":\"Sel\",\"quantity\":\"1 paquet\",\"aisle\":\"Épicerie\"},{\"name\":\"Poivre\",\"quantity\":\"1 moulin\",\"aisle\":\"Épicerie\"},{\"name\":\"Huile d’olive\",\"quantity\":\"1 bouteille 75 cl\",\"aisle\":\"Épicerie\"},{\"name\":\"Huile neutre\",\"quantity\":\"1 bouteille 1 L\",\"aisle\":\"Épicerie\"},{\"name\":\"Vinaigre\",\"quantity\":\"1 bouteille 75 cl\",\"aisle\":\"Épicerie\"},{\"name\":\"Moutarde\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Mayonnaise\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Ketchup\",\"quantity\":\"1 flacon\",\"aisle\":\"Épicerie\"},{\"name\":\"Miel\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Sauce soja\",\"quantity\":\"1 bouteille 15 cl\",\"aisle\":\"Épicerie\"},{\"name\":\"Paprika\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Curry\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Tomates concassées\",\"quantity\":\"1 boîte 400 g\",\"aisle\":\"Conserves\"},{\"name\":\"Concentré de tomate\",\"quantity\":\"1 tube\",\"aisle\":\"Épicerie\"},{\"name\":\"Pois chiches\",\"quantity\":\"1 boîte 400 g\",\"aisle\":\"Conserves\"},{\"name\":\"Haricots rouges\",\"quantity\":\"1 boîte 400 g\",\"aisle\":\"Conserves\"},{\"name\":\"Maïs\",\"quantity\":\"1 boîte 300 g\",\"aisle\":\"Conserves\"},{\"name\":\"Thon au naturel\",\"quantity\":\"1 boîte 140 g\",\"aisle\":\"Conserves\"},{\"name\":\"Papier cuisson\",\"quantity\":\"1 rouleau\",\"aisle\":\"Maison\"},{\"name\":\"Film alimentaire\",\"quantity\":\"1 rouleau\",\"aisle\":\"Maison\"},{\"name\":\"Essuie-tout\",\"quantity\":\"1 paquet de 2\",\"aisle\":\"Maison\"},{\"name\":\"Papier toilette\",\"quantity\":\"1 paquet de 6\",\"aisle\":\"Hygiène\"},{\"name\":\"Liquide vaisselle\",\"quantity\":\"1 flacon 500 ml\",\"aisle\":\"Maison\"},{\"name\":\"Éponges\",\"quantity\":\"1 paquet de 3\",\"aisle\":\"Maison\"},{\"name\":\"Lessive\",\"quantity\":\"1 bidon\",\"aisle\":\"Maison\"}];\nconst V119_BASE_NAMES=[\"Eau\",\"Pain\",\"Lait\",\"Beurre\",\"Café\",\"Papier aluminium\",\"Sacs-poubelle\",\"Courgettes\"];\n\nhtml=html.replace(\n  /const DEFAULT_PRODUCTS=\\[[\\s\\S]*?\\n  \\];/,\n  'const DEFAULT_PRODUCTS='+JSON.stringify(V119_CATALOGUE)+';\\n  const BASE_PRODUCT_NAMES_V119='+JSON.stringify(V119_BASE_NAMES)+';'\n);\n\nhtml=html.replace(\n  'const products=Array.isArray(source.products)?source.products:DEFAULT_PRODUCTS;',\n  'const savedProductsV119=Array.isArray(source.products)?source.products:null;const legacyBaseV119=Array.isArray(savedProductsV119)&&savedProductsV119.length===8&&BASE_PRODUCT_NAMES_V119.every(name=>savedProductsV119.some(product=>productKey(product.name)===productKey(name)));const products=!savedProductsV119||legacyBaseV119?DEFAULT_PRODUCTS:savedProductsV119;'\n);\n\nhtml=html.replace(\n  '.slice().sort((a,b)=>(Number(usage[productKey(b.name)])||0)-(Number(usage[productKey(a.name)])||0)||a.name.localeCompare(b.name,\"fr\"));',\n  '.slice().sort((a,b)=>a.name.localeCompare(b.name,\"fr\",{sensitivity:\"base\"}));'\n);\n\nhtml=html.replace(\n  'Les produits les plus souvent choisis apparaissent en premier. Touchez un produit pour l’ajouter.',\n  'Vos produits habituels sont classés de A à Z. Touchez un produit pour l’ajouter.'\n);\n";
 
 if(!source.includes('document.open();')){
   document.getElementById('boot').innerHTML=
-    '<div><strong>Clair Courses V11.8</strong><p>La base V11.7 attendue n’a pas été reconnue.</p></div>';
+    '<div><strong>Clair Courses V11.9</strong><p>La base V11.7 attendue n’a pas été reconnue.</p></div>';
   return;
 }
 
-source=source.replace('document.open();',alphaPatch+'\ndocument.open();');
+source=source.replace('document.open();',v119Patch+'\ndocument.open();');
 
-/* Identification visuelle de cette correction, sans toucher aux données. */
-source=source.replaceAll('Clair Courses V11.7','Clair Courses V11.8');
-source=source.replaceAll('Version 11.7 stable','Version 11.8 stable');
-source=source.replaceAll("badge.textContent='V11.7'","badge.textContent='V11.8'");
-source=source.replaceAll("document.title='Clair Courses V11.7'","document.title='Clair Courses V11.8'");
+source=source.replaceAll('Clair Courses V11.7','Clair Courses V11.9');
+source=source.replaceAll('Version 11.7 stable','Version 11.9 stable');
+source=source.replaceAll("badge.textContent='V11.7'","badge.textContent='V11.9'");
+source=source.replaceAll("document.title='Clair Courses V11.7'","document.title='Clair Courses V11.9'");
 
 document.open();
 document.write(source);

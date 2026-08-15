@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "clair-courses-v11.7";
+const CACHE_NAME = "clair-courses-v11.9";
 const CORE_FILES = [
   "./",
   "./index.html",
