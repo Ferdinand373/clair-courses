@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#dceefa">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Clair Courses">
-<title>Clair Courses · Clair Sync</title>
+<title>Clair Courses · Clair Sync 1.1</title>
 <style>
 html,body{min-height:100%;margin:0;background:#eef6fb;color:#17364a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center;background:radial-gradient(circle at 90% 0,rgba(169,214,239,.62),transparent 25rem),linear-gradient(180deg,#eef8fd,#f8fbfd)}
@@ -36,7 +36,7 @@ function __CC_CLAIR_SYNC_TRANSFORM(html){
 (()=>{
 'use strict';
 
-const CC_SYNC_VERSION='Clair Sync 1.0';
+const CC_SYNC_VERSION='Clair Sync 1.1';
 const SUPABASE_URL='https://ryyewskgfgysfubesdsj.supabase.co';
 const SUPABASE_KEY='sb_publishable_T9Dmg9VKTdMFdCuLVxD54w_7GeH3Q6S';
 const STATE_KEY='clairCourses.state';
@@ -44,6 +44,7 @@ const USAGE_KEY='clairCourses.usage.v10';
 const PREVIOUS_KEY='clairCourses.previousList.v9';
 const REMOTE_KEY='clairCourses.state';
 const RELOAD_GUARD='clairSync.cc.reload.v1';
+const META_KEY='clairSync.cc.meta.v1';
 
 let client=null,user=null,syncing=false,lastRaw='',timer=null;
 
@@ -60,6 +61,21 @@ function parseKey(key){
   }catch{return null}
 }
 function stable(v){try{return JSON.stringify(v)}catch{return String(v)}}
+function stateHash(v){
+  try{
+    if(!v)return '';
+    const c=JSON.parse(JSON.stringify(v));
+    if(c&&typeof c==='object')delete c.updatedAt;
+    const str=JSON.stringify(c);
+    let h=2166136261;
+    for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}
+    return (h>>>0).toString(16);
+  }catch{return ''}
+}
+function getMeta(){return parseKey(META_KEY)||{}}
+function setMeta(patch){
+  try{localStorage.setItem(META_KEY,JSON.stringify({...getMeta(),...patch}))}catch{}
+}
 function normName(v){
   return String(v||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim().toLowerCase().replace(/\\s+/g,' ');
 }
@@ -74,24 +90,16 @@ function mergeProducts(primary=[],secondary=[]){
   }
   return out;
 }
-function mergeState(localState,remoteState){
-  if(!localState&& !remoteState)return null;
-  if(!localState)return remoteState;
-  if(!remoteState)return localState;
-
-  const lt=Number(localState.updatedAt)||0;
-  const rt=Number(remoteState.updatedAt)||0;
-  const localWins=lt>=rt;
-  const newest=localWins?localState:remoteState;
-  const older=localWins?remoteState:localState;
-
+function combineState(primary,secondary){
+  if(!primary)return secondary||null;
+  if(!secondary)return primary;
   return {
-    ...older,
-    ...newest,
-    items:Array.isArray(newest.items)?newest.items:[],
-    products:mergeProducts(newest.products,older.products),
-    updatedAt:Math.max(lt,rt,Date.now()),
-    version:Math.max(Number(localState.version)||0,Number(remoteState.version)||0)
+    ...secondary,
+    ...primary,
+    items:Array.isArray(primary.items)?primary.items:[],
+    products:mergeProducts(primary.products,secondary.products),
+    updatedAt:Number(primary.updatedAt)||Date.now(),
+    version:Math.max(Number(primary.version)||0,Number(secondary.version)||0)
   };
 }
 function setBadge(text,kind='ok'){
@@ -136,7 +144,7 @@ async function pushRemote(row,state,usage,previous){
       previousList:previous??null,
       source_device:deviceLabel(),
       synced_at:now,
-      integration:'clair-sync-1.0'
+      integration:'clair-sync-1.1'
     },
     schema_version:1,
     revision:(row?.revision||0)+1,
@@ -154,30 +162,53 @@ async function syncNow(reason='auto'){
     const localPrevious=parseKey(PREVIOUS_KEY);
     const row=await getRemote();
     const remoteState=row?.payload?.value||null;
-    const merged=mergeState(localState,remoteState);
+    const meta=getMeta();
+    const localHash=stateHash(localState);
+    const remoteHash=stateHash(remoteState);
 
-    if(!merged){
-      setBadge('Clair Sync ✓'); syncing=false; return;
+    let merged=null;
+    if(!remoteState){
+      merged=localState;
+    }else if(!localState){
+      merged=remoteState;
+    }else if(localHash===remoteHash){
+      merged=localState;
+    }else if(!meta.lastSyncedHash){
+      // Premier appairage d'un nouvel appareil : le nuage est la référence
+      // pour la liste active, mais les produits personnels des deux appareils sont réunis.
+      merged=combineState(remoteState,localState);
+    }else{
+      const localChanged=localHash!==meta.lastSyncedHash;
+      const remoteChanged=remoteHash!==meta.lastSyncedHash;
+      if(localChanged&&!remoteChanged){
+        merged=combineState(localState,remoteState);
+      }else if(!localChanged&&remoteChanged){
+        merged=combineState(remoteState,localState);
+      }else{
+        const localAt=Number(meta.localChangedAt)||0;
+        const remoteAt=Date.parse(row?.payload?.synced_at||row?.updated_at||0)||0;
+        merged=localAt>remoteAt?combineState(localState,remoteState):combineState(remoteState,localState);
+      }
     }
 
-    const localBefore=stable(localState);
-    const mergedText=stable(merged);
+    if(!merged){setBadge('Clair Sync ✓');return}
 
-    // The newest active list wins; "Mes produits" are safely united.
-    if(mergedText!==localBefore){
-      writeLocal(STATE_KEY,merged);
-    }
+    const mergedHash=stateHash(merged);
+    const localNeedsUpdate=mergedHash!==localHash;
+    const remoteNeedsUpdate=!row||mergedHash!==remoteHash;
+
+    if(localNeedsUpdate)writeLocal(STATE_KEY,merged);
 
     const remoteUsage=row?.payload?.usage;
     const usage=localUsage??remoteUsage??null;
     const previous=localPrevious??row?.payload?.previousList??null;
-    await pushRemote(row,merged,usage,previous);
+    if(remoteNeedsUpdate)await pushRemote(row,merged,usage,previous);
 
+    setMeta({lastSyncedHash:mergedHash,remoteRevision:(row?.revision||0)+(remoteNeedsUpdate?1:0),lastSyncAt:Date.now(),localChangedAt:0});
     lastRaw=localStorage.getItem(STATE_KEY)||'';
     setBadge('Clair Sync ✓');
 
-    // If data arrived from the other device, reload once so the visible list is current.
-    if(mergedText!==localBefore && sessionStorage.getItem(RELOAD_GUARD)!=='1'){
+    if(localNeedsUpdate && sessionStorage.getItem(RELOAD_GUARD)!=='1'){
       sessionStorage.setItem(RELOAD_GUARD,'1');
       setTimeout(()=>location.reload(),120);
       return;
@@ -186,9 +217,7 @@ async function syncNow(reason='auto'){
   }catch(err){
     console.warn('Clair Sync',err);
     setBadge(navigator.onLine?'Clair Sync en attente':'Clair Sync hors ligne','off');
-  }finally{
-    syncing=false;
-  }
+  }finally{syncing=false}
 }
 function schedule(delay=500){
   clearTimeout(timer);
@@ -213,7 +242,11 @@ async function bootSync(){
     // Detect changes made by Clair Courses itself without modifying its code.
     setInterval(()=>{
       const raw=localStorage.getItem(STATE_KEY)||'';
-      if(raw!==lastRaw){lastRaw=raw;schedule(650)}
+      if(raw!==lastRaw){
+        lastRaw=raw;
+        setMeta({localChangedAt:Date.now()});
+        schedule(650);
+      }
     },1200);
   }catch(err){
     console.warn('Clair Sync boot',err);
