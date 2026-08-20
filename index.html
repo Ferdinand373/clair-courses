@@ -1,108 +1,251 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#dceefa">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Clair Courses">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="format-detection" content="telephone=no">
-<meta name="description" content="Clair Courses — liste de courses Premium, claire et rapide.">
-<title>Clair Courses V13.1</title>
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-<style>
-html,body{min-height:100%;margin:0;background:#eef6fb;color:#17364a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center;background:radial-gradient(circle at 90% 0,rgba(169,214,239,.62),transparent 25rem),linear-gradient(180deg,#eef8fd,#f8fbfd)}
-.boot-card{width:min(420px,100%);padding:30px 20px;border:1px solid rgba(255,255,255,.92);border-radius:28px;background:rgba(255,255,255,.80);box-shadow:0 20px 60px rgba(39,88,119,.12)}
-.boot-logo{width:84px;height:84px;margin:0 auto 16px;border-radius:22px;box-shadow:0 10px 28px rgba(38,83,111,.16)}
-.boot strong{display:block;font-size:1.48rem;letter-spacing:-.03em}.boot p{margin:8px 0 0;color:#728793;line-height:1.45}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eef4ef">
+  <title>Espace Clair</title>
+  <style>
+    :root{
+      --ink:#14211d;--muted:#6d7b75;--green:#3f765f;--green-dark:#28543f;
+      --green-soft:#e8f1eb;--line:rgba(20,33,29,.09);--surface:rgba(255,255,255,.84);
+      --danger:#9b514e;--shadow:0 24px 64px rgba(28,45,38,.11)
+    }
+    *{box-sizing:border-box}html{min-height:100%;background:#eef3ef}body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at 8% 0%,#dfeee5 0,transparent 33%),radial-gradient(circle at 92% 2%,#f4ead5 0,transparent 30%),linear-gradient(145deg,#f9faf8 0%,#eef3ef 48%,#f6f1e8 100%);-webkit-font-smoothing:antialiased}
+    button,input{font:inherit}[hidden]{display:none!important}.shell{width:min(1180px,calc(100% - 34px));margin:0 auto;padding:24px 0 52px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#557c69,#315947);box-shadow:0 12px 28px rgba(49,89,71,.20);font-size:22px}.brand-name{margin:0;font-weight:800;font-size:17px}.brand-sub{margin:2px 0 0;color:var(--muted);font-size:12px}.status-pill{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid rgba(72,116,95,.12);border-radius:999px;background:rgba(255,255,255,.62);font-size:13px;font-weight:700;color:var(--green-dark);backdrop-filter:blur(16px)}.status-dot{width:8px;height:8px;border-radius:50%;background:#6d9b80;box-shadow:0 0 0 5px rgba(109,155,128,.12)}.status-pill.offline{color:#7f6646}.status-pill.offline .status-dot{background:#c19b61;box-shadow:0 0 0 5px rgba(193,155,97,.13)}
+    .login-wrap{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(330px,.70fr);gap:24px;align-items:stretch}.hero,.auth-panel,.card{border:1px solid rgba(255,255,255,.78);box-shadow:var(--shadow);backdrop-filter:blur(24px)}.hero{position:relative;overflow:hidden;padding:38px;border-radius:32px;background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(250,250,247,.74));min-height:570px;display:flex;flex-direction:column;justify-content:space-between}.hero:after{content:"";position:absolute;width:310px;height:310px;right:-100px;top:-115px;border-radius:50%;background:radial-gradient(circle,rgba(178,202,187,.46),rgba(178,202,187,0));pointer-events:none}.eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:16px;color:var(--green-dark);font-size:12px;font-weight:850;letter-spacing:.09em;text-transform:uppercase}.hero h1{max-width:760px;margin:0;font-size:clamp(42px,6vw,68px);line-height:.96;letter-spacing:-.056em;font-weight:790}.hero-lead{max-width:650px;margin:20px 0 0;color:#5d6b65;font-size:clamp(16px,2.2vw,19px);line-height:1.55}.hero-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:34px}.hero-feature{padding:15px;border-radius:18px;background:rgba(247,249,247,.72);border:1px solid rgba(20,33,29,.06)}.hero-feature strong{display:block;font-size:13px}.hero-feature span{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.4}
+    .auth-panel{padding:28px;border-radius:32px;background:rgba(255,255,255,.83)}.auth-title{margin:2px 0 7px;font-size:26px;letter-spacing:-.035em}.auth-intro{margin:0 0 22px;color:var(--muted);font-size:13px;line-height:1.5}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;margin-bottom:24px;border-radius:16px;background:#eff3f0}.tab{min-height:42px;border:0;border-radius:12px;background:transparent;color:var(--muted);font-weight:740;cursor:pointer}.tab.active{background:#fff;color:var(--ink);box-shadow:0 6px 20px rgba(28,45,38,.07)}.form{display:grid;gap:14px}.field{display:grid;gap:7px}.label{font-size:12px;color:var(--muted);font-weight:700}.input{width:100%;min-height:50px;border:1px solid rgba(20,33,29,.12);border-radius:14px;padding:0 14px;outline:none;background:rgba(255,255,255,.94);color:var(--ink);transition:.18s}.input:focus{border-color:rgba(72,116,95,.56);box-shadow:0 0 0 4px rgba(72,116,95,.09)}.button{appearance:none;border:0;border-radius:14px;min-height:48px;padding:0 18px;display:inline-flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;font-weight:760}.button:disabled{opacity:.58;cursor:not-allowed}.primary{color:#fff;background:linear-gradient(145deg,var(--green),var(--green-dark));box-shadow:0 14px 28px rgba(49,89,71,.20)}.soft{color:var(--ink);background:rgba(255,255,255,.75);border:1px solid var(--line)}.note{margin:2px 0 0;color:var(--muted);font-size:12px;line-height:1.45}.message{display:none;margin-top:14px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.45}.message.visible{display:block}.message.success{background:#edf5f0;color:#315947}.message.error{background:#f8eeee;color:#864643}.message.info{background:#f4f1e9;color:#67593d}.trust-list{display:grid;gap:15px;margin-top:26px}.trust-item{display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:start}.trust-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:var(--green-soft)}.trust-item strong{display:block;margin-bottom:3px;font-size:14px}.trust-item span{color:var(--muted);font-size:12px;line-height:1.45}
+    .dashboard{display:none}.dashboard.visible{display:block}.signedout.hidden{display:none}.welcome{display:flex;justify-content:space-between;gap:24px;align-items:end;margin:12px 0 24px}.welcome h1{margin:0;font-size:clamp(34px,5vw,56px);letter-spacing:-.05em;line-height:1}.welcome p{margin:10px 0 0;color:var(--muted);font-size:15px}.sync-badge{flex:0 0 auto;display:inline-flex;align-items:center;min-height:44px;padding:0 15px;border-radius:999px;color:var(--green-dark);background:rgba(231,240,235,.86);border:1px solid rgba(72,116,95,.11);font-size:13px;font-weight:760}.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}.card{position:relative;overflow:hidden;padding:24px;border-radius:24px;background:var(--surface)}.identity{grid-column:span 7;min-height:228px}.health{grid-column:span 5;min-height:228px}.devices{grid-column:span 7}.privacy{grid-column:span 5}.storage,.data,.account{grid-column:span 4}.integration{grid-column:span 12}.integration-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.integration-status{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.5}.integration .button{min-width:190px}.kicker{color:var(--muted);font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.card h2{margin:10px 0 0;font-size:23px;letter-spacing:-.03em}.card p{color:var(--muted);line-height:1.5}.identity-row{display:flex;align-items:center;gap:17px;margin-top:24px}.avatar{width:68px;height:68px;display:grid;place-items:center;border-radius:22px;color:#fff;background:linear-gradient(145deg,#628672,#355f4c);font-size:25px;font-weight:780}.identity-main{min-width:0}.identity-name{font-size:20px;font-weight:770;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.identity-email{margin-top:4px;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.identity-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.mini-pill{display:inline-flex;align-items:center;min-height:30px;padding:0 10px;border-radius:999px;background:rgba(231,240,235,.72);color:var(--green-dark);font-size:11px;font-weight:700}.health-line{display:flex;align-items:center;gap:20px;margin-top:18px}.health-ring{width:94px;height:94px;flex:0 0 94px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(var(--green) 0 96%,rgba(72,116,95,.12) 96% 100%);box-shadow:inset 0 0 0 12px rgba(255,255,255,.88);color:var(--green-dark);font-weight:820}.health-copy strong{display:block;font-size:17px}.health-copy span{display:block;margin-top:7px;color:var(--muted);font-size:12px;line-height:1.45}.mini-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}.mini-stat{padding:13px;border-radius:15px;background:rgba(248,249,247,.84);border:1px solid rgba(20,33,29,.06)}.mini-stat strong{display:block;font-size:18px}.mini-stat span{display:block;margin-top:3px;color:var(--muted);font-size:11px}.device-list{display:grid;gap:10px;margin-top:18px}.device{display:flex;align-items:center;gap:13px;padding:13px;border-radius:16px;background:rgba(249,250,248,.90);border:1px solid rgba(20,33,29,.065)}.device-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:var(--green-soft);font-size:18px}.device-copy{min-width:0;flex:1}.device-name{font-size:14px;font-weight:740}.device-meta{margin-top:3px;color:var(--muted);font-size:11px}.device-current{color:var(--green-dark);font-weight:740}.privacy-seal{width:52px;height:52px;display:grid;place-items:center;margin-top:20px;border-radius:17px;background:var(--green-soft);font-size:23px}.row-link{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink);text-align:left;cursor:pointer}.row-link:first-of-type{margin-top:16px}.row-link strong{font-size:13px}.row-link span{color:var(--muted);font-size:12px}.big-number{margin-top:18px;font-size:38px;line-height:1;letter-spacing:-.045em;font-weight:800}.big-label{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.45}.test-button{margin-top:16px;width:100%}.footer{display:flex;justify-content:space-between;gap:15px;margin-top:22px;color:#7f8a85;font-size:11px}.loading{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:rgba(244,247,244,.90);backdrop-filter:blur(18px);transition:.25s}.loading.hidden{opacity:0;visibility:hidden;pointer-events:none}.loader-mark{width:58px;height:58px;display:grid;place-items:center;border-radius:20px;background:linear-gradient(145deg,#557c69,#315947);font-size:25px}.dialog-backdrop{position:fixed;inset:0;z-index:80;display:none;place-items:center;padding:18px;background:rgba(20,33,29,.32);backdrop-filter:blur(12px)}.dialog-backdrop.visible{display:grid}.dialog{width:min(460px,100%);padding:24px;border-radius:24px;background:#fbfcfa;box-shadow:0 30px 100px rgba(20,33,29,.25)}.dialog h3{margin:0 0 6px;font-size:22px}.dialog p{margin:0 0 18px;color:var(--muted);font-size:13px}.dialog-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+    @media(max-width:860px){.login-wrap{grid-template-columns:1fr}.hero{min-height:auto}.grid{grid-template-columns:1fr}.identity,.health,.devices,.privacy,.storage,.data,.account,.integration{grid-column:auto}}@media(max-width:620px){.shell{width:min(100% - 22px,1180px);padding-top:16px}.topbar{margin-bottom:18px}.brand-sub{display:none}.hero{padding:27px 22px;border-radius:26px}.hero h1{font-size:clamp(39px,12vw,54px)}.hero-foot{grid-template-columns:1fr}.auth-panel{padding:20px;border-radius:25px}.welcome{align-items:flex-start;flex-direction:column}.card{padding:20px;border-radius:22px}.health-line{align-items:flex-start}.footer{flex-direction:column}}
+  </style>
 </head>
 <body>
-<div class="boot" id="boot"><div class="boot-card"><img class="boot-logo" src="./icon-192.png" alt=""><strong>Clair Courses V13.1</strong><p>Ouverture de votre liste Premium…</p></div></div>
-<script>
-(async()=>{
-'use strict';
+  <div id="loading" class="loading"><div class="loader-mark">🌿</div></div>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="mark">🌿</div><div><p class="brand-name">Espace Clair</p><p class="brand-sub">Votre univers personnel, privé et synchronisé</p></div></div>
+      <div id="networkPill" class="status-pill"><span class="status-dot"></span><span id="networkText">Connexion privée</span></div>
+    </header>
 
-/*
- * Clair Courses V13.1 — Premium stable.
- * Une seule chaîne fonctionnelle : V11.7 stable + patch V12 éprouvé,
- * puis habillage Premium appliqué sur l'application FINALE juste avant affichage.
- * Les clés localStorage et les données de l'utilisateur restent inchangées.
- */
-function __CC_V131_TRANSFORM(html){
-  try{
-    html=html.replace('<meta name="theme-color" content="#f6f4ed">','<meta name="theme-color" content="#dceefa">');
-    html=html.replace('<title>Clair Courses</title>','<title>Clair Courses V13.1</title>');
-    html=html.replace('</title>','</title><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-192.png">',1);
-    html=html.replace('</style>',"\n/* ========================================================================== */\n/* CLAIR COURSES V13.1 \u2014 REFONTE PREMIUM                                      */\n/* Efficacit\u00e9 premium : ciel nacr\u00e9, bleu encre, blanc perle.                   */\n/* ========================================================================== */\n:root{\n  --bg:#eef6fb;--surface:#fffefd;--soft:#f1f7fb;--text:#17364a;--muted:#758996;\n  --line:#dce8ef;--accent:#397fa9;--accent2:#245f84;--accentSoft:#e3f2fb;\n  --danger:#a9534c;--shadow:0 16px 44px rgba(39,88,119,.09);--radius:22px;\n  --cc-sky:#dceefa;--cc-sky-2:#c7e4f5;--cc-ink:#142e40;--cc-champagne:#c49b5b;\n}\nhtml{background:#edf5fa;scroll-behavior:smooth}\nbody{\n  background:\n    radial-gradient(circle at 92% -3%,rgba(164,210,237,.55),transparent 30rem),\n    radial-gradient(circle at 4% 15%,rgba(255,255,255,.95),transparent 24rem),\n    linear-gradient(180deg,#eef8fd 0,#f8fbfd 44%,#f4f6f5 100%);\n  background-attachment:fixed;color:var(--cc-ink)\n}\n.app{width:min(680px,100%);padding-top:calc(13px + env(safe-area-inset-top));padding-bottom:calc(112px + env(safe-area-inset-bottom))}\nheader{position:relative}\n.brand-row{\n  position:relative;overflow:hidden;align-items:center;margin-bottom:13px;padding:18px 17px;\n  border:1px solid rgba(255,255,255,.9);border-radius:27px;\n  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(226,244,254,.9) 63%,rgba(250,247,241,.88));\n  box-shadow:0 18px 55px rgba(37,83,112,.115)\n}\n.brand-row::after{content:'';position:absolute;width:180px;height:180px;right:-82px;top:-100px;border-radius:50%;background:radial-gradient(circle,rgba(91,164,207,.24),transparent 70%);pointer-events:none}\n.premium-kicker{display:block;margin-bottom:5px;color:#6e8da0;font-size:.58rem;font-weight:950;letter-spacing:.16em;text-transform:uppercase}\n.brand h1{margin:0;color:#15364b;font-size:clamp(2.05rem,9vw,2.7rem);letter-spacing:-.055em;font-weight:950}\n.brand h1 span{color:#3b82ad;font-weight:530}\n.tagline{max-width:430px;margin-top:5px!important;color:#708793!important;font-size:.86rem!important;line-height:1.4}\n.version-pill{position:relative;z-index:2;padding:7px 10px;border-color:rgba(179,141,79,.2);background:rgba(255,250,241,.82);color:#8b6834;font-size:.68rem;letter-spacing:.05em}\n.status-card{position:relative;overflow:hidden;margin:0 0 11px;padding:17px 16px;border-color:rgba(62,119,155,.13);border-radius:25px;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(241,249,253,.94));box-shadow:var(--shadow)}\n.status-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#88c4e4,#347da8 75%,#c7a264)}\n.premium-status-label{margin:0 0 9px;color:#8a9da8;font-size:.55rem;font-weight:950;letter-spacing:.14em;text-transform:uppercase}\n.counter-block{min-width:82px;border:1px solid rgba(66,124,160,.08);border-radius:17px;background:linear-gradient(145deg,#edf8fe,#dceefa);color:#2d719a}\n.progress-badge{font-size:2.3rem}.counter-label{font-size:.62rem}.status-main{color:#1c4057;font-size:1.15rem}.status-sub{font-size:.82rem;line-height:1.4}\n.progress-track{height:9px;background:#e3edf2}.progress-fill{background:linear-gradient(90deg,#6fb4d9,#347da8)}.progress-percent{color:#2f7198}\n.primary-actions{gap:8px;margin-bottom:10px}.primary-action{min-height:62px;border-radius:18px;background:linear-gradient(135deg,#438bb5,#2d6c94);box-shadow:0 10px 24px rgba(48,112,151,.18);font-size:.86rem}.primary-action.alt{border-color:#dce8ef;background:rgba(255,255,255,.86);color:#345b71;box-shadow:0 6px 17px rgba(42,79,102,.05)}\n.primary-action span{font-size:1.35rem}\n.course-controls{gap:8px;margin-bottom:10px}.control-button{min-height:48px;border-color:#dce8ef;border-radius:16px;background:rgba(255,255,255,.82);color:#496b7e;box-shadow:0 5px 15px rgba(38,76,100,.045)}.control-button[aria-pressed=true]{border-color:#a8d2e7;background:#e5f4fc;color:#286b93}\n.premium-route{margin:0 0 18px;padding:12px 12px 10px;border:1px solid rgba(65,119,153,.11);border-radius:20px;background:rgba(255,255,255,.7);box-shadow:0 7px 22px rgba(42,82,107,.045)}\n.premium-route-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.premium-route-head strong{color:#365e75;font-size:.76rem}.premium-route-head span{color:#91a0a9;font-size:.62rem;font-weight:800}.premium-route-chips{display:flex;gap:6px;margin:0 -1px;padding:1px 1px 3px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.premium-route-chips::-webkit-scrollbar{display:none}.premium-route-chip{flex:0 0 auto;min-height:36px;padding:6px 10px;border:1px solid rgba(65,121,156,.11);border-radius:13px;background:#f7fbfd;color:#54798f;font-size:.68rem;font-weight:850;white-space:nowrap}.premium-route-chip.done{border-color:#dce5e1;background:#f2f5f3;color:#9aa6a0;text-decoration:line-through}.premium-route-empty{color:#94a3ab;font-size:.69rem}\n.list-heading{align-items:center!important;margin-top:7px}.premium-section-kicker{display:block;margin-bottom:3px;color:#91a1aa;font-size:.53rem;font-weight:950;letter-spacing:.14em;text-transform:uppercase}.list-heading h2{color:#234b62;font-size:1.38rem!important;letter-spacing:-.03em}.list-count{color:#688396!important}.new-list-visible{border-color:#dbe7ed!important;border-radius:14px!important;background:rgba(255,255,255,.8)!important;color:#557487!important;box-shadow:0 4px 13px rgba(40,78,102,.04)}\n.empty-state{padding:28px 20px;border-color:#cbdde7;border-radius:22px;background:rgba(255,255,255,.57);color:#82949e}.empty-state strong{color:#365e73}\n.aisles{gap:9px}.aisle{border-color:rgba(68,119,150,.12);border-radius:21px;background:rgba(255,255,255,.9);box-shadow:0 8px 25px rgba(40,79,103,.055)}.aisle[open]{box-shadow:0 12px 32px rgba(40,86,115,.085)}\n.aisle-summary{grid-template-columns:auto 40px minmax(0,1fr) auto;min-height:68px;gap:9px;padding:8px 10px 8px 12px}.aisle-icon-premium{display:grid;width:38px;height:38px;place-items:center;border:1px solid rgba(71,126,160,.08);border-radius:13px;background:linear-gradient(145deg,#eef8fd,#e1f1fa);font-size:1.05rem}.aisle-name{color:#294f66;font-size:.96rem}.aisle-count{color:#8798a2;font-size:.74rem}.check-all{min-height:39px;border-color:#d8e6ed;background:#f9fcfd;color:#4a7690;font-size:.68rem}\n.items{border-color:#e3edf2}.item{min-height:69px;grid-template-columns:49px minmax(0,1fr) 44px 44px;padding:6px 7px 6px 10px;border-color:rgba(220,232,239,.85);transition:opacity .15s,background .15s}.item-check{border-color:#90a7b5;border-radius:13px;background:#fff}.item-check:checked{border-color:#397fa9;background:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 12 4 4 8-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\") center/22px no-repeat,#397fa9}.item-label{color:#294b60}.quantity{color:#2a6588}.item:has(.item-check:checked){background:#f5f8f7;opacity:.56}.item:has(.item-check:checked) .item-label{text-decoration:line-through;text-decoration-thickness:1px}\ndetails.panel{margin-top:14px;border-color:#dce7ed;border-radius:20px;background:rgba(255,255,255,.75);box-shadow:0 7px 22px rgba(42,80,104,.04)}details.panel>summary{min-height:62px;padding:0 15px;color:#345b71}.panel-eyebrow{display:block;margin-bottom:2px;color:#94a4ad;font-size:.5rem;font-style:normal;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.panel-copy{color:#81939d}.product-search{min-height:50px;border-color:#d8e6ed;border-radius:15px;background:#fbfdfe;color:#294b60;box-shadow:inset 0 1px 0 #fff}\n.products-list{gap:7px}.alpha-heading{position:sticky;top:0;z-index:2;margin:8px 0 1px;padding:5px 8px;border-radius:9px;background:rgba(237,247,252,.96);color:#4a7894;font-size:.63rem;font-weight:950;letter-spacing:.1em;backdrop-filter:blur(8px)}.product-add{min-height:59px;border-color:#dce8ef;border-radius:15px;background:rgba(255,255,255,.92);color:#294d63}.product-add:before{background:#438bb5;box-shadow:0 5px 12px rgba(58,127,169,.18)}.product-add small{color:#8798a2}.product-add.is-present{border-color:#b9d6e5;background:#eaf5fb;color:#2c6587}.product-add.is-present:before{background:#2f739b}\n.add-product-button,.primary-button{border-radius:15px;background:linear-gradient(135deg,#438bb5,#2d6c94);box-shadow:0 7px 17px rgba(48,112,151,.15)}.secondary-button{border-color:#dce8ef;border-radius:15px;background:#fffefd;color:#496b7e}\n.action-bar{border-color:rgba(181,204,217,.82);background:rgba(245,250,253,.92);backdrop-filter:blur(20px);box-shadow:0 -8px 30px rgba(35,75,100,.07)}.action-bar-inner{max-width:680px;gap:4px}.action{border-radius:14px;color:#557487}.action-icon{font-size:1.18rem}#bar-add{border-radius:14px!important;background:linear-gradient(135deg,#438bb5,#2d6c94)!important;box-shadow:0 7px 17px rgba(48,112,151,.18)}.action.has-items{background:#397fa9}\ndialog{border-radius:25px;background:#fffefd;box-shadow:0 25px 80px rgba(31,68,91,.25)}dialog::backdrop{background:rgba(19,42,57,.38);backdrop-filter:blur(5px)}.dialog-card{padding:19px}.dialog-header h2{color:#244b62}.close-button{border-color:#dce8ef;background:#f0f7fb;color:#4a6e83}.field{border-color:#d8e6ed;border-radius:14px;background:#fbfdfe;color:#294b60}.toast{background:rgba(28,61,82,.95);box-shadow:0 12px 32px rgba(24,52,70,.22)}\n.version-line{color:#93a1a9!important}\nbody.course-mode .status-card{top:calc(7px + env(safe-area-inset-top));border-radius:22px}body.course-mode .course-controls{top:calc(158px + env(safe-area-inset-top));border-color:rgba(184,207,220,.86);background:rgba(245,250,253,.95)}body.course-mode .premium-route{display:block;margin-top:5px}body.course-mode .item{min-height:80px}body.course-mode .item-label{font-size:1.14rem;color:#1d4258}\n@media(max-width:390px){.brand-row{padding:16px 14px}.brand h1{font-size:2.12rem}.tagline{font-size:.78rem!important}.status-card{padding:15px 13px}.premium-route{padding-left:10px;padding-right:10px}.aisle-summary{grid-template-columns:auto 36px minmax(0,1fr) auto;gap:7px}.aisle-icon-premium{width:34px;height:34px}.check-all{padding:0 8px}.action{font-size:.61rem}}\n"+'</style>');
-    html=html.replace('<div class="brand"><h1>Clair Courses</h1><p class="tagline">Ma liste, simplement</p></div>','<div class="brand"><span class="premium-kicker">Assistant de courses</span><h1>Clair <span>Courses</span></h1><p class="tagline">Faire ses courses. Vite, clair, sans rien oublier.</p></div>');
-    html=html.replace('<section class="status-card" aria-label="Progression des courses" aria-live="polite">','<section class="status-card" aria-label="Progression des courses" aria-live="polite"><div class="premium-status-label">Progression en magasin</div>');
-    html=html.replace('  </header>\n\n  <main>','    <section class="premium-route" aria-label="Parcours magasin"><div class="premium-route-head"><strong>Parcours magasin</strong><span>Touchez un rayon pour y aller</span></div><div class="premium-route-chips" id="premium-route-chips"></div></section>\n  </header>\n\n  <main>');
-    html=html.replace('<h2 id="list-title">Ma liste</h2>','<span class="premium-section-kicker">Votre parcours</span><h2 id="list-title">Ma liste</h2>');
-    html=html.replace('<summary><span>Ajouter depuis mes produits <small id="products-count"></small></span><span class="sr-only">Afficher ou masquer</span></summary>','<summary><span><em class="panel-eyebrow">Bibliothèque personnelle</em>Mes produits <small id="products-count"></small></span><span class="sr-only">Afficher ou masquer</span></summary>');
-    html=html.replace('<summary><span>Aide et sauvegarde</span><span class="sr-only">Afficher ou masquer</span></summary>','<summary><span><em class="panel-eyebrow">Confiance & données</em>Réglages et sauvegarde</span><span class="sr-only">Afficher ou masquer</span></summary>');
-    html=html.replaceAll('Clair Courses V12.0','Clair Courses V13.1');
-    html=html.replaceAll('Version 12.0 stable','Version 13.1 Premium');
-    html=html.replaceAll('Version 12.0','Version 13.1 Premium');
-    html=html.replaceAll("badge.textContent='V12.0'","badge.textContent='V13.1'");
-    html=html.replaceAll("document.title='Clair Courses V12.0'","document.title='Clair Courses V13.1'");
-    html=html.replace('const APP_RELEASE="10.9";','const APP_RELEASE="13.1";');
-    const __ccPremiumRuntime="(()=>{\n  'use strict';\n  const aisleIcons={\n    'Eau':'💧','Épicerie':'◫','Fruits et légumes':'◌','Boucherie':'◇','Charcuterie':'▱','Poissonnerie':'≈',\n    'Boulangerie':'⌁','Conserves':'▣','Crèmerie':'○','Surgelés':'❄','Boissons':'◍','Hygiène':'✦','Maison':'⌂','Divers':'·'\n  };\n  const slug=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');\n  let lastProducts='';\n  function enhanceAisles(){\n    const root=document.getElementById('aisles-root');\n    const route=document.getElementById('premium-route-chips');\n    if(!root||!route)return;\n    const aisles=[...root.querySelectorAll('details.aisle')];\n    aisles.forEach((aisle,index)=>{\n      const summary=aisle.querySelector('.aisle-summary');\n      const nameEl=aisle.querySelector('.aisle-name');\n      if(!summary||!nameEl)return;\n      const name=nameEl.textContent.trim();\n      aisle.id=aisle.id||`cc-aisle-${slug(name)||index}`;\n      if(!summary.querySelector('.aisle-icon-premium')){\n        const icon=document.createElement('span');\n        icon.className='aisle-icon-premium';\n        icon.setAttribute('aria-hidden','true');\n        icon.textContent=aisleIcons[name]||'·';\n        const chevron=summary.querySelector('.aisle-chevron');\n        if(chevron&&chevron.nextSibling)summary.insertBefore(icon,chevron.nextSibling);else summary.insertBefore(icon,summary.firstChild);\n      }\n    });\n    if(!aisles.length){route.innerHTML='<span class=\"premium-route-empty\">Les rayons apparaîtront ici dès que la liste contient des articles.</span>';return}\n    const buttons=aisles.map((aisle,index)=>{\n      const name=aisle.querySelector('.aisle-name')?.textContent.trim()||`Rayon ${index+1}`;\n      const unchecked=aisle.querySelectorAll('.item-check:not(:checked)').length;\n      const total=aisle.querySelectorAll('.item-check').length;\n      const done=total>0&&unchecked===0;\n      return `<button type=\"button\" class=\"premium-route-chip${done?' done':''}\" data-target=\"${aisle.id}\">${name}${unchecked?` · ${unchecked}`:''}</button>`;\n    }).join('');\n    if(route.innerHTML!==buttons)route.innerHTML=buttons;\n  }\n  function enhanceProducts(){\n    const root=document.getElementById('products-list');if(!root)return;\n    const rows=[...root.querySelectorAll(':scope > .product-row')];\n    const signature=rows.map(r=>r.querySelector('.product-add strong')?.textContent.trim()||'').join('|');\n    if(signature===lastProducts)return;lastProducts=signature;\n    root.querySelectorAll(':scope > .alpha-heading').forEach(el=>el.remove());\n    let last='';\n    rows.forEach(row=>{\n      const name=row.querySelector('.product-add strong')?.textContent.trim()||'';\n      const letter=(name.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').charAt(0)||'#').toUpperCase();\n      if(letter!==last){\n        const h=document.createElement('div');h.className='alpha-heading';h.textContent=letter;row.before(h);last=letter;\n      }\n    });\n  }\n  document.addEventListener('click',e=>{\n    const chip=e.target.closest('.premium-route-chip');if(!chip)return;\n    const target=document.getElementById(chip.dataset.target);if(!target)return;\n    target.open=true;target.scrollIntoView({behavior:'smooth',block:'start'});\n  });\n  const a=document.getElementById('aisles-root');if(a)new MutationObserver(()=>requestAnimationFrame(enhanceAisles)).observe(a,{childList:true,subtree:true,attributes:true,attributeFilter:['checked']});\n  const p=document.getElementById('products-list');if(p)new MutationObserver(()=>requestAnimationFrame(enhanceProducts)).observe(p,{childList:true,subtree:true});\n  requestAnimationFrame(()=>{enhanceAisles();enhanceProducts()});\n  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});\n})();";const __ccScriptClose='</scr'+'ipt>';const __ccCloseIndex=html.lastIndexOf(__ccScriptClose);if(__ccCloseIndex>=0){html=html.slice(0,__ccCloseIndex)+'\n'+__ccPremiumRuntime+'\n'+html.slice(__ccCloseIndex);}
-    return html;
-  }catch(error){console.error('V13.1 premium transform',error);return html}
-}
+    <section id="signedout" class="signedout">
+      <div class="login-wrap">
+        <article class="hero">
+          <div><div class="eyebrow">🌿 Mon espace Clair</div><h1>Tout ce qui est à vous reste à vous.</h1><p class="hero-lead">Vos favoris, notes, historiques, listes et préférences suivent vos appareils sans se mélanger au logiciel Clair.</p></div>
+          <div class="hero-foot"><div class="hero-feature"><strong>Privé</strong><span>Chaque compte ne voit que ses propres données.</span></div><div class="hero-feature"><strong>Sûr</strong><span>Les suppressions sont conçues pour rester réversibles.</span></div><div class="hero-feature"><strong>Invisible</strong><span>Le socle travaille en arrière-plan sans compliquer Clair.</span></div></div>
+        </article>
 
-const V117_COMMIT='ca971ada48ddaee0117fc8d5c8e14f6084cd0d11';
-const CACHE_KEY='clairCourses.v13.1.wrapper.v117';
-const SOURCES=[
-  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${V117_COMMIT}/index.html?v=131premium`,
-  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${V117_COMMIT}/index.html?v=131premium`
-];
-let source='';
-for(const url of SOURCES){
-  try{
-    const response=await fetch(url,{cache:'no-store'});
-    if(response.ok){
-      const text=await response.text();
-      if(text.includes('Clair Courses V11.7')&&text.includes('document.write(html);')){
-        source=text;
-        try{localStorage.setItem(CACHE_KEY,text)}catch{}
-        break;
+        <aside class="auth-panel">
+          <h2 class="auth-title">Bienvenue</h2><p class="auth-intro">Connectez-vous à votre espace personnel ou créez-le en quelques secondes.</p>
+          <div class="tabs"><button id="loginTab" class="tab active" type="button">Se connecter</button><button id="signupTab" class="tab" type="button">Créer mon espace</button></div>
+          <form id="loginForm" class="form"><div class="field"><label class="label" for="loginEmail">Adresse e-mail</label><input class="input" id="loginEmail" type="email" autocomplete="email" required placeholder="vous@exemple.fr"></div><div class="field"><label class="label" for="loginPassword">Mot de passe</label><input class="input" id="loginPassword" type="password" autocomplete="current-password" required minlength="8" placeholder="••••••••"></div><button id="loginButton" class="button primary" type="submit">Ouvrir mon espace</button></form>
+          <form id="signupForm" class="form" hidden><div class="field"><label class="label" for="signupName">Prénom ou nom affiché</label><input class="input" id="signupName" type="text" maxlength="60" required placeholder="Freddy"></div><div class="field"><label class="label" for="signupEmail">Adresse e-mail</label><input class="input" id="signupEmail" type="email" autocomplete="email" required placeholder="vous@exemple.fr"></div><div class="field"><label class="label" for="signupPassword">Choisir un mot de passe</label><input class="input" id="signupPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="8 caractères minimum"></div><button id="signupButton" class="button primary" type="submit">Créer mon espace Clair</button><p class="note">Un e-mail de confirmation peut être demandé avant la première connexion.</p></form>
+          <div id="authMessage" class="message" role="status"></div>
+          <div class="trust-list"><div class="trust-item"><div class="trust-icon">🔒</div><div><strong>Accès strictement personnel</strong><span>Les règles de sécurité du serveur isolent chaque compte.</span></div></div><div class="trust-item"><div class="trust-icon">📱</div><div><strong>iPhone + ordinateur</strong><span>Chaque appareil est reconnu séparément pour préparer la synchronisation.</span></div></div></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="dashboard" class="dashboard">
+      <div class="welcome"><div><div class="eyebrow">Espace personnel</div><h1 id="welcomeTitle">Bonjour</h1><p id="welcomeSubtitle">Votre espace Clair est prêt.</p></div><div id="syncBadge" class="sync-badge">✓ Socle connecté</div></div>
+      <div class="grid">
+        <article class="card identity"><div class="kicker">Mon identité</div><h2>Votre espace, simplement</h2><div class="identity-row"><div id="avatar" class="avatar">C</div><div class="identity-main"><div id="displayName" class="identity-name">Utilisateur Clair</div><div id="displayEmail" class="identity-email">—</div><div class="identity-meta"><span class="mini-pill">Compte privé</span><span id="memberSince" class="mini-pill">Espace Clair</span></div></div></div><button id="editProfile" class="row-link" type="button"><strong>Modifier le nom affiché</strong><span>›</span></button></article>
+        <article class="card health"><div class="kicker">État du socle</div><h2>Tout est protégé</h2><div class="health-line"><div class="health-ring">OK</div><div class="health-copy"><strong>Protection active</strong><span>Votre compte est authentifié et les données sont isolées par utilisateur.</span></div></div></article>
+        <article class="card devices"><div class="kicker">Mes appareils</div><h2>Synchronisation multi-appareils</h2><p>Chaque appareil est identifié sans partager vos données avec les autres utilisateurs.</p><div id="deviceList" class="device-list"></div></article>
+        <article class="card privacy"><div class="kicker">Confidentialité</div><h2>Privé par conception</h2><div class="privacy-seal">🔒</div><p>Vos données Clair sont séparées du logiciel et protégées par votre compte. Aucun accès anonyme n’est autorisé.</p><div class="mini-stats"><div class="mini-stat"><strong>RLS</strong><span>Protection serveur</span></div><div class="mini-stat"><strong>Privé</strong><span>Données isolées</span></div></div></article>
+        <article class="card storage"><div class="kicker">Fichiers</div><h2>Espace privé</h2><div class="big-number">🔐</div><div class="big-label">Photos et documents pourront être conservés dans votre dossier personnel.</div></article>
+        <article class="card data"><div class="kicker">Mes données Clair</div><h2>Contenu personnel</h2><div id="dataCount" class="big-number">0</div><div id="dataLabel" class="big-label">donnée personnelle enregistrée</div><div id="lastData" class="big-label">Aucune donnée synchronisée pour le moment.</div><button id="testSyncButton" class="button soft test-button" type="button">Créer une donnée test</button></article>
+        <article class="card account"><div class="kicker">Compte</div><h2>Contrôle total</h2><p>Vous gardez la maîtrise de votre session et de votre identité Clair.</p><button id="refreshButton" class="row-link" type="button"><strong>Actualiser l’espace</strong><span>↻</span></button><button id="logoutButton" class="row-link" type="button"><strong>Se déconnecter</strong><span>›</span></button></article>
+        <article class="card integration"><div class="kicker">Applications Clair</div><h2>Clair Repas est synchronisé</h2><p>Vos <strong>données personnelles Clair Repas</strong> suivent désormais votre compte entre ordinateur et iPhone : favoris, notes, préférences, apprentissage et historiques. Les recettes et le moteur de Clair Repas V7.5 restent inchangés.</p><div id="crStatus" class="integration-status">Vérification de Clair Repas…</div><div class="integration-actions"><button id="syncCrButton" class="button primary" type="button">Synchroniser Clair Repas</button><a class="button soft" href="https://ferdinand373.github.io/Clair-Repas/" target="_blank" rel="noopener">Ouvrir Clair Repas</a></div></article>
+      </div>
+      <footer class="footer"><span>🌿 Espace Clair — Socle V8</span><span id="footerStatus">Connexion sécurisée à Supabase</span></footer>
+    </section>
+  </main>
+
+  <div id="profileDialogBackdrop" class="dialog-backdrop"><div class="dialog"><h3>Nom affiché</h3><p>Ce nom apparaît uniquement dans votre interface Clair.</p><div class="field"><label class="label" for="profileNameInput">Nom</label><input id="profileNameInput" class="input" type="text" maxlength="60"></div><div id="profileMessage" class="message"></div><div class="dialog-actions"><button id="cancelProfile" class="button soft" type="button">Annuler</button><button id="saveProfile" class="button primary" type="button">Enregistrer</button></div></div></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  (()=>{
+    'use strict';
+    const SUPABASE_URL='https://ryyewskgfgysfubesdsj.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY='sb_publishable_T9Dmg9VKTdMFdCuLVxD54w_7GeH3Q6S';
+    const APP_VERSION='Espace Clair V8.2 — Clair Repas complet';
+    const DEVICE_KEY_STORAGE='clair.device.key.v1';
+    const $=id=>document.getElementById(id);
+    const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    let currentUser=null,currentDevice=null;
+    const CR_PERSONAL_KEYS=[
+      {key:'crFavMeals',label:'favoris'},
+      {key:'crRecipeNotesV31',label:'notes'},
+      {key:'crRecipeReactionsV3',label:'avis et réactions'},
+      {key:'crRecipeLearningV3',label:'préférences apprises'},
+      {key:'crRecentRecipesV25',label:'recettes récentes'},
+      {key:'crHistoryV13',label:'historique'},
+      {key:'crMealUsageV19',label:'usage des repas'},
+      {key:'crCourseUsageV37',label:'usage des courses'},
+      {key:'crStateV13',label:'état personnel'}
+    ];
+    const CR_KEY_SET=new Set(CR_PERSONAL_KEYS.map(x=>x.key));
+    let crSyncInFlight=false,crAutoTimer=null;
+
+    function setMessage(el,text,type='info'){el.textContent=text||'';el.className='message'+(text?` visible ${type}`:'')}
+    function setBusy(btn,busy,text){if(!btn)return;if(busy){btn.dataset.old=btn.textContent;btn.textContent=text;btn.disabled=true}else{btn.textContent=btn.dataset.old||btn.textContent;btn.disabled=false}}
+    function setNetwork(){const on=navigator.onLine;$('networkPill').classList.toggle('offline',!on);$('networkText').textContent=on?'Connexion privée':'Mode hors connexion';$('footerStatus').textContent=on?'Connexion sécurisée à Supabase':'Connexion réseau indisponible'}
+    function switchAuth(mode){const login=mode==='login';$('loginTab').classList.toggle('active',login);$('signupTab').classList.toggle('active',!login);$('loginForm').hidden=!login;$('signupForm').hidden=login;setMessage($('authMessage'),'')}
+    function platform(){const u=navigator.userAgent||'';if(/iPhone/i.test(u))return'iPhone';if(/iPad/i.test(u))return'iPad';if(/Android/i.test(u))return'Android';if(/Windows/i.test(u))return'Windows';if(/Macintosh|Mac OS X/i.test(u))return'Mac';return'Navigateur'}
+    function browser(){const u=navigator.userAgent||'';if(/Edg\//.test(u))return'Edge';if(/CriOS|Chrome\//.test(u)&&!/Edg\//.test(u))return'Chrome';if(/FxiOS|Firefox\//.test(u))return'Firefox';if(/Safari\//.test(u)&&!/Chrome\//.test(u)&&!/CriOS/.test(u))return'Safari';return'Web'}
+    function deviceLabel(){const p=platform(),b=browser();return p==='Windows'?`Ordinateur Windows • ${b}`:`${p} • ${b}`}
+    function icon(p){if(/iPhone|Android/.test(p))return'📱';if(/iPad/.test(p))return'▣';if(/Windows|Mac|Linux/.test(p))return'💻';return'🌐'}
+    function deviceKey(){let k=localStorage.getItem(DEVICE_KEY_STORAGE);if(!k){k=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`;localStorage.setItem(DEVICE_KEY_STORAGE,k)}return k}
+    function pretty(v,time=false){if(!v)return'—';return new Intl.DateTimeFormat('fr-FR',time?{dateStyle:'medium',timeStyle:'short'}:{dateStyle:'medium'}).format(new Date(v))}
+    function relative(v){if(!v)return'jamais';const m=Math.max(0,Math.round((Date.now()-new Date(v).getTime())/60000));if(m<2)return'à l’instant';if(m<60)return`il y a ${m} min`;const h=Math.round(m/60);if(h<24)return`il y a ${h} h`;return pretty(v)}
+    function displayName(user,profile){return profile?.display_name||user?.user_metadata?.display_name||user?.email?.split('@')[0]||'Utilisateur Clair'}
+    function readLocalJson(key){const raw=localStorage.getItem(key);if(raw===null)return{exists:false,value:null};try{return{exists:true,value:JSON.parse(raw)}}catch{return{exists:true,value:raw}}}
+    function writeLocalJson(key,value){localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value))}
+    function stableIdentity(v){try{return JSON.stringify(v)}catch{return String(v)}}
+    function isPlainObject(v){return !!v&&typeof v==='object'&&!Array.isArray(v)}
+    function mergeArrays(remoteValue,localValue){
+      const remote=Array.isArray(remoteValue)?remoteValue:[];
+      const local=Array.isArray(localValue)?localValue:[];
+      const seen=new Set(),out=[];
+      // Local first: preserves this device's most recent ordering, then adds missing remote entries.
+      for(const item of [...local,...remote]){const k=stableIdentity(item);if(!seen.has(k)){seen.add(k);out.push(item)}}
+      return out;
+    }
+    function mergePersonal(remoteValue,localValue){
+      if(Array.isArray(remoteValue)||Array.isArray(localValue))return mergeArrays(remoteValue,localValue);
+      if(isPlainObject(remoteValue)||isPlainObject(localValue)){
+        const r=isPlainObject(remoteValue)?remoteValue:{},l=isPlainObject(localValue)?localValue:{},out={...r};
+        for(const k of Object.keys(l))out[k]=(k in r)?mergePersonal(r[k],l[k]):l[k];
+        return out;
+      }
+      return localValue!==undefined&&localValue!==null?localValue:remoteValue;
+    }
+    function favoriteCount(v){if(Array.isArray(v))return v.length;if(v&&typeof v==='object')return Object.keys(v).length;return v?1:0}
+    function meaningful(v){if(v===null||v===undefined)return false;if(Array.isArray(v))return v.length>0;if(isPlainObject(v))return Object.keys(v).length>0;if(typeof v==='string')return v.length>0;return true}
+
+    async function fetchCrRemoteRows(){
+      const keys=CR_PERSONAL_KEYS.map(x=>x.key);
+      const r=await client.from('clair_data').select('id,data_key,payload,revision,updated_at')
+        .eq('user_id',currentUser.id).eq('app_id','clair-repas')
+        .in('data_key',keys).is('deleted_at',null);
+      if(r.error)throw r.error;
+      return new Map((r.data||[]).map(row=>[row.data_key,row]));
+    }
+
+    async function updateClairRepasStatus(){
+      if(!currentUser||!$('crStatus'))return;
+      try{
+        const remote=await fetchCrRemoteRows();
+        let localTypes=0,remoteTypes=0;
+        for(const item of CR_PERSONAL_KEYS){
+          const l=readLocalJson(item.key);
+          if(l.exists&&meaningful(l.value))localTypes++;
+          const rv=remote.get(item.key)?.payload?.value;
+          if(rv!==undefined&&meaningful(rv))remoteTypes++;
+        }
+        const localFav=readLocalJson('crFavMeals');
+        const remoteFav=remote.get('crFavMeals')?.payload?.value;
+        const lf=localFav.exists?favoriteCount(localFav.value):0;
+        const rf=remoteFav!==undefined?favoriteCount(remoteFav):0;
+        if(!localTypes&&!remoteTypes){
+          $('crStatus').textContent='Clair Repas est relié. Aucune donnée personnelle à synchroniser pour le moment.';
+        }else{
+          $('crStatus').textContent=`Clair Repas : ${localTypes} type${localTypes>1?'s':''} de données sur cet appareil · ${remoteTypes} dans Mon espace Clair · favoris ${lf}/${rf}.`;
+        }
+      }catch(err){
+        console.error(err);
+        $('crStatus').textContent='Clair Repas : vérification momentanément indisponible.';
       }
     }
-  }catch{}
-}
-if(!source){try{source=localStorage.getItem(CACHE_KEY)||''}catch{}}
-if(!source||!source.includes('document.write(html);')||!source.includes('document.open();')){
-  document.getElementById('boot').innerHTML='<div class="boot-card"><img class="boot-logo" src="./icon-192.png" alt=""><strong>Clair Courses ne peut pas s’ouvrir.</strong><p>Vérifiez la connexion, puis rechargez la page.</p></div>';
-  return;
-}
 
-/* V12.0 : catalogue enrichi, Mes produits A→Z, ajout manuel permanent,
-   protection porc/échine. Patch repris à l'identique de la version stable. */
-const v120Patch="/* V12.0 — ajout manuel permanent + catalogue V11.9 conservé. */\nconst V120_CATALOGUE=[{\"name\":\"Eau\",\"quantity\":\"1 pack de 6 × 1,5 L\",\"aisle\":\"Eau\"},{\"name\":\"Pain\",\"quantity\":\"1 baguette\",\"aisle\":\"Boulangerie\"},{\"name\":\"Lait\",\"quantity\":\"1 bouteille 1 L\",\"aisle\":\"Crèmerie\"},{\"name\":\"Beurre\",\"quantity\":\"1 plaquette 250 g\",\"aisle\":\"Crèmerie\"},{\"name\":\"Café\",\"quantity\":\"1 paquet 250 g\",\"aisle\":\"Épicerie\"},{\"name\":\"Papier aluminium\",\"quantity\":\"1 rouleau\",\"aisle\":\"Maison\"},{\"name\":\"Sacs-poubelle\",\"quantity\":\"1 rouleau\",\"aisle\":\"Maison\"},{\"name\":\"Courgettes\",\"quantity\":\"à l’unité\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Ail\",\"quantity\":\"1 tête\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Carottes\",\"quantity\":\"1 sachet 1 kg\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Citrons\",\"quantity\":\"2 pièces\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Oignons\",\"quantity\":\"1 filet 1 kg\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Pommes de terre\",\"quantity\":\"1 filet 2,5 kg\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Salade\",\"quantity\":\"1 pièce\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Tomates\",\"quantity\":\"1 barquette 500 g\",\"aisle\":\"Fruits et légumes\"},{\"name\":\"Œufs\",\"quantity\":\"1 boîte de 6\",\"aisle\":\"Crèmerie\"},{\"name\":\"Crème fraîche\",\"quantity\":\"1 pot 20 cl\",\"aisle\":\"Crèmerie\"},{\"name\":\"Fromage râpé\",\"quantity\":\"1 sachet 200 g\",\"aisle\":\"Crèmerie\"},{\"name\":\"Parmesan\",\"quantity\":\"1 sachet 100 g\",\"aisle\":\"Crèmerie\"},{\"name\":\"Yaourts nature\",\"quantity\":\"1 pack de 4\",\"aisle\":\"Crèmerie\"},{\"name\":\"Riz\",\"quantity\":\"1 paquet 1 kg\",\"aisle\":\"Épicerie\"},{\"name\":\"Pâtes\",\"quantity\":\"1 paquet 500 g\",\"aisle\":\"Épicerie\"},{\"name\":\"Semoule\",\"quantity\":\"1 paquet 500 g\",\"aisle\":\"Épicerie\"},{\"name\":\"Farine\",\"quantity\":\"1 paquet 1 kg\",\"aisle\":\"Épicerie\"},{\"name\":\"Sucre\",\"quantity\":\"1 paquet 1 kg\",\"aisle\":\"Épicerie\"},{\"name\":\"Sel\",\"quantity\":\"1 paquet\",\"aisle\":\"Épicerie\"},{\"name\":\"Poivre\",\"quantity\":\"1 moulin\",\"aisle\":\"Épicerie\"},{\"name\":\"Huile d’olive\",\"quantity\":\"1 bouteille 75 cl\",\"aisle\":\"Épicerie\"},{\"name\":\"Huile neutre\",\"quantity\":\"1 bouteille 1 L\",\"aisle\":\"Épicerie\"},{\"name\":\"Vinaigre\",\"quantity\":\"1 bouteille 75 cl\",\"aisle\":\"Épicerie\"},{\"name\":\"Moutarde\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Mayonnaise\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Ketchup\",\"quantity\":\"1 flacon\",\"aisle\":\"Épicerie\"},{\"name\":\"Miel\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Sauce soja\",\"quantity\":\"1 bouteille 15 cl\",\"aisle\":\"Épicerie\"},{\"name\":\"Paprika\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Curry\",\"quantity\":\"1 pot\",\"aisle\":\"Épicerie\"},{\"name\":\"Tomates concassées\",\"quantity\":\"1 boîte 400 g\",\"aisle\":\"Conserves\"},{\"name\":\"Concentré de tomate\",\"quantity\":\"1 tube\",\"aisle\":\"Épicerie\"},{\"name\":\"Pois chiches\",\"quantity\":\"1 boîte 400 g\",\"aisle\":\"Conserves\"},{\"name\":\"Haricots rouges\",\"quantity\":\"1 boîte 400 g\",\"aisle\":\"Conserves\"},{\"name\":\"Maïs\",\"quantity\":\"1 boîte 300 g\",\"aisle\":\"Conserves\"},{\"name\":\"Thon au naturel\",\"quantity\":\"1 boîte 140 g\",\"aisle\":\"Conserves\"},{\"name\":\"Papier cuisson\",\"quantity\":\"1 rouleau\",\"aisle\":\"Maison\"},{\"name\":\"Film alimentaire\",\"quantity\":\"1 rouleau\",\"aisle\":\"Maison\"},{\"name\":\"Essuie-tout\",\"quantity\":\"1 paquet de 2\",\"aisle\":\"Maison\"},{\"name\":\"Papier toilette\",\"quantity\":\"1 paquet de 6\",\"aisle\":\"Hygiène\"},{\"name\":\"Liquide vaisselle\",\"quantity\":\"1 flacon 500 ml\",\"aisle\":\"Maison\"},{\"name\":\"Éponges\",\"quantity\":\"1 paquet de 3\",\"aisle\":\"Maison\"},{\"name\":\"Lessive\",\"quantity\":\"1 bidon\",\"aisle\":\"Maison\"}];\nconst V120_BASE_NAMES=[\"Eau\",\"Pain\",\"Lait\",\"Beurre\",\"Café\",\"Papier aluminium\",\"Sacs-poubelle\",\"Courgettes\"];\n\nhtml=html.replace(\n  /const DEFAULT_PRODUCTS=\\[[\\s\\S]*?\\n  \\];/,\n  'const DEFAULT_PRODUCTS='+JSON.stringify(V120_CATALOGUE)+';\\n  const BASE_PRODUCT_NAMES_V120='+JSON.stringify(V120_BASE_NAMES)+';'\n);\n\nhtml=html.replace(\n  'const products=Array.isArray(source.products)?source.products:DEFAULT_PRODUCTS;',\n  'const savedProductsV120=Array.isArray(source.products)?source.products:null;const legacyBaseV120=Array.isArray(savedProductsV120)&&savedProductsV120.length===8&&BASE_PRODUCT_NAMES_V120.every(name=>savedProductsV120.some(product=>productKey(product.name)===productKey(name)));const products=!savedProductsV120||legacyBaseV120?DEFAULT_PRODUCTS:savedProductsV120;'\n);\n\nhtml=html.replace(\n  '.slice().sort((a,b)=>(Number(usage[productKey(b.name)])||0)-(Number(usage[productKey(a.name)])||0)||a.name.localeCompare(b.name,\"fr\"));',\n  '.slice().sort((a,b)=>a.name.localeCompare(b.name,\"fr\",{sensitivity:\"base\"}));'\n);\nhtml=html.replace(\n  'Les produits les plus souvent choisis apparaissent en premier. Touchez un produit pour l’ajouter.',\n  'Vos produits habituels sont classés de A à Z. Touchez un produit pour l’ajouter.'\n);\n\n/* V12.0 : rendre l'ajout manuel impossible à perdre de vue. */\nhtml=html.replace(\n  '</style>',\n  `.action-bar-inner{grid-template-columns:repeat(5,minmax(0,1fr))}#bar-add{color:#fff;background:var(--accent);border-radius:12px}#bar-add .action-icon{font-size:1.35rem}body.course-mode .action-bar{display:block!important}body.course-mode .action-bar-inner{display:flex;justify-content:center}body.course-mode .action:not(#bar-add){display:none!important}body.course-mode #bar-add{display:grid!important;min-width:150px;max-width:220px}body.course-mode .app{padding-bottom:calc(98px + env(safe-area-inset-bottom))}@media(max-width:370px){.action-bar-inner{grid-template-columns:repeat(5,minmax(0,1fr))}.action{font-size:.63rem}}</style>`\n);\n\nhtml=html.replace(\n  '<div class=\"action-bar-inner\">',\n  '<div class=\"action-bar-inner\"><button class=\"action\" id=\"bar-add\" type=\"button\"><span class=\"action-icon\">➕</span><span>Ajouter</span></button>'\n);\n\nhtml=html.replace(\n  'els.barList.addEventListener(\"click\",()=>scrollToId(\"list-title\"));',\n  'document.getElementById(\"bar-add\")?.addEventListener(\"click\",()=>openItemDialog());els.barList.addEventListener(\"click\",()=>scrollToId(\"list-title\"));'\n);\n\n/* Exemple concret V12.0 : porc/échine doit rester en Boucherie en saisie manuelle. */\nhtml=html.replace(\n  'const aisle=isAisle(requestedAisle)?requestedAisle:classify(parts.original);',\n  'let aisle=isAisle(requestedAisle)?requestedAisle:classify(parts.original);if(/(?:^| )(?:echines?|porc)(?: |$)/.test(normalize(parts.original)))aisle=\"Boucherie\";'\n);\n";
+    async function syncClairRepasPersonal(options={}){
+      if(!currentUser||crSyncInFlight||!navigator.onLine)return;
+      const silent=!!options.silent,btn=$('syncCrButton');
+      crSyncInFlight=true;
+      if(!silent)setBusy(btn,true,'Synchronisation…');
+      try{
+        const remote=await fetchCrRemoteRows();
+        let synced=0;
+        const now=new Date().toISOString();
 
-/* Injecter le transformateur DANS V11.7, afin qu'il s'applique après tous les
-   correctifs fonctionnels, sur le HTML final réellement affiché. */
-const transformSource=__CC_V131_TRANSFORM.toString();
-source=source.replace("'use strict';","'use strict';\n"+transformSource+"\n");
-source=source.replace('document.open();',v120Patch+'\ndocument.open();');
-source=source.replace('document.write(html);','html=__CC_V131_TRANSFORM(html);document.write(html);');
+        for(const item of CR_PERSONAL_KEYS){
+          const local=readLocalJson(item.key);
+          const row=remote.get(item.key);
+          const remoteValue=row?.payload?.value;
 
-/* Identification V13.1 dans le code V11.7 avant exécution. */
-source=source.replaceAll('Clair Courses V11.7','Clair Courses V13.1');
-source=source.replaceAll('Version 11.7 stable','Version 13.1 Premium');
-source=source.replaceAll("badge.textContent='V11.7'","badge.textContent='V13.1'");
-source=source.replaceAll("document.title='Clair Courses V11.7'","document.title='Clair Courses V13.1'");
+          if(!local.exists&&remoteValue===undefined)continue;
 
-document.open();
-document.write(source);
-document.close();
-})();
-</script>
+          // Safe merge: empty local data never destroys remote data.
+          const merged=mergePersonal(remoteValue,local.exists?local.value:undefined);
+          if(merged===undefined)continue;
+
+          writeLocalJson(item.key,merged);
+
+          const payload={
+            value:merged,
+            source_device:deviceLabel(),
+            synced_at:now,
+            integration:'espace-clair-v8.2'
+          };
+          const up=await client.from('clair_data').upsert({
+            user_id:currentUser.id,
+            app_id:'clair-repas',
+            data_key:item.key,
+            payload,
+            schema_version:1,
+            revision:(row?.revision||0)+1,
+            last_device_id:currentDevice?.id||null,
+            deleted_at:null,
+            updated_at:now
+          },{onConflict:'user_id,app_id,data_key'});
+          if(up.error)throw up.error;
+          synced++;
+        }
+
+        await updateClairRepasStatus();
+        if(!silent){
+          $('crStatus').textContent=synced
+            ?`✓ Clair Repas synchronisé : ${synced} type${synced>1?'s':''} de données personnelles sont à jour sur cet appareil et dans Mon espace Clair.`
+            :'✓ Clair Repas est relié. Rien de nouveau à synchroniser pour le moment.';
+        }
+      }catch(err){
+        console.error(err);
+        if(!silent)$('crStatus').textContent='Synchronisation impossible : '+friendly(err);
+      }finally{
+        crSyncInFlight=false;
+        if(!silent)setBusy(btn,false);
+      }
+    }
+
+    function scheduleCrAutoSync(delay=500){
+      if(crAutoTimer)clearTimeout(crAutoTimer);
+      crAutoTimer=setTimeout(()=>syncClairRepasPersonal({silent:true}),delay);
+    }
+
+    async function ensureProfile(user){let r=await client.from('clair_profiles').select('*').eq('user_id',user.id).maybeSingle();if(r.error)throw r.error;if(!r.data){const name=user.user_metadata?.display_name||user.email?.split('@')[0]||'Utilisateur Clair';r=await client.from('clair_profiles').upsert({user_id:user.id,display_name:name},{onConflict:'user_id'}).select('*').single();if(r.error)throw r.error}return r.data}
+    async function registerDevice(user){const payload={user_id:user.id,device_key:deviceKey(),label:deviceLabel(),platform:platform(),app_version:APP_VERSION,last_seen_at:new Date().toISOString()};const r=await client.from('clair_devices').upsert(payload,{onConflict:'user_id,device_key'}).select('*').single();if(r.error)throw r.error;currentDevice=r.data;return r.data}
+    async function loadDashboard(user){currentUser=user;const profile=await ensureProfile(user);await registerDevice(user);const devicesR=await client.from('clair_devices').select('*').eq('user_id',user.id).order('last_seen_at',{ascending:false});if(devicesR.error)throw devicesR.error;const dataR=await client.from('clair_data').select('id,app_id,data_key,updated_at,payload',{count:'exact'}).eq('user_id',user.id).is('deleted_at',null).order('updated_at',{ascending:false}).limit(1);if(dataR.error)throw dataR.error;const name=displayName(user,profile);$('displayName').textContent=name;$('displayEmail').textContent=user.email||'—';$('avatar').textContent=(name.trim()[0]||'C').toUpperCase();$('welcomeTitle').textContent=`Bonjour ${name}`;$('memberSince').textContent=user.created_at?`Depuis ${pretty(user.created_at)}`:'Espace Clair';const count=dataR.count||0;$('dataCount').textContent=String(count);$('dataLabel').textContent=count>1?'données personnelles enregistrées':'donnée personnelle enregistrée';$('lastData').textContent=dataR.data?.[0]?`Dernière mise à jour : ${pretty(dataR.data[0].updated_at,true)}`:'Aucune donnée synchronisée pour le moment.';$('deviceList').innerHTML=(devicesR.data||[]).map(d=>`<div class="device"><div class="device-icon">${icon(d.platform||'')}</div><div class="device-copy"><div class="device-name">${escapeHtml(d.label||d.platform||'Appareil')}</div><div class="device-meta">${d.id===currentDevice?.id?'<span class="device-current">Cet appareil</span> · ':''}${escapeHtml(relative(d.last_seen_at))}</div></div></div>`).join('')||'<div class="device"><div class="device-icon">⌛</div><div class="device-copy"><div class="device-name">Aucun appareil détecté</div></div></div>';$('signedout').classList.add('hidden');$('dashboard').classList.add('visible');await updateClairRepasStatus();scheduleCrAutoSync(300)}
+    function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+    function showSignedOut(){$('dashboard').classList.remove('visible');$('signedout').classList.remove('hidden');currentUser=null;currentDevice=null}
+    async function refresh(){if(!currentUser)return;try{await loadDashboard(currentUser)}catch(e){console.error(e);$('syncBadge').textContent='⚠ Vérification nécessaire'}}
+
+    $('loginTab').addEventListener('click',()=>switchAuth('login'));$('signupTab').addEventListener('click',()=>switchAuth('signup'));
+    $('loginForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('loginButton');setMessage($('authMessage'),'');setBusy(btn,true,'Connexion…');try{const {data,error}=await client.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error)throw error;if(!data.user)throw new Error('Connexion impossible.');await loadDashboard(data.user)}catch(err){setMessage($('authMessage'),friendly(err),'error')}finally{setBusy(btn,false)}});
+    $('signupForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('signupButton');setMessage($('authMessage'),'');setBusy(btn,true,'Création…');try{const email=$('signupEmail').value.trim(),name=$('signupName').value.trim(),password=$('signupPassword').value;const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name},emailRedirectTo:location.href}});if(error)throw error;if(data.session&&data.user){await loadDashboard(data.user)}else{setMessage($('authMessage'),'Votre espace est créé. Vérifiez votre e-mail pour confirmer votre adresse, puis revenez ici pour vous connecter.','success');switchAuth('login');$('loginEmail').value=email}}catch(err){setMessage($('authMessage'),friendly(err),'error')}finally{setBusy(btn,false)}});
+    $('logoutButton').addEventListener('click',async()=>{await client.auth.signOut();showSignedOut()});$('refreshButton').addEventListener('click',refresh);
+    $('syncCrButton').addEventListener('click',()=>syncClairRepasPersonal({silent:false}));
+    $('testSyncButton').addEventListener('click',async()=>{if(!currentUser)return;const btn=$('testSyncButton');setBusy(btn,true,'Enregistrement…');try{const existing=await client.from('clair_data').select('*').eq('user_id',currentUser.id).eq('app_id','espace-clair').eq('data_key','premier-test').maybeSingle();if(existing.error)throw existing.error;const revision=(existing.data?.revision||0)+1;const payload={message:'Bonjour depuis Espace Clair',device:deviceLabel(),saved_at:new Date().toISOString()};const r=await client.from('clair_data').upsert({user_id:currentUser.id,app_id:'espace-clair',data_key:'premier-test',payload,schema_version:1,revision,last_device_id:currentDevice?.id||null,deleted_at:null,updated_at:new Date().toISOString()},{onConflict:'user_id,app_id,data_key'});if(r.error)throw r.error;await refresh();$('lastData').textContent=`Test enregistré depuis ${deviceLabel()} à ${new Intl.DateTimeFormat('fr-FR',{timeStyle:'short'}).format(new Date())}`;}catch(err){alert(friendly(err))}finally{setBusy(btn,false)}});
+    $('editProfile').addEventListener('click',()=>{$('profileNameInput').value=$('displayName').textContent||'';$('profileDialogBackdrop').classList.add('visible');setMessage($('profileMessage'),'')});$('cancelProfile').addEventListener('click',()=>$('profileDialogBackdrop').classList.remove('visible'));$('saveProfile').addEventListener('click',async()=>{if(!currentUser)return;const name=$('profileNameInput').value.trim();if(!name){setMessage($('profileMessage'),'Indiquez un nom.','error');return}try{const r=await client.from('clair_profiles').upsert({user_id:currentUser.id,display_name:name,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(r.error)throw r.error;$('profileDialogBackdrop').classList.remove('visible');await refresh()}catch(err){setMessage($('profileMessage'),friendly(err),'error')}});
+    function friendly(err){const m=String(err?.message||err||'Erreur inconnue');if(/Invalid login credentials/i.test(m))return'Adresse e-mail ou mot de passe incorrect.';if(/Email not confirmed/i.test(m))return'Confirmez d’abord votre adresse e-mail.';if(/User already registered/i.test(m))return'Un espace existe déjà avec cette adresse.';if(/Failed to fetch/i.test(m))return'Impossible de joindre le serveur. Vérifiez la connexion Internet.';return m}
+
+    window.addEventListener('storage',e=>{if(currentUser&&CR_KEY_SET.has(e.key))scheduleCrAutoSync(350)});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)scheduleCrAutoSync(250)});
+    window.addEventListener('online',()=>{setNetwork();if(currentUser)scheduleCrAutoSync(250)});
+    window.addEventListener('offline',setNetwork);setNetwork();
+    client.auth.onAuthStateChange(async(event,session)=>{if(session?.user){try{await loadDashboard(session.user)}catch(e){console.error(e);setMessage($('authMessage'),friendly(e),'error');showSignedOut()}}else if(event==='SIGNED_OUT'){showSignedOut()}});
+    (async()=>{try{const {data}=await client.auth.getSession();if(data.session?.user)await loadDashboard(data.session.user);else showSignedOut()}catch(e){console.error(e);showSignedOut();setMessage($('authMessage'),friendly(e),'error')}finally{$('loading').classList.add('hidden')}})();
+  })();
+  </script>
 </body>
 </html>
