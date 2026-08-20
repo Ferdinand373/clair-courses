@@ -1,251 +1,286 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#eef4ef">
-  <title>Espace Clair</title>
-  <style>
-    :root{
-      --ink:#14211d;--muted:#6d7b75;--green:#3f765f;--green-dark:#28543f;
-      --green-soft:#e8f1eb;--line:rgba(20,33,29,.09);--surface:rgba(255,255,255,.84);
-      --danger:#9b514e;--shadow:0 24px 64px rgba(28,45,38,.11)
-    }
-    *{box-sizing:border-box}html{min-height:100%;background:#eef3ef}body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at 8% 0%,#dfeee5 0,transparent 33%),radial-gradient(circle at 92% 2%,#f4ead5 0,transparent 30%),linear-gradient(145deg,#f9faf8 0%,#eef3ef 48%,#f6f1e8 100%);-webkit-font-smoothing:antialiased}
-    button,input{font:inherit}[hidden]{display:none!important}.shell{width:min(1180px,calc(100% - 34px));margin:0 auto;padding:24px 0 52px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#557c69,#315947);box-shadow:0 12px 28px rgba(49,89,71,.20);font-size:22px}.brand-name{margin:0;font-weight:800;font-size:17px}.brand-sub{margin:2px 0 0;color:var(--muted);font-size:12px}.status-pill{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid rgba(72,116,95,.12);border-radius:999px;background:rgba(255,255,255,.62);font-size:13px;font-weight:700;color:var(--green-dark);backdrop-filter:blur(16px)}.status-dot{width:8px;height:8px;border-radius:50%;background:#6d9b80;box-shadow:0 0 0 5px rgba(109,155,128,.12)}.status-pill.offline{color:#7f6646}.status-pill.offline .status-dot{background:#c19b61;box-shadow:0 0 0 5px rgba(193,155,97,.13)}
-    .login-wrap{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(330px,.70fr);gap:24px;align-items:stretch}.hero,.auth-panel,.card{border:1px solid rgba(255,255,255,.78);box-shadow:var(--shadow);backdrop-filter:blur(24px)}.hero{position:relative;overflow:hidden;padding:38px;border-radius:32px;background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(250,250,247,.74));min-height:570px;display:flex;flex-direction:column;justify-content:space-between}.hero:after{content:"";position:absolute;width:310px;height:310px;right:-100px;top:-115px;border-radius:50%;background:radial-gradient(circle,rgba(178,202,187,.46),rgba(178,202,187,0));pointer-events:none}.eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:16px;color:var(--green-dark);font-size:12px;font-weight:850;letter-spacing:.09em;text-transform:uppercase}.hero h1{max-width:760px;margin:0;font-size:clamp(42px,6vw,68px);line-height:.96;letter-spacing:-.056em;font-weight:790}.hero-lead{max-width:650px;margin:20px 0 0;color:#5d6b65;font-size:clamp(16px,2.2vw,19px);line-height:1.55}.hero-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:34px}.hero-feature{padding:15px;border-radius:18px;background:rgba(247,249,247,.72);border:1px solid rgba(20,33,29,.06)}.hero-feature strong{display:block;font-size:13px}.hero-feature span{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.4}
-    .auth-panel{padding:28px;border-radius:32px;background:rgba(255,255,255,.83)}.auth-title{margin:2px 0 7px;font-size:26px;letter-spacing:-.035em}.auth-intro{margin:0 0 22px;color:var(--muted);font-size:13px;line-height:1.5}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;margin-bottom:24px;border-radius:16px;background:#eff3f0}.tab{min-height:42px;border:0;border-radius:12px;background:transparent;color:var(--muted);font-weight:740;cursor:pointer}.tab.active{background:#fff;color:var(--ink);box-shadow:0 6px 20px rgba(28,45,38,.07)}.form{display:grid;gap:14px}.field{display:grid;gap:7px}.label{font-size:12px;color:var(--muted);font-weight:700}.input{width:100%;min-height:50px;border:1px solid rgba(20,33,29,.12);border-radius:14px;padding:0 14px;outline:none;background:rgba(255,255,255,.94);color:var(--ink);transition:.18s}.input:focus{border-color:rgba(72,116,95,.56);box-shadow:0 0 0 4px rgba(72,116,95,.09)}.button{appearance:none;border:0;border-radius:14px;min-height:48px;padding:0 18px;display:inline-flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;font-weight:760}.button:disabled{opacity:.58;cursor:not-allowed}.primary{color:#fff;background:linear-gradient(145deg,var(--green),var(--green-dark));box-shadow:0 14px 28px rgba(49,89,71,.20)}.soft{color:var(--ink);background:rgba(255,255,255,.75);border:1px solid var(--line)}.note{margin:2px 0 0;color:var(--muted);font-size:12px;line-height:1.45}.message{display:none;margin-top:14px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.45}.message.visible{display:block}.message.success{background:#edf5f0;color:#315947}.message.error{background:#f8eeee;color:#864643}.message.info{background:#f4f1e9;color:#67593d}.trust-list{display:grid;gap:15px;margin-top:26px}.trust-item{display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:start}.trust-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:var(--green-soft)}.trust-item strong{display:block;margin-bottom:3px;font-size:14px}.trust-item span{color:var(--muted);font-size:12px;line-height:1.45}
-    .dashboard{display:none}.dashboard.visible{display:block}.signedout.hidden{display:none}.welcome{display:flex;justify-content:space-between;gap:24px;align-items:end;margin:12px 0 24px}.welcome h1{margin:0;font-size:clamp(34px,5vw,56px);letter-spacing:-.05em;line-height:1}.welcome p{margin:10px 0 0;color:var(--muted);font-size:15px}.sync-badge{flex:0 0 auto;display:inline-flex;align-items:center;min-height:44px;padding:0 15px;border-radius:999px;color:var(--green-dark);background:rgba(231,240,235,.86);border:1px solid rgba(72,116,95,.11);font-size:13px;font-weight:760}.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}.card{position:relative;overflow:hidden;padding:24px;border-radius:24px;background:var(--surface)}.identity{grid-column:span 7;min-height:228px}.health{grid-column:span 5;min-height:228px}.devices{grid-column:span 7}.privacy{grid-column:span 5}.storage,.data,.account{grid-column:span 4}.integration{grid-column:span 12}.integration-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.integration-status{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.5}.integration .button{min-width:190px}.kicker{color:var(--muted);font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.card h2{margin:10px 0 0;font-size:23px;letter-spacing:-.03em}.card p{color:var(--muted);line-height:1.5}.identity-row{display:flex;align-items:center;gap:17px;margin-top:24px}.avatar{width:68px;height:68px;display:grid;place-items:center;border-radius:22px;color:#fff;background:linear-gradient(145deg,#628672,#355f4c);font-size:25px;font-weight:780}.identity-main{min-width:0}.identity-name{font-size:20px;font-weight:770;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.identity-email{margin-top:4px;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.identity-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.mini-pill{display:inline-flex;align-items:center;min-height:30px;padding:0 10px;border-radius:999px;background:rgba(231,240,235,.72);color:var(--green-dark);font-size:11px;font-weight:700}.health-line{display:flex;align-items:center;gap:20px;margin-top:18px}.health-ring{width:94px;height:94px;flex:0 0 94px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(var(--green) 0 96%,rgba(72,116,95,.12) 96% 100%);box-shadow:inset 0 0 0 12px rgba(255,255,255,.88);color:var(--green-dark);font-weight:820}.health-copy strong{display:block;font-size:17px}.health-copy span{display:block;margin-top:7px;color:var(--muted);font-size:12px;line-height:1.45}.mini-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}.mini-stat{padding:13px;border-radius:15px;background:rgba(248,249,247,.84);border:1px solid rgba(20,33,29,.06)}.mini-stat strong{display:block;font-size:18px}.mini-stat span{display:block;margin-top:3px;color:var(--muted);font-size:11px}.device-list{display:grid;gap:10px;margin-top:18px}.device{display:flex;align-items:center;gap:13px;padding:13px;border-radius:16px;background:rgba(249,250,248,.90);border:1px solid rgba(20,33,29,.065)}.device-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:var(--green-soft);font-size:18px}.device-copy{min-width:0;flex:1}.device-name{font-size:14px;font-weight:740}.device-meta{margin-top:3px;color:var(--muted);font-size:11px}.device-current{color:var(--green-dark);font-weight:740}.privacy-seal{width:52px;height:52px;display:grid;place-items:center;margin-top:20px;border-radius:17px;background:var(--green-soft);font-size:23px}.row-link{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink);text-align:left;cursor:pointer}.row-link:first-of-type{margin-top:16px}.row-link strong{font-size:13px}.row-link span{color:var(--muted);font-size:12px}.big-number{margin-top:18px;font-size:38px;line-height:1;letter-spacing:-.045em;font-weight:800}.big-label{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.45}.test-button{margin-top:16px;width:100%}.footer{display:flex;justify-content:space-between;gap:15px;margin-top:22px;color:#7f8a85;font-size:11px}.loading{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:rgba(244,247,244,.90);backdrop-filter:blur(18px);transition:.25s}.loading.hidden{opacity:0;visibility:hidden;pointer-events:none}.loader-mark{width:58px;height:58px;display:grid;place-items:center;border-radius:20px;background:linear-gradient(145deg,#557c69,#315947);font-size:25px}.dialog-backdrop{position:fixed;inset:0;z-index:80;display:none;place-items:center;padding:18px;background:rgba(20,33,29,.32);backdrop-filter:blur(12px)}.dialog-backdrop.visible{display:grid}.dialog{width:min(460px,100%);padding:24px;border-radius:24px;background:#fbfcfa;box-shadow:0 30px 100px rgba(20,33,29,.25)}.dialog h3{margin:0 0 6px;font-size:22px}.dialog p{margin:0 0 18px;color:var(--muted);font-size:13px}.dialog-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
-    @media(max-width:860px){.login-wrap{grid-template-columns:1fr}.hero{min-height:auto}.grid{grid-template-columns:1fr}.identity,.health,.devices,.privacy,.storage,.data,.account,.integration{grid-column:auto}}@media(max-width:620px){.shell{width:min(100% - 22px,1180px);padding-top:16px}.topbar{margin-bottom:18px}.brand-sub{display:none}.hero{padding:27px 22px;border-radius:26px}.hero h1{font-size:clamp(39px,12vw,54px)}.hero-foot{grid-template-columns:1fr}.auth-panel{padding:20px;border-radius:25px}.welcome{align-items:flex-start;flex-direction:column}.card{padding:20px;border-radius:22px}.health-line{align-items:flex-start}.footer{flex-direction:column}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#dceefa">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Clair Courses">
+<title>Clair Courses · Clair Sync</title>
+<style>
+html,body{min-height:100%;margin:0;background:#eef6fb;color:#17364a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center;background:radial-gradient(circle at 90% 0,rgba(169,214,239,.62),transparent 25rem),linear-gradient(180deg,#eef8fd,#f8fbfd)}
+.card{width:min(420px,100%);padding:30px 20px;border:1px solid rgba(255,255,255,.92);border-radius:28px;background:rgba(255,255,255,.82);box-shadow:0 20px 60px rgba(39,88,119,.12)}
+.card strong{display:block;font-size:1.45rem}.card p{margin:8px 0 0;color:#728793;line-height:1.45}
+</style>
 </head>
 <body>
-  <div id="loading" class="loading"><div class="loader-mark">🌿</div></div>
-  <main class="shell">
-    <header class="topbar">
-      <div class="brand"><div class="mark">🌿</div><div><p class="brand-name">Espace Clair</p><p class="brand-sub">Votre univers personnel, privé et synchronisé</p></div></div>
-      <div id="networkPill" class="status-pill"><span class="status-dot"></span><span id="networkText">Connexion privée</span></div>
-    </header>
+<div class="boot" id="boot"><div class="card"><strong>Clair Courses</strong><p>Ouverture avec Clair Sync…</p></div></div>
+<script>
+(async()=>{
+'use strict';
 
-    <section id="signedout" class="signedout">
-      <div class="login-wrap">
-        <article class="hero">
-          <div><div class="eyebrow">🌿 Mon espace Clair</div><h1>Tout ce qui est à vous reste à vous.</h1><p class="hero-lead">Vos favoris, notes, historiques, listes et préférences suivent vos appareils sans se mélanger au logiciel Clair.</p></div>
-          <div class="hero-foot"><div class="hero-feature"><strong>Privé</strong><span>Chaque compte ne voit que ses propres données.</span></div><div class="hero-feature"><strong>Sûr</strong><span>Les suppressions sont conçues pour rester réversibles.</span></div><div class="hero-feature"><strong>Invisible</strong><span>Le socle travaille en arrière-plan sans compliquer Clair.</span></div></div>
-        </article>
+const STABLE_COMMIT='f0c871a958583c72b766027da84f193806a2bbe1';
+const CACHE_KEY='clairCourses.clairSync.stable.v1';
+const SOURCES=[
+  `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${STABLE_COMMIT}/index.html?v=clairsync1`,
+  `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${STABLE_COMMIT}/index.html?v=clairsync1`
+];
 
-        <aside class="auth-panel">
-          <h2 class="auth-title">Bienvenue</h2><p class="auth-intro">Connectez-vous à votre espace personnel ou créez-le en quelques secondes.</p>
-          <div class="tabs"><button id="loginTab" class="tab active" type="button">Se connecter</button><button id="signupTab" class="tab" type="button">Créer mon espace</button></div>
-          <form id="loginForm" class="form"><div class="field"><label class="label" for="loginEmail">Adresse e-mail</label><input class="input" id="loginEmail" type="email" autocomplete="email" required placeholder="vous@exemple.fr"></div><div class="field"><label class="label" for="loginPassword">Mot de passe</label><input class="input" id="loginPassword" type="password" autocomplete="current-password" required minlength="8" placeholder="••••••••"></div><button id="loginButton" class="button primary" type="submit">Ouvrir mon espace</button></form>
-          <form id="signupForm" class="form" hidden><div class="field"><label class="label" for="signupName">Prénom ou nom affiché</label><input class="input" id="signupName" type="text" maxlength="60" required placeholder="Freddy"></div><div class="field"><label class="label" for="signupEmail">Adresse e-mail</label><input class="input" id="signupEmail" type="email" autocomplete="email" required placeholder="vous@exemple.fr"></div><div class="field"><label class="label" for="signupPassword">Choisir un mot de passe</label><input class="input" id="signupPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="8 caractères minimum"></div><button id="signupButton" class="button primary" type="submit">Créer mon espace Clair</button><p class="note">Un e-mail de confirmation peut être demandé avant la première connexion.</p></form>
-          <div id="authMessage" class="message" role="status"></div>
-          <div class="trust-list"><div class="trust-item"><div class="trust-icon">🔒</div><div><strong>Accès strictement personnel</strong><span>Les règles de sécurité du serveur isolent chaque compte.</span></div></div><div class="trust-item"><div class="trust-icon">📱</div><div><strong>iPhone + ordinateur</strong><span>Chaque appareil est reconnu séparément pour préparer la synchronisation.</span></div></div></div>
-        </aside>
-      </div>
-    </section>
 
-    <section id="dashboard" class="dashboard">
-      <div class="welcome"><div><div class="eyebrow">Espace personnel</div><h1 id="welcomeTitle">Bonjour</h1><p id="welcomeSubtitle">Votre espace Clair est prêt.</p></div><div id="syncBadge" class="sync-badge">✓ Socle connecté</div></div>
-      <div class="grid">
-        <article class="card identity"><div class="kicker">Mon identité</div><h2>Votre espace, simplement</h2><div class="identity-row"><div id="avatar" class="avatar">C</div><div class="identity-main"><div id="displayName" class="identity-name">Utilisateur Clair</div><div id="displayEmail" class="identity-email">—</div><div class="identity-meta"><span class="mini-pill">Compte privé</span><span id="memberSince" class="mini-pill">Espace Clair</span></div></div></div><button id="editProfile" class="row-link" type="button"><strong>Modifier le nom affiché</strong><span>›</span></button></article>
-        <article class="card health"><div class="kicker">État du socle</div><h2>Tout est protégé</h2><div class="health-line"><div class="health-ring">OK</div><div class="health-copy"><strong>Protection active</strong><span>Votre compte est authentifié et les données sont isolées par utilisateur.</span></div></div></article>
-        <article class="card devices"><div class="kicker">Mes appareils</div><h2>Synchronisation multi-appareils</h2><p>Chaque appareil est identifié sans partager vos données avec les autres utilisateurs.</p><div id="deviceList" class="device-list"></div></article>
-        <article class="card privacy"><div class="kicker">Confidentialité</div><h2>Privé par conception</h2><div class="privacy-seal">🔒</div><p>Vos données Clair sont séparées du logiciel et protégées par votre compte. Aucun accès anonyme n’est autorisé.</p><div class="mini-stats"><div class="mini-stat"><strong>RLS</strong><span>Protection serveur</span></div><div class="mini-stat"><strong>Privé</strong><span>Données isolées</span></div></div></article>
-        <article class="card storage"><div class="kicker">Fichiers</div><h2>Espace privé</h2><div class="big-number">🔐</div><div class="big-label">Photos et documents pourront être conservés dans votre dossier personnel.</div></article>
-        <article class="card data"><div class="kicker">Mes données Clair</div><h2>Contenu personnel</h2><div id="dataCount" class="big-number">0</div><div id="dataLabel" class="big-label">donnée personnelle enregistrée</div><div id="lastData" class="big-label">Aucune donnée synchronisée pour le moment.</div><button id="testSyncButton" class="button soft test-button" type="button">Créer une donnée test</button></article>
-        <article class="card account"><div class="kicker">Compte</div><h2>Contrôle total</h2><p>Vous gardez la maîtrise de votre session et de votre identité Clair.</p><button id="refreshButton" class="row-link" type="button"><strong>Actualiser l’espace</strong><span>↻</span></button><button id="logoutButton" class="row-link" type="button"><strong>Se déconnecter</strong><span>›</span></button></article>
-        <article class="card integration"><div class="kicker">Applications Clair</div><h2>Clair Repas est synchronisé</h2><p>Vos <strong>données personnelles Clair Repas</strong> suivent désormais votre compte entre ordinateur et iPhone : favoris, notes, préférences, apprentissage et historiques. Les recettes et le moteur de Clair Repas V7.5 restent inchangés.</p><div id="crStatus" class="integration-status">Vérification de Clair Repas…</div><div class="integration-actions"><button id="syncCrButton" class="button primary" type="button">Synchroniser Clair Repas</button><a class="button soft" href="https://ferdinand373.github.io/Clair-Repas/" target="_blank" rel="noopener">Ouvrir Clair Repas</a></div></article>
-      </div>
-      <footer class="footer"><span>🌿 Espace Clair — Socle V8</span><span id="footerStatus">Connexion sécurisée à Supabase</span></footer>
-    </section>
-  </main>
+function __CC_CLAIR_SYNC_TRANSFORM(html){
+  try{
+    const syncScript = `
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></scr`+`ipt>
+<script>
+(()=>{
+'use strict';
 
-  <div id="profileDialogBackdrop" class="dialog-backdrop"><div class="dialog"><h3>Nom affiché</h3><p>Ce nom apparaît uniquement dans votre interface Clair.</p><div class="field"><label class="label" for="profileNameInput">Nom</label><input id="profileNameInput" class="input" type="text" maxlength="60"></div><div id="profileMessage" class="message"></div><div class="dialog-actions"><button id="cancelProfile" class="button soft" type="button">Annuler</button><button id="saveProfile" class="button primary" type="button">Enregistrer</button></div></div></div>
+const CC_SYNC_VERSION='Clair Sync 1.0';
+const SUPABASE_URL='https://ryyewskgfgysfubesdsj.supabase.co';
+const SUPABASE_KEY='sb_publishable_T9Dmg9VKTdMFdCuLVxD54w_7GeH3Q6S';
+const STATE_KEY='clairCourses.state';
+const USAGE_KEY='clairCourses.usage.v10';
+const PREVIOUS_KEY='clairCourses.previousList.v9';
+const REMOTE_KEY='clairCourses.state';
+const RELOAD_GUARD='clairSync.cc.reload.v1';
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-  (()=>{
-    'use strict';
-    const SUPABASE_URL='https://ryyewskgfgysfubesdsj.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY='sb_publishable_T9Dmg9VKTdMFdCuLVxD54w_7GeH3Q6S';
-    const APP_VERSION='Espace Clair V8.2 — Clair Repas complet';
-    const DEVICE_KEY_STORAGE='clair.device.key.v1';
-    const $=id=>document.getElementById(id);
-    const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-    let currentUser=null,currentDevice=null;
-    const CR_PERSONAL_KEYS=[
-      {key:'crFavMeals',label:'favoris'},
-      {key:'crRecipeNotesV31',label:'notes'},
-      {key:'crRecipeReactionsV3',label:'avis et réactions'},
-      {key:'crRecipeLearningV3',label:'préférences apprises'},
-      {key:'crRecentRecipesV25',label:'recettes récentes'},
-      {key:'crHistoryV13',label:'historique'},
-      {key:'crMealUsageV19',label:'usage des repas'},
-      {key:'crCourseUsageV37',label:'usage des courses'},
-      {key:'crStateV13',label:'état personnel'}
-    ];
-    const CR_KEY_SET=new Set(CR_PERSONAL_KEYS.map(x=>x.key));
-    let crSyncInFlight=false,crAutoTimer=null;
+let client=null,user=null,syncing=false,lastRaw='',timer=null;
 
-    function setMessage(el,text,type='info'){el.textContent=text||'';el.className='message'+(text?` visible ${type}`:'')}
-    function setBusy(btn,busy,text){if(!btn)return;if(busy){btn.dataset.old=btn.textContent;btn.textContent=text;btn.disabled=true}else{btn.textContent=btn.dataset.old||btn.textContent;btn.disabled=false}}
-    function setNetwork(){const on=navigator.onLine;$('networkPill').classList.toggle('offline',!on);$('networkText').textContent=on?'Connexion privée':'Mode hors connexion';$('footerStatus').textContent=on?'Connexion sécurisée à Supabase':'Connexion réseau indisponible'}
-    function switchAuth(mode){const login=mode==='login';$('loginTab').classList.toggle('active',login);$('signupTab').classList.toggle('active',!login);$('loginForm').hidden=!login;$('signupForm').hidden=login;setMessage($('authMessage'),'')}
-    function platform(){const u=navigator.userAgent||'';if(/iPhone/i.test(u))return'iPhone';if(/iPad/i.test(u))return'iPad';if(/Android/i.test(u))return'Android';if(/Windows/i.test(u))return'Windows';if(/Macintosh|Mac OS X/i.test(u))return'Mac';return'Navigateur'}
-    function browser(){const u=navigator.userAgent||'';if(/Edg\//.test(u))return'Edge';if(/CriOS|Chrome\//.test(u)&&!/Edg\//.test(u))return'Chrome';if(/FxiOS|Firefox\//.test(u))return'Firefox';if(/Safari\//.test(u)&&!/Chrome\//.test(u)&&!/CriOS/.test(u))return'Safari';return'Web'}
-    function deviceLabel(){const p=platform(),b=browser();return p==='Windows'?`Ordinateur Windows • ${b}`:`${p} • ${b}`}
-    function icon(p){if(/iPhone|Android/.test(p))return'📱';if(/iPad/.test(p))return'▣';if(/Windows|Mac|Linux/.test(p))return'💻';return'🌐'}
-    function deviceKey(){let k=localStorage.getItem(DEVICE_KEY_STORAGE);if(!k){k=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`;localStorage.setItem(DEVICE_KEY_STORAGE,k)}return k}
-    function pretty(v,time=false){if(!v)return'—';return new Intl.DateTimeFormat('fr-FR',time?{dateStyle:'medium',timeStyle:'short'}:{dateStyle:'medium'}).format(new Date(v))}
-    function relative(v){if(!v)return'jamais';const m=Math.max(0,Math.round((Date.now()-new Date(v).getTime())/60000));if(m<2)return'à l’instant';if(m<60)return`il y a ${m} min`;const h=Math.round(m/60);if(h<24)return`il y a ${h} h`;return pretty(v)}
-    function displayName(user,profile){return profile?.display_name||user?.user_metadata?.display_name||user?.email?.split('@')[0]||'Utilisateur Clair'}
-    function readLocalJson(key){const raw=localStorage.getItem(key);if(raw===null)return{exists:false,value:null};try{return{exists:true,value:JSON.parse(raw)}}catch{return{exists:true,value:raw}}}
-    function writeLocalJson(key,value){localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value))}
-    function stableIdentity(v){try{return JSON.stringify(v)}catch{return String(v)}}
-    function isPlainObject(v){return !!v&&typeof v==='object'&&!Array.isArray(v)}
-    function mergeArrays(remoteValue,localValue){
-      const remote=Array.isArray(remoteValue)?remoteValue:[];
-      const local=Array.isArray(localValue)?localValue:[];
-      const seen=new Set(),out=[];
-      // Local first: preserves this device's most recent ordering, then adds missing remote entries.
-      for(const item of [...local,...remote]){const k=stableIdentity(item);if(!seen.has(k)){seen.add(k);out.push(item)}}
-      return out;
+function deviceLabel(){
+  const u=navigator.userAgent||'';
+  const p=/iPhone/i.test(u)?'iPhone':/iPad/i.test(u)?'iPad':/Android/i.test(u)?'Android':/Windows/i.test(u)?'Ordinateur Windows':/Macintosh|Mac OS X/i.test(u)?'Mac':'Appareil';
+  const b=/Edg\\//.test(u)?'Edge':/CriOS|Chrome\\//.test(u)?'Chrome':/Safari\\//.test(u)&&!/Chrome\\//.test(u)&&!/CriOS/.test(u)?'Safari':'Web';
+  return p+' • '+b;
+}
+function parseKey(key){
+  try{
+    const raw=localStorage.getItem(key);
+    return raw===null?null:JSON.parse(raw);
+  }catch{return null}
+}
+function stable(v){try{return JSON.stringify(v)}catch{return String(v)}}
+function normName(v){
+  return String(v||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim().toLowerCase().replace(/\\s+/g,' ');
+}
+function mergeProducts(primary=[],secondary=[]){
+  const out=[],seen=new Set();
+  for(const p of [...(Array.isArray(primary)?primary:[]),...(Array.isArray(secondary)?secondary:[])]){
+    if(!p)continue;
+    const name=typeof p==='string'?p:(p.name??p.label??p.article??'');
+    const k=normName(name);
+    if(!k||seen.has(k))continue;
+    seen.add(k);out.push(p);
+  }
+  return out;
+}
+function mergeState(localState,remoteState){
+  if(!localState&& !remoteState)return null;
+  if(!localState)return remoteState;
+  if(!remoteState)return localState;
+
+  const lt=Number(localState.updatedAt)||0;
+  const rt=Number(remoteState.updatedAt)||0;
+  const localWins=lt>=rt;
+  const newest=localWins?localState:remoteState;
+  const older=localWins?remoteState:localState;
+
+  return {
+    ...older,
+    ...newest,
+    items:Array.isArray(newest.items)?newest.items:[],
+    products:mergeProducts(newest.products,older.products),
+    updatedAt:Math.max(lt,rt,Date.now()),
+    version:Math.max(Number(localState.version)||0,Number(remoteState.version)||0)
+  };
+}
+function setBadge(text,kind='ok'){
+  let b=document.getElementById('clair-sync-badge');
+  if(!b){
+    const row=document.querySelector('.brand-row')||document.querySelector('header')||document.body;
+    b=document.createElement('div');b.id='clair-sync-badge';
+    b.style.cssText='position:relative;z-index:4;flex:0 0 auto;margin-left:auto;padding:7px 10px;border:1px solid rgba(57,127,169,.18);border-radius:999px;background:rgba(236,247,252,.92);color:#286b93;font-size:.64rem;font-weight:900;letter-spacing:.02em;white-space:nowrap';
+    row.appendChild(b);
+  }
+  b.textContent=text;
+  if(kind==='wait'){b.style.opacity='.68'}
+  else if(kind==='off'){b.style.color='#7c6b50';b.style.background='rgba(250,247,241,.92)'}
+  else {b.style.color='#286b93';b.style.background='rgba(236,247,252,.92)';b.style.opacity='1'}
+}
+function writeLocal(key,value){
+  try{
+    if(value===undefined||value===null)localStorage.removeItem(key);
+    else localStorage.setItem(key,JSON.stringify(value));
+  }catch{}
+}
+async function getRemote(){
+  const r=await client.from('clair_data')
+    .select('payload,revision,updated_at')
+    .eq('user_id',user.id)
+    .eq('app_id','clair-courses')
+    .eq('data_key',REMOTE_KEY)
+    .is('deleted_at',null)
+    .maybeSingle();
+  if(r.error)throw r.error;
+  return r.data||null;
+}
+async function pushRemote(row,state,usage,previous){
+  const now=new Date().toISOString();
+  const r=await client.from('clair_data').upsert({
+    user_id:user.id,
+    app_id:'clair-courses',
+    data_key:REMOTE_KEY,
+    payload:{
+      value:state,
+      usage:usage??null,
+      previousList:previous??null,
+      source_device:deviceLabel(),
+      synced_at:now,
+      integration:'clair-sync-1.0'
+    },
+    schema_version:1,
+    revision:(row?.revision||0)+1,
+    deleted_at:null,
+    updated_at:now
+  },{onConflict:'user_id,app_id,data_key'});
+  if(r.error)throw r.error;
+}
+async function syncNow(reason='auto'){
+  if(syncing||!user||!navigator.onLine)return;
+  syncing=true;setBadge('Clair Sync…','wait');
+  try{
+    const localState=parseKey(STATE_KEY);
+    const localUsage=parseKey(USAGE_KEY);
+    const localPrevious=parseKey(PREVIOUS_KEY);
+    const row=await getRemote();
+    const remoteState=row?.payload?.value||null;
+    const merged=mergeState(localState,remoteState);
+
+    if(!merged){
+      setBadge('Clair Sync ✓'); syncing=false; return;
     }
-    function mergePersonal(remoteValue,localValue){
-      if(Array.isArray(remoteValue)||Array.isArray(localValue))return mergeArrays(remoteValue,localValue);
-      if(isPlainObject(remoteValue)||isPlainObject(localValue)){
-        const r=isPlainObject(remoteValue)?remoteValue:{},l=isPlainObject(localValue)?localValue:{},out={...r};
-        for(const k of Object.keys(l))out[k]=(k in r)?mergePersonal(r[k],l[k]):l[k];
-        return out;
+
+    const localBefore=stable(localState);
+    const mergedText=stable(merged);
+
+    // The newest active list wins; "Mes produits" are safely united.
+    if(mergedText!==localBefore){
+      writeLocal(STATE_KEY,merged);
+    }
+
+    const remoteUsage=row?.payload?.usage;
+    const usage=localUsage??remoteUsage??null;
+    const previous=localPrevious??row?.payload?.previousList??null;
+    await pushRemote(row,merged,usage,previous);
+
+    lastRaw=localStorage.getItem(STATE_KEY)||'';
+    setBadge('Clair Sync ✓');
+
+    // If data arrived from the other device, reload once so the visible list is current.
+    if(mergedText!==localBefore && sessionStorage.getItem(RELOAD_GUARD)!=='1'){
+      sessionStorage.setItem(RELOAD_GUARD,'1');
+      setTimeout(()=>location.reload(),120);
+      return;
+    }
+    sessionStorage.removeItem(RELOAD_GUARD);
+  }catch(err){
+    console.warn('Clair Sync',err);
+    setBadge(navigator.onLine?'Clair Sync en attente':'Clair Sync hors ligne','off');
+  }finally{
+    syncing=false;
+  }
+}
+function schedule(delay=500){
+  clearTimeout(timer);
+  timer=setTimeout(()=>syncNow('change'),delay);
+}
+async function bootSync(){
+  setBadge('Clair Sync…','wait');
+  if(!window.supabase){setBadge('Clair Sync en attente','off');return}
+  try{
+    client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
+    });
+    const s=await client.auth.getSession();
+    user=s.data?.session?.user||null;
+    if(!user){
+      setBadge('Clair Sync : connexion requise','off');
+      return;
+    }
+    lastRaw=localStorage.getItem(STATE_KEY)||'';
+    await syncNow('open');
+
+    // Detect changes made by Clair Courses itself without modifying its code.
+    setInterval(()=>{
+      const raw=localStorage.getItem(STATE_KEY)||'';
+      if(raw!==lastRaw){lastRaw=raw;schedule(650)}
+    },1200);
+  }catch(err){
+    console.warn('Clair Sync boot',err);
+    setBadge('Clair Sync en attente','off');
+  }
+}
+window.addEventListener('online',()=>schedule(200));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule(250)});
+setTimeout(bootSync,350);
+})();
+</scr`+`ipt>`;
+    return html.replace('</body>',syncScript+'</body>');
+  }catch(error){
+    console.warn('Clair Sync transform',error);
+    return html;
+  }
+}
+
+
+let source='';
+for(const url of SOURCES){
+  try{
+    const r=await fetch(url,{cache:'no-store'});
+    if(r.ok){
+      const t=await r.text();
+      if(t.includes('Clair Courses V13.1')&&t.includes('const transformSource=__CC_V131_TRANSFORM.toString();')){
+        source=t;
+        try{localStorage.setItem(CACHE_KEY,t)}catch{}
+        break;
       }
-      return localValue!==undefined&&localValue!==null?localValue:remoteValue;
     }
-    function favoriteCount(v){if(Array.isArray(v))return v.length;if(v&&typeof v==='object')return Object.keys(v).length;return v?1:0}
-    function meaningful(v){if(v===null||v===undefined)return false;if(Array.isArray(v))return v.length>0;if(isPlainObject(v))return Object.keys(v).length>0;if(typeof v==='string')return v.length>0;return true}
+  }catch{}
+}
+if(!source){
+  try{source=localStorage.getItem(CACHE_KEY)||''}catch{}
+}
+if(!source){
+  document.getElementById('boot').innerHTML='<div class="card"><strong>Clair Courses ne peut pas s’ouvrir.</strong><p>Vérifiez la connexion puis rechargez la page.</p></div>';
+  return;
+}
 
-    async function fetchCrRemoteRows(){
-      const keys=CR_PERSONAL_KEYS.map(x=>x.key);
-      const r=await client.from('clair_data').select('id,data_key,payload,revision,updated_at')
-        .eq('user_id',currentUser.id).eq('app_id','clair-repas')
-        .in('data_key',keys).is('deleted_at',null);
-      if(r.error)throw r.error;
-      return new Map((r.data||[]).map(row=>[row.data_key,row]));
-    }
+// Inject Clair Sync into the proven V13.1 wrapper, without changing the shopping engine.
+try{
+  source=source.replace(
+    'function __CC_V131_TRANSFORM(html){',
+    __CC_CLAIR_SYNC_TRANSFORM.toString()+'\nfunction __CC_V131_TRANSFORM(html){'
+  );
+  source=source.replace(
+    'const transformSource=__CC_V131_TRANSFORM.toString();',
+    'const transformSource=__CC_V131_TRANSFORM.toString()+"\\n"+__CC_CLAIR_SYNC_TRANSFORM.toString();'
+  );
+  source=source.replace(
+    "source=source.replace('document.write(html);','html=__CC_V131_TRANSFORM(html);document.write(html);');",
+    "source=source.replace('document.write(html);','html=__CC_V131_TRANSFORM(html);html=__CC_CLAIR_SYNC_TRANSFORM(html);document.write(html);');"
+  );
 
-    async function updateClairRepasStatus(){
-      if(!currentUser||!$('crStatus'))return;
-      try{
-        const remote=await fetchCrRemoteRows();
-        let localTypes=0,remoteTypes=0;
-        for(const item of CR_PERSONAL_KEYS){
-          const l=readLocalJson(item.key);
-          if(l.exists&&meaningful(l.value))localTypes++;
-          const rv=remote.get(item.key)?.payload?.value;
-          if(rv!==undefined&&meaningful(rv))remoteTypes++;
-        }
-        const localFav=readLocalJson('crFavMeals');
-        const remoteFav=remote.get('crFavMeals')?.payload?.value;
-        const lf=localFav.exists?favoriteCount(localFav.value):0;
-        const rf=remoteFav!==undefined?favoriteCount(remoteFav):0;
-        if(!localTypes&&!remoteTypes){
-          $('crStatus').textContent='Clair Repas est relié. Aucune donnée personnelle à synchroniser pour le moment.';
-        }else{
-          $('crStatus').textContent=`Clair Repas : ${localTypes} type${localTypes>1?'s':''} de données sur cet appareil · ${remoteTypes} dans Mon espace Clair · favoris ${lf}/${rf}.`;
-        }
-      }catch(err){
-        console.error(err);
-        $('crStatus').textContent='Clair Repas : vérification momentanément indisponible.';
-      }
-    }
+  const ok=source.includes('__CC_CLAIR_SYNC_TRANSFORM') &&
+           source.includes('html=__CC_V131_TRANSFORM(html);html=__CC_CLAIR_SYNC_TRANSFORM(html);document.write(html);');
+  if(!ok)throw new Error('Injection Clair Sync non validée');
+}catch(err){
+  console.warn('Clair Sync: mode sûr, V13.1 inchangée',err);
+}
 
-    async function syncClairRepasPersonal(options={}){
-      if(!currentUser||crSyncInFlight||!navigator.onLine)return;
-      const silent=!!options.silent,btn=$('syncCrButton');
-      crSyncInFlight=true;
-      if(!silent)setBusy(btn,true,'Synchronisation…');
-      try{
-        const remote=await fetchCrRemoteRows();
-        let synced=0;
-        const now=new Date().toISOString();
-
-        for(const item of CR_PERSONAL_KEYS){
-          const local=readLocalJson(item.key);
-          const row=remote.get(item.key);
-          const remoteValue=row?.payload?.value;
-
-          if(!local.exists&&remoteValue===undefined)continue;
-
-          // Safe merge: empty local data never destroys remote data.
-          const merged=mergePersonal(remoteValue,local.exists?local.value:undefined);
-          if(merged===undefined)continue;
-
-          writeLocalJson(item.key,merged);
-
-          const payload={
-            value:merged,
-            source_device:deviceLabel(),
-            synced_at:now,
-            integration:'espace-clair-v8.2'
-          };
-          const up=await client.from('clair_data').upsert({
-            user_id:currentUser.id,
-            app_id:'clair-repas',
-            data_key:item.key,
-            payload,
-            schema_version:1,
-            revision:(row?.revision||0)+1,
-            last_device_id:currentDevice?.id||null,
-            deleted_at:null,
-            updated_at:now
-          },{onConflict:'user_id,app_id,data_key'});
-          if(up.error)throw up.error;
-          synced++;
-        }
-
-        await updateClairRepasStatus();
-        if(!silent){
-          $('crStatus').textContent=synced
-            ?`✓ Clair Repas synchronisé : ${synced} type${synced>1?'s':''} de données personnelles sont à jour sur cet appareil et dans Mon espace Clair.`
-            :'✓ Clair Repas est relié. Rien de nouveau à synchroniser pour le moment.';
-        }
-      }catch(err){
-        console.error(err);
-        if(!silent)$('crStatus').textContent='Synchronisation impossible : '+friendly(err);
-      }finally{
-        crSyncInFlight=false;
-        if(!silent)setBusy(btn,false);
-      }
-    }
-
-    function scheduleCrAutoSync(delay=500){
-      if(crAutoTimer)clearTimeout(crAutoTimer);
-      crAutoTimer=setTimeout(()=>syncClairRepasPersonal({silent:true}),delay);
-    }
-
-    async function ensureProfile(user){let r=await client.from('clair_profiles').select('*').eq('user_id',user.id).maybeSingle();if(r.error)throw r.error;if(!r.data){const name=user.user_metadata?.display_name||user.email?.split('@')[0]||'Utilisateur Clair';r=await client.from('clair_profiles').upsert({user_id:user.id,display_name:name},{onConflict:'user_id'}).select('*').single();if(r.error)throw r.error}return r.data}
-    async function registerDevice(user){const payload={user_id:user.id,device_key:deviceKey(),label:deviceLabel(),platform:platform(),app_version:APP_VERSION,last_seen_at:new Date().toISOString()};const r=await client.from('clair_devices').upsert(payload,{onConflict:'user_id,device_key'}).select('*').single();if(r.error)throw r.error;currentDevice=r.data;return r.data}
-    async function loadDashboard(user){currentUser=user;const profile=await ensureProfile(user);await registerDevice(user);const devicesR=await client.from('clair_devices').select('*').eq('user_id',user.id).order('last_seen_at',{ascending:false});if(devicesR.error)throw devicesR.error;const dataR=await client.from('clair_data').select('id,app_id,data_key,updated_at,payload',{count:'exact'}).eq('user_id',user.id).is('deleted_at',null).order('updated_at',{ascending:false}).limit(1);if(dataR.error)throw dataR.error;const name=displayName(user,profile);$('displayName').textContent=name;$('displayEmail').textContent=user.email||'—';$('avatar').textContent=(name.trim()[0]||'C').toUpperCase();$('welcomeTitle').textContent=`Bonjour ${name}`;$('memberSince').textContent=user.created_at?`Depuis ${pretty(user.created_at)}`:'Espace Clair';const count=dataR.count||0;$('dataCount').textContent=String(count);$('dataLabel').textContent=count>1?'données personnelles enregistrées':'donnée personnelle enregistrée';$('lastData').textContent=dataR.data?.[0]?`Dernière mise à jour : ${pretty(dataR.data[0].updated_at,true)}`:'Aucune donnée synchronisée pour le moment.';$('deviceList').innerHTML=(devicesR.data||[]).map(d=>`<div class="device"><div class="device-icon">${icon(d.platform||'')}</div><div class="device-copy"><div class="device-name">${escapeHtml(d.label||d.platform||'Appareil')}</div><div class="device-meta">${d.id===currentDevice?.id?'<span class="device-current">Cet appareil</span> · ':''}${escapeHtml(relative(d.last_seen_at))}</div></div></div>`).join('')||'<div class="device"><div class="device-icon">⌛</div><div class="device-copy"><div class="device-name">Aucun appareil détecté</div></div></div>';$('signedout').classList.add('hidden');$('dashboard').classList.add('visible');await updateClairRepasStatus();scheduleCrAutoSync(300)}
-    function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-    function showSignedOut(){$('dashboard').classList.remove('visible');$('signedout').classList.remove('hidden');currentUser=null;currentDevice=null}
-    async function refresh(){if(!currentUser)return;try{await loadDashboard(currentUser)}catch(e){console.error(e);$('syncBadge').textContent='⚠ Vérification nécessaire'}}
-
-    $('loginTab').addEventListener('click',()=>switchAuth('login'));$('signupTab').addEventListener('click',()=>switchAuth('signup'));
-    $('loginForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('loginButton');setMessage($('authMessage'),'');setBusy(btn,true,'Connexion…');try{const {data,error}=await client.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error)throw error;if(!data.user)throw new Error('Connexion impossible.');await loadDashboard(data.user)}catch(err){setMessage($('authMessage'),friendly(err),'error')}finally{setBusy(btn,false)}});
-    $('signupForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('signupButton');setMessage($('authMessage'),'');setBusy(btn,true,'Création…');try{const email=$('signupEmail').value.trim(),name=$('signupName').value.trim(),password=$('signupPassword').value;const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name},emailRedirectTo:location.href}});if(error)throw error;if(data.session&&data.user){await loadDashboard(data.user)}else{setMessage($('authMessage'),'Votre espace est créé. Vérifiez votre e-mail pour confirmer votre adresse, puis revenez ici pour vous connecter.','success');switchAuth('login');$('loginEmail').value=email}}catch(err){setMessage($('authMessage'),friendly(err),'error')}finally{setBusy(btn,false)}});
-    $('logoutButton').addEventListener('click',async()=>{await client.auth.signOut();showSignedOut()});$('refreshButton').addEventListener('click',refresh);
-    $('syncCrButton').addEventListener('click',()=>syncClairRepasPersonal({silent:false}));
-    $('testSyncButton').addEventListener('click',async()=>{if(!currentUser)return;const btn=$('testSyncButton');setBusy(btn,true,'Enregistrement…');try{const existing=await client.from('clair_data').select('*').eq('user_id',currentUser.id).eq('app_id','espace-clair').eq('data_key','premier-test').maybeSingle();if(existing.error)throw existing.error;const revision=(existing.data?.revision||0)+1;const payload={message:'Bonjour depuis Espace Clair',device:deviceLabel(),saved_at:new Date().toISOString()};const r=await client.from('clair_data').upsert({user_id:currentUser.id,app_id:'espace-clair',data_key:'premier-test',payload,schema_version:1,revision,last_device_id:currentDevice?.id||null,deleted_at:null,updated_at:new Date().toISOString()},{onConflict:'user_id,app_id,data_key'});if(r.error)throw r.error;await refresh();$('lastData').textContent=`Test enregistré depuis ${deviceLabel()} à ${new Intl.DateTimeFormat('fr-FR',{timeStyle:'short'}).format(new Date())}`;}catch(err){alert(friendly(err))}finally{setBusy(btn,false)}});
-    $('editProfile').addEventListener('click',()=>{$('profileNameInput').value=$('displayName').textContent||'';$('profileDialogBackdrop').classList.add('visible');setMessage($('profileMessage'),'')});$('cancelProfile').addEventListener('click',()=>$('profileDialogBackdrop').classList.remove('visible'));$('saveProfile').addEventListener('click',async()=>{if(!currentUser)return;const name=$('profileNameInput').value.trim();if(!name){setMessage($('profileMessage'),'Indiquez un nom.','error');return}try{const r=await client.from('clair_profiles').upsert({user_id:currentUser.id,display_name:name,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(r.error)throw r.error;$('profileDialogBackdrop').classList.remove('visible');await refresh()}catch(err){setMessage($('profileMessage'),friendly(err),'error')}});
-    function friendly(err){const m=String(err?.message||err||'Erreur inconnue');if(/Invalid login credentials/i.test(m))return'Adresse e-mail ou mot de passe incorrect.';if(/Email not confirmed/i.test(m))return'Confirmez d’abord votre adresse e-mail.';if(/User already registered/i.test(m))return'Un espace existe déjà avec cette adresse.';if(/Failed to fetch/i.test(m))return'Impossible de joindre le serveur. Vérifiez la connexion Internet.';return m}
-
-    window.addEventListener('storage',e=>{if(currentUser&&CR_KEY_SET.has(e.key))scheduleCrAutoSync(350)});
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser)scheduleCrAutoSync(250)});
-    window.addEventListener('online',()=>{setNetwork();if(currentUser)scheduleCrAutoSync(250)});
-    window.addEventListener('offline',setNetwork);setNetwork();
-    client.auth.onAuthStateChange(async(event,session)=>{if(session?.user){try{await loadDashboard(session.user)}catch(e){console.error(e);setMessage($('authMessage'),friendly(e),'error');showSignedOut()}}else if(event==='SIGNED_OUT'){showSignedOut()}});
-    (async()=>{try{const {data}=await client.auth.getSession();if(data.session?.user)await loadDashboard(data.session.user);else showSignedOut()}catch(e){console.error(e);showSignedOut();setMessage($('authMessage'),friendly(e),'error')}finally{$('loading').classList.add('hidden')}})();
-  })();
-  </script>
+document.open();
+document.write(source);
+document.close();
+})();
+</script>
 </body>
 </html>
