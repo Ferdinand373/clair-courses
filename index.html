@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#dceefa">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Clair Courses">
-<title>Clair Courses · Clair Sync 1.1</title>
+<title>Clair Courses · Clair Sync 1.2</title>
 <style>
 html,body{min-height:100%;margin:0;background:#eef6fb;color:#17364a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .boot{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center;background:radial-gradient(circle at 90% 0,rgba(169,214,239,.62),transparent 25rem),linear-gradient(180deg,#eef8fd,#f8fbfd)}
@@ -21,7 +21,7 @@ html,body{min-height:100%;margin:0;background:#eef6fb;color:#17364a;font-family:
 'use strict';
 
 const STABLE_COMMIT='f0c871a958583c72b766027da84f193806a2bbe1';
-const CACHE_KEY='clairCourses.clairSync.stable.v1';
+const CACHE_KEY='clairCourses.clairSync.stable.v1.2';
 const SOURCES=[
   `https://cdn.jsdelivr.net/gh/Ferdinand373/clair-courses@${STABLE_COMMIT}/index.html?v=clairsync1`,
   `https://raw.githubusercontent.com/Ferdinand373/clair-courses/${STABLE_COMMIT}/index.html?v=clairsync1`
@@ -36,7 +36,7 @@ function __CC_CLAIR_SYNC_TRANSFORM(html){
 (()=>{
 'use strict';
 
-const CC_SYNC_VERSION='Clair Sync 1.1';
+const CC_SYNC_VERSION='Clair Sync 1.2';
 const SUPABASE_URL='https://ryyewskgfgysfubesdsj.supabase.co';
 const SUPABASE_KEY='sb_publishable_T9Dmg9VKTdMFdCuLVxD54w_7GeH3Q6S';
 const STATE_KEY='clairCourses.state';
@@ -46,7 +46,7 @@ const REMOTE_KEY='clairCourses.state';
 const RELOAD_GUARD='clairSync.cc.reload.v1';
 const META_KEY='clairSync.cc.meta.v1';
 
-let client=null,user=null,syncing=false,lastRaw='',timer=null;
+let client=null,user=null,syncing=false,lastRaw='',timer=null,watcherStarted=false;
 
 function deviceLabel(){
   const u=navigator.userAgent||'';
@@ -144,7 +144,7 @@ async function pushRemote(row,state,usage,previous){
       previousList:previous??null,
       source_device:deviceLabel(),
       synced_at:now,
-      integration:'clair-sync-1.1'
+      integration:'clair-sync-1.2'
     },
     schema_version:1,
     revision:(row?.revision||0)+1,
@@ -223,6 +223,103 @@ function schedule(delay=500){
   clearTimeout(timer);
   timer=setTimeout(()=>syncNow('change'),delay);
 }
+function startWatcher(){
+  if(watcherStarted)return;
+  watcherStarted=true;
+  setInterval(()=>{
+    const raw=localStorage.getItem(STATE_KEY)||'';
+    if(raw!==lastRaw){
+      lastRaw=raw;
+      setMeta({localChangedAt:Date.now()});
+      schedule(650);
+    }
+  },1200);
+}
+function showLoginPanel(){
+  if(document.getElementById('clair-sync-login'))return;
+
+  const overlay=document.createElement('div');
+  overlay.id='clair-sync-login';
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:18px;background:rgba(19,42,57,.46);backdrop-filter:blur(8px)';
+
+  const box=document.createElement('div');
+  box.style.cssText='width:min(390px,100%);padding:22px;border:1px solid rgba(255,255,255,.9);border-radius:24px;background:#fffefd;box-shadow:0 24px 80px rgba(19,42,57,.28);color:#17364a';
+
+  const title=document.createElement('strong');
+  title.textContent='Connexion Clair Sync';
+  title.style.cssText='display:block;font-size:1.25rem;margin-bottom:7px';
+
+  const copy=document.createElement('p');
+  copy.textContent='Une seule connexion est nécessaire sur cet appareil. Utilisez les mêmes identifiants que pour Mon espace Clair.';
+  copy.style.cssText='margin:0 0 16px;color:#728793;font-size:.88rem;line-height:1.45';
+
+  const form=document.createElement('form');
+  form.style.cssText='display:grid;gap:10px';
+
+  const email=document.createElement('input');
+  email.type='email';
+  email.autocomplete='email';
+  email.autocapitalize='none';
+  email.spellcheck=false;
+  email.placeholder='Adresse e-mail';
+  email.required=true;
+  email.style.cssText='width:100%;min-height:50px;padding:0 13px;border:1px solid #d8e6ed;border-radius:14px;background:#fbfdfe;color:#17364a;font:inherit;box-sizing:border-box';
+
+  const password=document.createElement('input');
+  password.type='password';
+  password.autocomplete='current-password';
+  password.placeholder='Mot de passe';
+  password.required=true;
+  password.style.cssText=email.style.cssText;
+
+  const error=document.createElement('div');
+  error.style.cssText='min-height:18px;color:#a9534c;font-size:.78rem;line-height:1.35';
+
+  const submit=document.createElement('button');
+  submit.type='submit';
+  submit.textContent='Se connecter';
+  submit.style.cssText='min-height:50px;border:0;border-radius:14px;background:linear-gradient(135deg,#438bb5,#2d6c94);color:#fff;font:inherit;font-weight:900';
+
+  const later=document.createElement('button');
+  later.type='button';
+  later.textContent='Plus tard';
+  later.style.cssText='min-height:44px;border:0;background:transparent;color:#728793;font:inherit;font-weight:800';
+
+  later.addEventListener('click',()=>overlay.remove());
+
+  form.addEventListener('submit',async(ev)=>{
+    ev.preventDefault();
+    error.textContent='';
+    submit.disabled=true;
+    submit.textContent='Connexion…';
+    try{
+      const result=await client.auth.signInWithPassword({
+        email:email.value.trim(),
+        password:password.value
+      });
+      if(result.error)throw result.error;
+      user=result.data?.session?.user||result.data?.user||null;
+      if(!user)throw new Error('Session non créée');
+      password.value='';
+      overlay.remove();
+      setBadge('Clair Sync…','wait');
+      lastRaw=localStorage.getItem(STATE_KEY)||'';
+      await syncNow('login');
+      startWatcher();
+    }catch(err){
+      console.warn('Clair Sync login',err);
+      error.textContent='Connexion impossible. Vérifiez votre e-mail et votre mot de passe.';
+      submit.disabled=false;
+      submit.textContent='Se connecter';
+    }
+  });
+
+  form.append(email,password,error,submit,later);
+  box.append(title,copy,form);
+  overlay.append(box);
+  document.body.append(overlay);
+  setTimeout(()=>email.focus(),120);
+}
 async function bootSync(){
   setBadge('Clair Sync…','wait');
   if(!window.supabase){setBadge('Clair Sync en attente','off');return}
@@ -234,20 +331,12 @@ async function bootSync(){
     user=s.data?.session?.user||null;
     if(!user){
       setBadge('Clair Sync : connexion requise','off');
+      showLoginPanel();
       return;
     }
     lastRaw=localStorage.getItem(STATE_KEY)||'';
     await syncNow('open');
-
-    // Detect changes made by Clair Courses itself without modifying its code.
-    setInterval(()=>{
-      const raw=localStorage.getItem(STATE_KEY)||'';
-      if(raw!==lastRaw){
-        lastRaw=raw;
-        setMeta({localChangedAt:Date.now()});
-        schedule(650);
-      }
-    },1200);
+    startWatcher();
   }catch(err){
     console.warn('Clair Sync boot',err);
     setBadge('Clair Sync en attente','off');
